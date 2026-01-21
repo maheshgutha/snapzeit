@@ -1,0 +1,162 @@
+{
+  "nav": {
+    "home": "Início",
+    "photographers": "Fotógrafos",
+    "howItWorks": "Como Funciona",
+    "dashboard": "Painel",
+    "admin": "Admin",
+    "profile": "Perfil",
+    "bookings": "Minhas Reservas",
+    "photographerDashboard": "Painel do Fotógrafo",
+    "adminPanel": "Painel Admin",
+    "signOut": "Sair",
+    "logIn": "Entrar",
+    "signUp": "Cadastrar",
+    "signIn": "Entrar",
+    "getStarted": "Começar",
+    "findPhotographers": "Encontrar Fotógrafos"
+  },
+  "hero": {
+    "trustBadge": "Confiado por mais de 10.000 clientes em todo o mundo",
+    "title": "Encontre o",
+    "titleHighlight": "fotógrafo",
+    "titleEnd": "perfeito para o seu momento",
+    "subtitle": "Reserve fotógrafos talentosos para casamentos, eventos, retratos e mais. Reserva simples, profissionais verificados, resultados impressionantes.",
+    "searchPlaceholder": "Pesquisar por localização, especialidade ou nome...",
+    "search": "Pesquisar",
+    "photographersCount": "2.500+ Fotógrafos",
+    "averageRating": "4.9 Avaliação Média",
+    "verified": "100% Verificados"
+  },
+  "features": {
+    "title": "Como Funciona",
+    "subtitle": "Reserve seu fotógrafo perfeito em três passos simples",
+    "browse": {
+      "title": "Navegue e Compare",
+      "desc": "Explore portfólios, leia avaliações e compare preços de fotógrafos verificados na sua região."
+    },
+    "book": {
+      "title": "Reserve Instantaneamente",
+      "desc": "Verifique a disponibilidade em tempo real e reserve sua sessão em poucos cliques. Sem idas e vindas."
+    },
+    "pay": {
+      "title": "Pague com Segurança",
+      "desc": "Pagamentos seguros com nossa garantia de devolução. Pague apenas quando estiver completamente satisfeito."
+    }
+  },
+  "featured": {
+    "title": "Fotógrafos Mais Bem Avaliados",
+    "subtitle": "Profissionais selecionados com avaliações excepcionais",
+    "viewAll": "Ver Todos"
+  },
+  "testimonials": {
+    "title": "O Que Nossos Clientes Dizem",
+    "subtitle": "Milhares de clientes satisfeitos encontraram seu fotógrafo perfeito através do OraSnap"
+  },
+  "cta": {
+    "title": "Você é Fotógrafo?",
+    "subtitle": "Junte-se à nossa crescente rede de profissionais. Alcance mais clientes, gerencie reservas sem esforço e expanda seu negócio.",
+    "button": "Junte-se como Fotógrafo"
+  },
+  "footer": {
+    "photographers": "Fotógrafos",
+    "howItWorks": "Como Funciona",
+    "contact": "Contato",
+    "signIn": "Entrar",
+    "copyright": "© 2024 OraSnap. Todos os direitos reservados."
+  },
+  "photographers": {
+    "title": "Encontre Seu Fotógrafo Perfeito",
+    "subtitle": "Navegue pela nossa seleção de fotógrafos profissionais prontos para capturar seus momentos especiais",
+    "filters": "Filtros",
+    "clearFilters": "Limpar Filtros",
+    "applyFilters": "Aplicar Filtros",
+    "specialty": "Especialidade",
+    "allSpecialties": "Todas as Especialidades",
+    "country": "País",
+    "allCountries": "Todos os Países",
+    "city": "Cidade",
+    "allCities": "Todas as Cidades",
+    "priceRange": "Faixa de Preço",
+    "minRating": "Avaliação Mínima",
+    "anyRating": "Qualquer Avaliação",
+    "sortBy": "Ordenar Por",
+    "rating": "Avaliação",
+    "priceAsc": "Preço: Menor para Maior",
+    "priceDesc": "Preço: Maior para Menor",
+    "experience": "Experiência",
+    "listView": "Visualização em Lista",
+    "mapView": "Visualização em Mapa",
+    "noPhotographers": "Nenhum fotógrafo encontrado",
+    "tryAdjusting": "Tente ajustar seus filtros ou critérios de busca",
+    "perHour": "/hora",
+    "years": "anos",
+    "reviews": "avaliações",
+    "viewProfile": "Ver Perfil"
+  },
+  "booking": {
+    "title": "Minhas Reservas",
+    "noBookings": "Nenhuma reserva ainda",
+    "startBrowsing": "Comece a navegar pelos fotógrafos para fazer sua primeira reserva",
+    "browsePhotographers": "Navegar Fotógrafos",
+    "pending": "Aguardando aprovação do fotógrafo",
+    "confirmed": "Reserva confirmada!",
+    "cancelled": "Reserva recusada",
+    "completed": "Concluída",
+    "date": "Data",
+    "time": "Hora",
+    "location": "Local",
+    "total": "Total",
+    "chat": "Chat",
+    "leaveReview": "Deixar Avaliação"
+  },
+  "auth": {
+    "backToHome": "Voltar para Início",
+    "tagline": "Reserve fotógrafos profissionais em minutos",
+    "signInTab": "Entrar",
+    "signUpTab": "Cadastrar",
+    "continueWithGoogle": "Continuar com Google",
+    "connecting": "Conectando...",
+    "orContinueWithEmail": "ou continuar com email",
+    "email": "Email",
+    "password": "Senha",
+    "fullName": "Nome Completo",
+    "forgotPassword": "Esqueceu a senha?",
+    "signingIn": "Entrando...",
+    "creatingAccount": "Criando conta...",
+    "createAccount": "Criar Conta",
+    "areYouPhotographer": "Você é fotógrafo?",
+    "joinAsPhotographer": "Junte-se como fotógrafo",
+    "resetPassword": "Redefinir senha",
+    "resetDescription": "Digite seu email e enviaremos um link para redefinir sua senha.",
+    "emailAddress": "Endereço de email",
+    "sendResetLink": "Enviar Link",
+    "sending": "Enviando...",
+    "passwordStrength": {
+      "weak": "Senha fraca",
+      "fair": "Senha razoável",
+      "good": "Senha boa",
+      "strong": "Senha forte"
+    },
+    "passwordRequirements": {
+      "minLength": "Pelo menos 6 caracteres",
+      "uppercase": "Uma letra maiúscula",
+      "lowercase": "Uma letra minúscula",
+      "number": "Um número"
+    }
+  },
+  "common": {
+    "loading": "Carregando...",
+    "error": "Erro",
+    "success": "Sucesso",
+    "cancel": "Cancelar",
+    "save": "Salvar",
+    "delete": "Excluir",
+    "edit": "Editar",
+    "close": "Fechar",
+    "back": "Voltar",
+    "next": "Próximo",
+    "submit": "Enviar",
+    "language": "Idioma"
+  }
+}

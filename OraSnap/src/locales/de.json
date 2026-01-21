@@ -1,0 +1,162 @@
+{
+  "nav": {
+    "home": "Startseite",
+    "photographers": "Fotografen",
+    "howItWorks": "So funktioniert's",
+    "dashboard": "Dashboard",
+    "admin": "Admin",
+    "profile": "Profil",
+    "bookings": "Meine Buchungen",
+    "photographerDashboard": "Fotografen-Dashboard",
+    "adminPanel": "Admin-Panel",
+    "signOut": "Abmelden",
+    "logIn": "Anmelden",
+    "signUp": "Registrieren",
+    "signIn": "Anmelden",
+    "getStarted": "Loslegen",
+    "findPhotographers": "Fotografen finden"
+  },
+  "hero": {
+    "trustBadge": "Vertraut von über 10.000 Kunden weltweit",
+    "title": "Finden Sie den perfekten",
+    "titleHighlight": "Fotografen",
+    "titleEnd": "für Ihren Moment",
+    "subtitle": "Buchen Sie talentierte Fotografen für Hochzeiten, Events, Porträts und mehr. Einfache Buchung, verifizierte Profis, atemberaubende Ergebnisse.",
+    "searchPlaceholder": "Nach Ort, Spezialisierung oder Name suchen...",
+    "search": "Suchen",
+    "photographersCount": "2.500+ Fotografen",
+    "averageRating": "4.9 Durchschnittsbewertung",
+    "verified": "100% Verifiziert"
+  },
+  "features": {
+    "title": "So funktioniert's",
+    "subtitle": "Buchen Sie Ihren perfekten Fotografen in drei einfachen Schritten",
+    "browse": {
+      "title": "Durchsuchen und Vergleichen",
+      "desc": "Entdecken Sie Portfolios, lesen Sie Bewertungen und vergleichen Sie Preise von verifizierten Fotografen in Ihrer Nähe."
+    },
+    "book": {
+      "title": "Sofort Buchen",
+      "desc": "Prüfen Sie die Verfügbarkeit in Echtzeit und buchen Sie Ihre Sitzung mit wenigen Klicks. Kein Hin und Her."
+    },
+    "pay": {
+      "title": "Sicher Bezahlen",
+      "desc": "Sichere Zahlungen mit unserer Geld-zurück-Garantie. Zahlen Sie erst, wenn Sie vollständig zufrieden sind."
+    }
+  },
+  "featured": {
+    "title": "Bestbewertete Fotografen",
+    "subtitle": "Handverlesene Profis mit außergewöhnlichen Bewertungen",
+    "viewAll": "Alle Anzeigen"
+  },
+  "testimonials": {
+    "title": "Was Unsere Kunden Sagen",
+    "subtitle": "Tausende zufriedener Kunden haben ihren perfekten Fotografen über OraSnap gefunden"
+  },
+  "cta": {
+    "title": "Sind Sie Fotograf?",
+    "subtitle": "Treten Sie unserem wachsenden Netzwerk von Profis bei. Erreichen Sie mehr Kunden, verwalten Sie Buchungen mühelos und wachsen Sie Ihr Geschäft.",
+    "button": "Als Fotograf Beitreten"
+  },
+  "footer": {
+    "photographers": "Fotografen",
+    "howItWorks": "So funktioniert's",
+    "contact": "Kontakt",
+    "signIn": "Anmelden",
+    "copyright": "© 2024 OraSnap. Alle Rechte vorbehalten."
+  },
+  "photographers": {
+    "title": "Finden Sie Ihren Perfekten Fotografen",
+    "subtitle": "Durchsuchen Sie unsere kuratierte Auswahl professioneller Fotografen, die bereit sind, Ihre besonderen Momente festzuhalten",
+    "filters": "Filter",
+    "clearFilters": "Filter Löschen",
+    "applyFilters": "Filter Anwenden",
+    "specialty": "Spezialisierung",
+    "allSpecialties": "Alle Spezialisierungen",
+    "country": "Land",
+    "allCountries": "Alle Länder",
+    "city": "Stadt",
+    "allCities": "Alle Städte",
+    "priceRange": "Preisbereich",
+    "minRating": "Mindestbewertung",
+    "anyRating": "Beliebige Bewertung",
+    "sortBy": "Sortieren Nach",
+    "rating": "Bewertung",
+    "priceAsc": "Preis: Niedrig nach Hoch",
+    "priceDesc": "Preis: Hoch nach Niedrig",
+    "experience": "Erfahrung",
+    "listView": "Listenansicht",
+    "mapView": "Kartenansicht",
+    "noPhotographers": "Keine Fotografen gefunden",
+    "tryAdjusting": "Versuchen Sie, Ihre Filter oder Suchkriterien anzupassen",
+    "perHour": "/Stunde",
+    "years": "Jahre",
+    "reviews": "Bewertungen",
+    "viewProfile": "Profil Anzeigen"
+  },
+  "booking": {
+    "title": "Meine Buchungen",
+    "noBookings": "Noch keine Buchungen",
+    "startBrowsing": "Beginnen Sie mit dem Durchsuchen von Fotografen für Ihre erste Buchung",
+    "browsePhotographers": "Fotografen Durchsuchen",
+    "pending": "Warten auf Bestätigung des Fotografen",
+    "confirmed": "Buchung bestätigt!",
+    "cancelled": "Buchung abgelehnt",
+    "completed": "Abgeschlossen",
+    "date": "Datum",
+    "time": "Uhrzeit",
+    "location": "Ort",
+    "total": "Gesamt",
+    "chat": "Chat",
+    "leaveReview": "Bewertung Abgeben"
+  },
+  "auth": {
+    "backToHome": "Zurück zur Startseite",
+    "tagline": "Buchen Sie professionelle Fotografen in wenigen Minuten",
+    "signInTab": "Anmelden",
+    "signUpTab": "Registrieren",
+    "continueWithGoogle": "Mit Google fortfahren",
+    "connecting": "Verbinden...",
+    "orContinueWithEmail": "oder mit E-Mail fortfahren",
+    "email": "E-Mail",
+    "password": "Passwort",
+    "fullName": "Vollständiger Name",
+    "forgotPassword": "Passwort vergessen?",
+    "signingIn": "Anmelden...",
+    "creatingAccount": "Konto wird erstellt...",
+    "createAccount": "Konto erstellen",
+    "areYouPhotographer": "Sind Sie Fotograf?",
+    "joinAsPhotographer": "Als Fotograf beitreten",
+    "resetPassword": "Passwort zurücksetzen",
+    "resetDescription": "Geben Sie Ihre E-Mail-Adresse ein und wir senden Ihnen einen Link zum Zurücksetzen.",
+    "emailAddress": "E-Mail-Adresse",
+    "sendResetLink": "Link senden",
+    "sending": "Senden...",
+    "passwordStrength": {
+      "weak": "Schwaches Passwort",
+      "fair": "Akzeptables Passwort",
+      "good": "Gutes Passwort",
+      "strong": "Starkes Passwort"
+    },
+    "passwordRequirements": {
+      "minLength": "Mindestens 6 Zeichen",
+      "uppercase": "Ein Großbuchstabe",
+      "lowercase": "Ein Kleinbuchstabe",
+      "number": "Eine Zahl"
+    }
+  },
+  "common": {
+    "loading": "Laden...",
+    "error": "Fehler",
+    "success": "Erfolg",
+    "cancel": "Abbrechen",
+    "save": "Speichern",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "close": "Schließen",
+    "back": "Zurück",
+    "next": "Weiter",
+    "submit": "Absenden",
+    "language": "Sprache"
+  }
+}

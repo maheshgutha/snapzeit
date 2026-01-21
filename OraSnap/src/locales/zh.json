@@ -1,0 +1,244 @@
+{
+  "nav": {
+    "home": "首页",
+    "photographers": "摄影师",
+    "howItWorks": "如何运作",
+    "dashboard": "仪表板",
+    "admin": "管理员",
+    "profile": "个人资料",
+    "bookings": "我的预订",
+    "photographerDashboard": "摄影师仪表板",
+    "adminPanel": "管理面板",
+    "signOut": "退出登录",
+    "logIn": "登录",
+    "signUp": "注册",
+    "signIn": "登录",
+    "getStarted": "开始使用",
+    "findPhotographers": "查找摄影师"
+  },
+  "hero": {
+    "trustBadge": "全球超过10,000+客户的信赖",
+    "title": "为您的时刻找到",
+    "titleHighlight": "完美的摄影师",
+    "titleEnd": "",
+    "subtitle": "为婚礼、活动、人像等预订才华横溢的摄影师。简单预订，专业认证，惊艳成果。",
+    "searchPlaceholder": "按地点、专业或姓名搜索...",
+    "search": "搜索",
+    "photographersCount": "2,500+ 摄影师",
+    "averageRating": "4.9 平均评分",
+    "verified": "100% 认证"
+  },
+  "features": {
+    "title": "如何运作",
+    "subtitle": "三个简单步骤预订您的完美摄影师",
+    "browse": {
+      "title": "浏览和比较",
+      "desc": "探索作品集，阅读评价，比较您所在地区认证摄影师的价格。"
+    },
+    "book": {
+      "title": "即时预订",
+      "desc": "查看实时可用性，只需点击几下即可预订您的拍摄。无需来回沟通。"
+    },
+    "pay": {
+      "title": "安全支付",
+      "desc": "安全支付，享受退款保证。只有完全满意后才需付款。"
+    }
+  },
+  "featured": {
+    "title": "顶级评分摄影师",
+    "subtitle": "精选的专业人士，拥有出色的评价",
+    "viewAll": "查看全部"
+  },
+  "testimonials": {
+    "title": "客户评价",
+    "subtitle": "数千名满意客户通过 OraSnap 找到了他们的完美摄影师"
+  },
+  "cta": {
+    "title": "您是摄影师吗？",
+    "subtitle": "加入我们不断壮大的专业网络。接触更多客户，轻松管理预订，发展您的业务。",
+    "button": "加入成为摄影师"
+  },
+  "footer": {
+    "photographers": "摄影师",
+    "howItWorks": "如何运作",
+    "contact": "联系我们",
+    "signIn": "登录",
+    "copyright": "© 2024 OraSnap. 保留所有权利。"
+  },
+  "photographers": {
+    "title": "找到您的完美摄影师",
+    "subtitle": "浏览我们精选的专业摄影师，准备捕捉您的特别时刻",
+    "filters": "筛选",
+    "clearFilters": "清除筛选",
+    "applyFilters": "应用筛选",
+    "specialty": "专业",
+    "allSpecialties": "所有专业",
+    "country": "国家",
+    "allCountries": "所有国家",
+    "city": "城市",
+    "allCities": "所有城市",
+    "priceRange": "价格范围",
+    "minRating": "最低评分",
+    "anyRating": "任何评分",
+    "sortBy": "排序",
+    "rating": "评分",
+    "priceAsc": "价格：从低到高",
+    "priceDesc": "价格：从高到低",
+    "experience": "经验",
+    "listView": "列表视图",
+    "mapView": "地图视图",
+    "noPhotographers": "未找到摄影师",
+    "tryAdjusting": "尝试调整您的筛选条件或搜索标准",
+    "perHour": "/小时",
+    "years": "年",
+    "reviews": "评价",
+    "viewProfile": "查看资料"
+  },
+  "booking": {
+    "title": "我的预订",
+    "noBookings": "暂无预订",
+    "startBrowsing": "开始浏览摄影师进行您的第一次预订",
+    "browsePhotographers": "浏览摄影师",
+    "pending": "等待摄影师确认",
+    "confirmed": "预订已确认！",
+    "cancelled": "预订被拒绝",
+    "completed": "已完成",
+    "date": "日期",
+    "time": "时间",
+    "location": "地点",
+    "total": "总计",
+    "chat": "聊天",
+    "leaveReview": "留下评价"
+  },
+  "auth": {
+    "backToHome": "返回首页",
+    "tagline": "几分钟内预订专业摄影师",
+    "signInTab": "登录",
+    "signUpTab": "注册",
+    "continueWithGoogle": "使用Google继续",
+    "connecting": "连接中...",
+    "orContinueWithEmail": "或使用邮箱继续",
+    "email": "邮箱",
+    "password": "密码",
+    "fullName": "全名",
+    "forgotPassword": "忘记密码？",
+    "signingIn": "登录中...",
+    "creatingAccount": "创建账户中...",
+    "createAccount": "创建账户",
+    "areYouPhotographer": "您是摄影师吗？",
+    "joinAsPhotographer": "作为摄影师加入",
+    "resetPassword": "重置密码",
+    "resetDescription": "输入您的邮箱地址，我们将发送重置密码链接给您。",
+    "emailAddress": "邮箱地址",
+    "sendResetLink": "发送重置链接",
+    "sending": "发送中...",
+    "passwordStrength": {
+      "weak": "密码较弱",
+      "fair": "密码一般",
+      "good": "密码良好",
+      "strong": "密码强"
+    },
+    "passwordRequirements": {
+      "minLength": "至少6个字符",
+      "uppercase": "一个大写字母",
+      "lowercase": "一个小写字母",
+      "number": "一个数字"
+    }
+  },
+  "profile": {
+    "title": "摄影师资料",
+    "notFound": "未找到摄影师",
+    "about": "关于",
+    "portfolio": "作品集",
+    "viewAll": "查看全部",
+    "reviews": "评价",
+    "noReviews": "暂无评价。成为第一个预订并评价的人！",
+    "yearsExperience": "年经验"
+  },
+  "dashboard": {
+    "title": "摄影师仪表板",
+    "welcomeBack": "欢迎回来",
+    "noProfile": "未找到摄影师资料",
+    "needToRegister": "您需要先注册成为摄影师。",
+    "registerAsPhotographer": "注册成为摄影师",
+    "applicationUnderReview": "申请审核中",
+    "applicationPending": "您的摄影师申请正在审核中。批准后我们会通知您。",
+    "pendingRequests": "待处理请求",
+    "upcomingSessions": "即将到来的拍摄",
+    "thisMonth": "本月",
+    "totalEarnings": "总收入",
+    "pendingBookingAlert": "您有 {{count}} 个待处理的预订请求",
+    "pendingBookingAlertPlural": "您有 {{count}} 个待处理的预订请求",
+    "reviewNow": "立即查看",
+    "requests": "请求",
+    "upcoming": "即将到来",
+    "completed": "已完成",
+    "earnings": "收入",
+    "noPendingRequests": "没有待处理的请求",
+    "noUpcomingSessions": "没有即将到来的拍摄",
+    "noCompletedSessions": "还没有完成的拍摄",
+    "bookedOn": "预订于",
+    "accept": "接受",
+    "decline": "拒绝",
+    "markComplete": "标记为完成",
+    "chatWithClient": "与客户聊天",
+    "totalEarned": "总收入",
+    "fromSessions": "来自 {{count}} 次拍摄",
+    "pendingPayout": "待付款",
+    "fromUpcoming": "来自 {{count}} 个即将到来的",
+    "earningsHistory": "收入历史",
+    "completeFirstSession": "完成您的第一次拍摄以查看收入"
+  },
+  "howItWorks": {
+    "title": "OraSnap 如何运作",
+    "subtitle": "预订专业摄影师从未如此简单。按照这些简单步骤捕捉您的完美时刻。",
+    "step": "步骤",
+    "steps": {
+      "browse": {
+        "title": "浏览摄影师",
+        "desc": "探索我们精选的认证专业人士网络。按专业、地点、价格和评价筛选，找到您的完美匹配。"
+      },
+      "book": {
+        "title": "查看可用性并预订",
+        "desc": "查看实时可用性并即时预订您的拍摄。无需来回发送邮件。"
+      },
+      "chat": {
+        "title": "聊天和计划",
+        "desc": "通过我们内置的聊天功能直接与您的摄影师联系。讨论您的想法，分享灵感，敲定细节。"
+      },
+      "capture": {
+        "title": "捕捉您的时刻",
+        "desc": "与您的摄影师见面，享受专业拍摄。他们会捕捉每一个特别的时刻。"
+      },
+      "receive": {
+        "title": "接收和评价",
+        "desc": "以数字方式接收您精美编辑的照片。分享您的体验，帮助他人找到优秀的摄影师。"
+      }
+    },
+    "whyChoose": "为什么选择 OraSnap？",
+    "verifiedProfessionals": "认证专业人士",
+    "verifiedDesc": "每位摄影师在加入我们平台之前都经过质量、专业性和可靠性的审核。",
+    "securePayments": "安全支付",
+    "secureDesc": "通过我们的平台安全支付，享有退款保证。在工作完成前，您的付款受到保护。",
+    "qualityGuaranteed": "质量保证",
+    "qualityDesc": "不满意？我们会与您合作解决问题或提供全额退款。",
+    "faq": "常见问题",
+    "faqSubtitle": "有问题？我们有答案。如果您找不到所需内容，请随时联系我们。",
+    "readyToStart": "准备开始了吗？",
+    "findPerfect": "为您的下一个活动、人像拍摄或特殊场合找到完美的摄影师。"
+  },
+  "common": {
+    "loading": "加载中...",
+    "error": "错误",
+    "success": "成功",
+    "cancel": "取消",
+    "save": "保存",
+    "delete": "删除",
+    "edit": "编辑",
+    "close": "关闭",
+    "back": "返回",
+    "next": "下一步",
+    "submit": "提交",
+    "language": "语言"
+  }
+}

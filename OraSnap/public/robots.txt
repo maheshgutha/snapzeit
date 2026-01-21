@@ -1,0 +1,82 @@
+# OraSnap Photography Platform - Robots.txt
+# International SEO optimized for worldwide markets
+
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Slurp
+Allow: /
+Crawl-delay: 1
+
+User-agent: DuckDuckBot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Twitterbot
+Allow: /
+
+User-agent: facebookexternalhit
+Allow: /
+
+User-agent: LinkedInBot
+Allow: /
+
+User-agent: WhatsApp
+Allow: /
+
+# Allow all other bots
+User-agent: *
+Allow: /
+Crawl-delay: 2
+
+# Disallow admin and private areas
+Disallow: /admin/
+Disallow: /api/
+Disallow: /auth/
+Disallow: /_next/
+Disallow: /private/
+Disallow: /.well-known/
+
+# Disallow search result pages with parameters to avoid duplicate content
+Disallow: /*?search=*
+Disallow: /*?sort=*
+Disallow: /*?filter=*
+
+# Allow important category and location pages
+Allow: /photographers?category=*
+Allow: /photographers?location=*
+Allow: /photographers?specialty=*
+
+# Allow country-specific pages
+Allow: /us/*
+Allow: /gb/*
+Allow: /ca/*
+Allow: /au/*
+Allow: /de/*
+Allow: /fr/*
+Allow: /in/*
+Allow: /jp/*
+Allow: /br/*
+Allow: /ae/*
+
+# International Sitemaps
+Sitemap: https://orasnap.com/sitemap.xml
+Sitemap: https://orasnap.com/sitemap-us.xml
+Sitemap: https://orasnap.com/sitemap-gb.xml
+Sitemap: https://orasnap.com/sitemap-ca.xml
+Sitemap: https://orasnap.com/sitemap-au.xml
+Sitemap: https://orasnap.com/sitemap-de.xml
+Sitemap: https://orasnap.com/sitemap-fr.xml
+Sitemap: https://orasnap.com/sitemap-in.xml
+Sitemap: https://orasnap.com/sitemap-jp.xml
+Sitemap: https://orasnap.com/sitemap-br.xml
+Sitemap: https://orasnap.com/sitemap-ae.xml
+Sitemap: https://orasnap.com/sitemap-photographers.xml
+
+# Host directive
+Host: https://orasnap.com

@@ -1,0 +1,162 @@
+{
+  "nav": {
+    "home": "홈",
+    "photographers": "사진작가",
+    "howItWorks": "이용 방법",
+    "dashboard": "대시보드",
+    "admin": "관리자",
+    "profile": "프로필",
+    "bookings": "내 예약",
+    "photographerDashboard": "사진작가 대시보드",
+    "adminPanel": "관리자 패널",
+    "signOut": "로그아웃",
+    "logIn": "로그인",
+    "signUp": "회원가입",
+    "signIn": "로그인",
+    "getStarted": "시작하기",
+    "findPhotographers": "사진작가 찾기"
+  },
+  "hero": {
+    "trustBadge": "전 세계 10,000명 이상의 고객이 신뢰합니다",
+    "title": "당신의 순간을 위한",
+    "titleHighlight": "완벽한 사진작가를",
+    "titleEnd": "찾아보세요",
+    "subtitle": "결혼식, 이벤트, 인물 사진 등을 위한 재능있는 사진작가를 예약하세요. 간편한 예약, 검증된 전문가, 놀라운 결과.",
+    "searchPlaceholder": "위치, 전문 분야 또는 이름으로 검색...",
+    "search": "검색",
+    "photographersCount": "2,500+ 사진작가",
+    "averageRating": "4.9 평균 평점",
+    "verified": "100% 검증됨"
+  },
+  "features": {
+    "title": "이용 방법",
+    "subtitle": "세 가지 간단한 단계로 완벽한 사진작가를 예약하세요",
+    "browse": {
+      "title": "검색 및 비교",
+      "desc": "포트폴리오를 탐색하고, 리뷰를 읽고, 지역의 검증된 사진작가 가격을 비교하세요."
+    },
+    "book": {
+      "title": "즉시 예약",
+      "desc": "실시간 가용성을 확인하고 몇 번의 클릭으로 세션을 예약하세요. 번거로움 없이."
+    },
+    "pay": {
+      "title": "안전한 결제",
+      "desc": "환불 보장과 함께 안전한 결제. 완전히 만족할 때만 결제하세요."
+    }
+  },
+  "featured": {
+    "title": "최고 평점 사진작가",
+    "subtitle": "뛰어난 리뷰를 가진 엄선된 전문가",
+    "viewAll": "모두 보기"
+  },
+  "testimonials": {
+    "title": "고객 후기",
+    "subtitle": "수천 명의 만족한 고객이 OraSnap을 통해 완벽한 사진작가를 찾았습니다"
+  },
+  "cta": {
+    "title": "사진작가이신가요?",
+    "subtitle": "성장하는 전문가 네트워크에 참여하세요. 더 많은 고객에게 도달하고, 예약을 쉽게 관리하고, 비즈니스를 성장시키세요.",
+    "button": "사진작가로 가입"
+  },
+  "footer": {
+    "photographers": "사진작가",
+    "howItWorks": "이용 방법",
+    "contact": "연락처",
+    "signIn": "로그인",
+    "copyright": "© 2024 OraSnap. All rights reserved."
+  },
+  "photographers": {
+    "title": "완벽한 사진작가 찾기",
+    "subtitle": "특별한 순간을 촬영할 준비가 된 전문 사진작가 컬렉션을 둘러보세요",
+    "filters": "필터",
+    "clearFilters": "필터 지우기",
+    "applyFilters": "필터 적용",
+    "specialty": "전문 분야",
+    "allSpecialties": "모든 전문 분야",
+    "country": "국가",
+    "allCountries": "모든 국가",
+    "city": "도시",
+    "allCities": "모든 도시",
+    "priceRange": "가격 범위",
+    "minRating": "최소 평점",
+    "anyRating": "모든 평점",
+    "sortBy": "정렬 기준",
+    "rating": "평점",
+    "priceAsc": "가격: 낮은순",
+    "priceDesc": "가격: 높은순",
+    "experience": "경력",
+    "listView": "목록 보기",
+    "mapView": "지도 보기",
+    "noPhotographers": "사진작가를 찾을 수 없습니다",
+    "tryAdjusting": "필터 또는 검색 조건을 조정해 보세요",
+    "perHour": "/시간",
+    "years": "년",
+    "reviews": "리뷰",
+    "viewProfile": "프로필 보기"
+  },
+  "booking": {
+    "title": "내 예약",
+    "noBookings": "아직 예약이 없습니다",
+    "startBrowsing": "첫 번째 예약을 위해 사진작가를 둘러보세요",
+    "browsePhotographers": "사진작가 둘러보기",
+    "pending": "사진작가 승인 대기 중",
+    "confirmed": "예약 확정!",
+    "cancelled": "예약 거절됨",
+    "completed": "완료됨",
+    "date": "날짜",
+    "time": "시간",
+    "location": "장소",
+    "total": "합계",
+    "chat": "채팅",
+    "leaveReview": "리뷰 작성"
+  },
+  "auth": {
+    "backToHome": "홈으로 돌아가기",
+    "tagline": "몇 분 안에 전문 사진작가 예약",
+    "signInTab": "로그인",
+    "signUpTab": "회원가입",
+    "continueWithGoogle": "Google로 계속",
+    "connecting": "연결 중...",
+    "orContinueWithEmail": "또는 이메일로 계속",
+    "email": "이메일",
+    "password": "비밀번호",
+    "fullName": "이름",
+    "forgotPassword": "비밀번호를 잊으셨나요?",
+    "signingIn": "로그인 중...",
+    "creatingAccount": "계정 생성 중...",
+    "createAccount": "계정 만들기",
+    "areYouPhotographer": "사진작가이신가요?",
+    "joinAsPhotographer": "사진작가로 참여",
+    "resetPassword": "비밀번호 재설정",
+    "resetDescription": "이메일 주소를 입력하시면 재설정 링크를 보내드립니다.",
+    "emailAddress": "이메일 주소",
+    "sendResetLink": "링크 보내기",
+    "sending": "전송 중...",
+    "passwordStrength": {
+      "weak": "약한 비밀번호",
+      "fair": "보통 비밀번호",
+      "good": "좋은 비밀번호",
+      "strong": "강한 비밀번호"
+    },
+    "passwordRequirements": {
+      "minLength": "최소 6자",
+      "uppercase": "대문자 1개",
+      "lowercase": "소문자 1개",
+      "number": "숫자 1개"
+    }
+  },
+  "common": {
+    "loading": "로딩 중...",
+    "error": "오류",
+    "success": "성공",
+    "cancel": "취소",
+    "save": "저장",
+    "delete": "삭제",
+    "edit": "편집",
+    "close": "닫기",
+    "back": "뒤로",
+    "next": "다음",
+    "submit": "제출",
+    "language": "언어"
+  }
+}

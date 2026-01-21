@@ -1,0 +1,162 @@
+{
+  "nav": {
+    "home": "ホーム",
+    "photographers": "フォトグラファー",
+    "howItWorks": "使い方",
+    "dashboard": "ダッシュボード",
+    "admin": "管理者",
+    "profile": "プロフィール",
+    "bookings": "予約一覧",
+    "photographerDashboard": "フォトグラファーダッシュボード",
+    "adminPanel": "管理パネル",
+    "signOut": "ログアウト",
+    "logIn": "ログイン",
+    "signUp": "新規登録",
+    "signIn": "ログイン",
+    "getStarted": "始める",
+    "findPhotographers": "フォトグラファーを探す"
+  },
+  "hero": {
+    "trustBadge": "世界中の10,000人以上のお客様に信頼されています",
+    "title": "あなたの瞬間に",
+    "titleHighlight": "最適なフォトグラファー",
+    "titleEnd": "を見つけよう",
+    "subtitle": "結婚式、イベント、ポートレートなど、才能あるフォトグラファーを予約。シンプルな予約、認定プロフェッショナル、素晴らしい成果。",
+    "searchPlaceholder": "場所、専門、または名前で検索...",
+    "search": "検索",
+    "photographersCount": "2,500+ フォトグラファー",
+    "averageRating": "4.9 平均評価",
+    "verified": "100% 認証済み"
+  },
+  "features": {
+    "title": "使い方",
+    "subtitle": "3つの簡単なステップで最適なフォトグラファーを予約",
+    "browse": {
+      "title": "閲覧して比較",
+      "desc": "ポートフォリオを閲覧し、レビューを読み、お住まいの地域の認定フォトグラファーの料金を比較。"
+    },
+    "book": {
+      "title": "即座に予約",
+      "desc": "リアルタイムの空き状況を確認し、数クリックでセッションを予約。やり取りの手間なし。"
+    },
+    "pay": {
+      "title": "安全に支払い",
+      "desc": "返金保証付きの安全な支払い。完全に満足した場合のみお支払い。"
+    }
+  },
+  "featured": {
+    "title": "トップ評価のフォトグラファー",
+    "subtitle": "優れたレビューを持つ厳選されたプロフェッショナル",
+    "viewAll": "すべて見る"
+  },
+  "testimonials": {
+    "title": "お客様の声",
+    "subtitle": "何千人もの満足したお客様が OraSnap で最適なフォトグラファーを見つけました"
+  },
+  "cta": {
+    "title": "フォトグラファーですか？",
+    "subtitle": "成長するプロフェッショナルネットワークに参加。より多くのクライアントにリーチし、予約を簡単に管理し、ビジネスを成長させましょう。",
+    "button": "フォトグラファーとして参加"
+  },
+  "footer": {
+    "photographers": "フォトグラファー",
+    "howItWorks": "使い方",
+    "contact": "お問い合わせ",
+    "signIn": "ログイン",
+    "copyright": "© 2024 OraSnap. All rights reserved."
+  },
+  "photographers": {
+    "title": "最適なフォトグラファーを見つける",
+    "subtitle": "あなたの特別な瞬間を撮影する準備ができているプロフェッショナルを閲覧",
+    "filters": "フィルター",
+    "clearFilters": "フィルターをクリア",
+    "applyFilters": "フィルターを適用",
+    "specialty": "専門",
+    "allSpecialties": "すべての専門",
+    "country": "国",
+    "allCountries": "すべての国",
+    "city": "都市",
+    "allCities": "すべての都市",
+    "priceRange": "価格帯",
+    "minRating": "最低評価",
+    "anyRating": "すべての評価",
+    "sortBy": "並び替え",
+    "rating": "評価",
+    "priceAsc": "価格：低い順",
+    "priceDesc": "価格：高い順",
+    "experience": "経験",
+    "listView": "リスト表示",
+    "mapView": "地図表示",
+    "noPhotographers": "フォトグラファーが見つかりません",
+    "tryAdjusting": "フィルターや検索条件を調整してください",
+    "perHour": "/時間",
+    "years": "年",
+    "reviews": "レビュー",
+    "viewProfile": "プロフィールを見る"
+  },
+  "booking": {
+    "title": "予約一覧",
+    "noBookings": "予約がありません",
+    "startBrowsing": "フォトグラファーを閲覧して最初の予約をしましょう",
+    "browsePhotographers": "フォトグラファーを閲覧",
+    "pending": "フォトグラファーの承認待ち",
+    "confirmed": "予約確定！",
+    "cancelled": "予約拒否",
+    "completed": "完了",
+    "date": "日付",
+    "time": "時間",
+    "location": "場所",
+    "total": "合計",
+    "chat": "チャット",
+    "leaveReview": "レビューを書く"
+  },
+  "auth": {
+    "backToHome": "ホームに戻る",
+    "tagline": "数分でプロカメラマンを予約",
+    "signInTab": "ログイン",
+    "signUpTab": "新規登録",
+    "continueWithGoogle": "Googleで続ける",
+    "connecting": "接続中...",
+    "orContinueWithEmail": "またはメールで続ける",
+    "email": "メール",
+    "password": "パスワード",
+    "fullName": "氏名",
+    "forgotPassword": "パスワードを忘れた?",
+    "signingIn": "ログイン中...",
+    "creatingAccount": "アカウント作成中...",
+    "createAccount": "アカウント作成",
+    "areYouPhotographer": "カメラマンですか?",
+    "joinAsPhotographer": "カメラマンとして参加",
+    "resetPassword": "パスワードをリセット",
+    "resetDescription": "メールアドレスを入力してください。リセットリンクを送信します。",
+    "emailAddress": "メールアドレス",
+    "sendResetLink": "リンクを送信",
+    "sending": "送信中...",
+    "passwordStrength": {
+      "weak": "弱いパスワード",
+      "fair": "普通のパスワード",
+      "good": "良いパスワード",
+      "strong": "強いパスワード"
+    },
+    "passwordRequirements": {
+      "minLength": "6文字以上",
+      "uppercase": "大文字1つ",
+      "lowercase": "小文字1つ",
+      "number": "数字1つ"
+    }
+  },
+  "common": {
+    "loading": "読み込み中...",
+    "error": "エラー",
+    "success": "成功",
+    "cancel": "キャンセル",
+    "save": "保存",
+    "delete": "削除",
+    "edit": "編集",
+    "close": "閉じる",
+    "back": "戻る",
+    "next": "次へ",
+    "submit": "送信",
+    "language": "言語"
+  }
+}

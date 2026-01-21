@@ -1,0 +1,244 @@
+{
+  "nav": {
+    "home": "Home",
+    "photographers": "Fotografi",
+    "howItWorks": "Come Funziona",
+    "dashboard": "Dashboard",
+    "admin": "Admin",
+    "profile": "Profilo",
+    "bookings": "Le Mie Prenotazioni",
+    "photographerDashboard": "Dashboard Fotografo",
+    "adminPanel": "Pannello Admin",
+    "signOut": "Esci",
+    "logIn": "Accedi",
+    "signUp": "Registrati",
+    "signIn": "Accedi",
+    "getStarted": "Inizia",
+    "findPhotographers": "Trova Fotografi"
+  },
+  "hero": {
+    "trustBadge": "Fidato da oltre 10.000 clienti in tutto il mondo",
+    "title": "Trova il",
+    "titleHighlight": "fotografo",
+    "titleEnd": "perfetto per il tuo momento",
+    "subtitle": "Prenota fotografi di talento per matrimoni, eventi, ritratti e altro. Prenotazione semplice, professionisti verificati, risultati straordinari.",
+    "searchPlaceholder": "Cerca per luogo, specialità o nome...",
+    "search": "Cerca",
+    "photographersCount": "2.500+ Fotografi",
+    "averageRating": "4.9 Valutazione Media",
+    "verified": "100% Verificati"
+  },
+  "features": {
+    "title": "Come Funziona",
+    "subtitle": "Prenota il tuo fotografo perfetto in tre semplici passaggi",
+    "browse": {
+      "title": "Sfoglia e Confronta",
+      "desc": "Esplora i portfolio, leggi le recensioni e confronta i prezzi dei fotografi verificati nella tua zona."
+    },
+    "book": {
+      "title": "Prenota Istantaneamente",
+      "desc": "Controlla la disponibilità in tempo reale e prenota la tua sessione in pochi clic. Niente andirivieni."
+    },
+    "pay": {
+      "title": "Paga in Sicurezza",
+      "desc": "Pagamenti sicuri con la nostra garanzia di rimborso. Paga solo quando sei completamente soddisfatto."
+    }
+  },
+  "featured": {
+    "title": "Fotografi Più Votati",
+    "subtitle": "Professionisti selezionati con recensioni eccezionali",
+    "viewAll": "Vedi Tutti"
+  },
+  "testimonials": {
+    "title": "Cosa Dicono i Nostri Clienti",
+    "subtitle": "Migliaia di clienti soddisfatti hanno trovato il loro fotografo perfetto attraverso OraSnap"
+  },
+  "cta": {
+    "title": "Sei un Fotografo?",
+    "subtitle": "Unisciti alla nostra rete in crescita di professionisti. Raggiungi più clienti, gestisci le prenotazioni senza sforzo e fai crescere la tua attività.",
+    "button": "Unisciti come Fotografo"
+  },
+  "footer": {
+    "photographers": "Fotografi",
+    "howItWorks": "Come Funziona",
+    "contact": "Contatti",
+    "signIn": "Accedi",
+    "copyright": "© 2024 OraSnap. Tutti i diritti riservati."
+  },
+  "photographers": {
+    "title": "Trova il Tuo Fotografo Perfetto",
+    "subtitle": "Sfoglia la nostra selezione curata di fotografi professionisti pronti a catturare i tuoi momenti speciali",
+    "filters": "Filtri",
+    "clearFilters": "Cancella Filtri",
+    "applyFilters": "Applica Filtri",
+    "specialty": "Specialità",
+    "allSpecialties": "Tutte le Specialità",
+    "country": "Paese",
+    "allCountries": "Tutti i Paesi",
+    "city": "Città",
+    "allCities": "Tutte le Città",
+    "priceRange": "Fascia di Prezzo",
+    "minRating": "Valutazione Minima",
+    "anyRating": "Qualsiasi Valutazione",
+    "sortBy": "Ordina Per",
+    "rating": "Valutazione",
+    "priceAsc": "Prezzo: Crescente",
+    "priceDesc": "Prezzo: Decrescente",
+    "experience": "Esperienza",
+    "listView": "Vista Lista",
+    "mapView": "Vista Mappa",
+    "noPhotographers": "Nessun fotografo trovato",
+    "tryAdjusting": "Prova a regolare i filtri o i criteri di ricerca",
+    "perHour": "/ora",
+    "years": "anni",
+    "reviews": "recensioni",
+    "viewProfile": "Vedi Profilo"
+  },
+  "booking": {
+    "title": "Le Mie Prenotazioni",
+    "noBookings": "Nessuna prenotazione ancora",
+    "startBrowsing": "Inizia a sfogliare i fotografi per fare la tua prima prenotazione",
+    "browsePhotographers": "Sfoglia Fotografi",
+    "pending": "In attesa di approvazione del fotografo",
+    "confirmed": "Prenotazione confermata!",
+    "cancelled": "Prenotazione rifiutata",
+    "completed": "Completata",
+    "date": "Data",
+    "time": "Ora",
+    "location": "Luogo",
+    "total": "Totale",
+    "chat": "Chat",
+    "leaveReview": "Lascia Recensione"
+  },
+  "auth": {
+    "backToHome": "Torna alla Home",
+    "tagline": "Prenota fotografi professionisti in pochi minuti",
+    "signInTab": "Accedi",
+    "signUpTab": "Registrati",
+    "continueWithGoogle": "Continua con Google",
+    "connecting": "Connessione...",
+    "orContinueWithEmail": "o continua con email",
+    "email": "Email",
+    "password": "Password",
+    "fullName": "Nome Completo",
+    "forgotPassword": "Password dimenticata?",
+    "signingIn": "Accesso in corso...",
+    "creatingAccount": "Creazione account...",
+    "createAccount": "Crea Account",
+    "areYouPhotographer": "Sei un fotografo?",
+    "joinAsPhotographer": "Unisciti come fotografo",
+    "resetPassword": "Reimposta la tua password",
+    "resetDescription": "Inserisci il tuo indirizzo email e ti invieremo un link per reimpostare la password.",
+    "emailAddress": "Indirizzo email",
+    "sendResetLink": "Invia Link di Reset",
+    "sending": "Invio...",
+    "passwordStrength": {
+      "weak": "Password debole",
+      "fair": "Password discreta",
+      "good": "Password buona",
+      "strong": "Password forte"
+    },
+    "passwordRequirements": {
+      "minLength": "Almeno 6 caratteri",
+      "uppercase": "Una lettera maiuscola",
+      "lowercase": "Una lettera minuscola",
+      "number": "Un numero"
+    }
+  },
+  "profile": {
+    "title": "Profilo Fotografo",
+    "notFound": "Fotografo non trovato",
+    "about": "Chi Sono",
+    "portfolio": "Portfolio",
+    "viewAll": "Vedi Tutti",
+    "reviews": "Recensioni",
+    "noReviews": "Nessuna recensione ancora. Sii il primo a prenotare e recensire!",
+    "yearsExperience": "anni di esperienza"
+  },
+  "dashboard": {
+    "title": "Dashboard Fotografo",
+    "welcomeBack": "Bentornato",
+    "noProfile": "Nessun Profilo Fotografo Trovato",
+    "needToRegister": "Devi prima registrarti come fotografo.",
+    "registerAsPhotographer": "Registrati come Fotografo",
+    "applicationUnderReview": "Domanda in Revisione",
+    "applicationPending": "La tua domanda da fotografo è in fase di revisione. Ti avviseremo una volta approvata.",
+    "pendingRequests": "Richieste in Sospeso",
+    "upcomingSessions": "Sessioni in Arrivo",
+    "thisMonth": "Questo Mese",
+    "totalEarnings": "Guadagni Totali",
+    "pendingBookingAlert": "Hai {{count}} richiesta di prenotazione in sospeso",
+    "pendingBookingAlertPlural": "Hai {{count}} richieste di prenotazione in sospeso",
+    "reviewNow": "Rivedi Ora",
+    "requests": "Richieste",
+    "upcoming": "In Arrivo",
+    "completed": "Completate",
+    "earnings": "Guadagni",
+    "noPendingRequests": "Nessuna richiesta in sospeso",
+    "noUpcomingSessions": "Nessuna sessione in arrivo",
+    "noCompletedSessions": "Nessuna sessione completata ancora",
+    "bookedOn": "Prenotato il",
+    "accept": "Accetta",
+    "decline": "Rifiuta",
+    "markComplete": "Segna come Completata",
+    "chatWithClient": "Chatta con il Cliente",
+    "totalEarned": "Totale Guadagnato",
+    "fromSessions": "Da {{count}} sessioni",
+    "pendingPayout": "Pagamento in Sospeso",
+    "fromUpcoming": "Da {{count}} in arrivo",
+    "earningsHistory": "Storico Guadagni",
+    "completeFirstSession": "Completa la tua prima sessione per vedere i guadagni"
+  },
+  "howItWorks": {
+    "title": "Come Funziona OraSnap",
+    "subtitle": "Prenotare un fotografo professionista non è mai stato così facile. Segui questi semplici passaggi per catturare i tuoi momenti perfetti.",
+    "step": "Passo",
+    "steps": {
+      "browse": {
+        "title": "Sfoglia i Fotografi",
+        "desc": "Esplora la nostra rete curata di professionisti verificati. Filtra per specialità, posizione, prezzo e recensioni per trovare la tua corrispondenza perfetta."
+      },
+      "book": {
+        "title": "Controlla Disponibilità e Prenota",
+        "desc": "Visualizza la disponibilità in tempo reale e prenota la tua sessione istantaneamente. Niente email avanti e indietro."
+      },
+      "chat": {
+        "title": "Chatta e Pianifica",
+        "desc": "Connettiti direttamente con il tuo fotografo attraverso la nostra chat integrata. Discuti la tua visione, condividi ispirazione e finalizza i dettagli."
+      },
+      "capture": {
+        "title": "Cattura il Tuo Momento",
+        "desc": "Incontra il tuo fotografo e goditi una sessione professionale. Cattureranno ogni momento speciale."
+      },
+      "receive": {
+        "title": "Ricevi e Recensisci",
+        "desc": "Ricevi le tue foto splendidamente modificate consegnate digitalmente. Condividi la tua esperienza per aiutare altri a trovare grandi fotografi."
+      }
+    },
+    "whyChoose": "Perché Scegliere OraSnap?",
+    "verifiedProfessionals": "Professionisti Verificati",
+    "verifiedDesc": "Ogni fotografo viene valutato per qualità, professionalità e affidabilità prima di unirsi alla nostra piattaforma.",
+    "securePayments": "Pagamenti Sicuri",
+    "secureDesc": "Paga in sicurezza attraverso la nostra piattaforma con la nostra garanzia di rimborso. Il tuo pagamento è protetto fino al completamento del lavoro.",
+    "qualityGuaranteed": "Qualità Garantita",
+    "qualityDesc": "Non sei soddisfatto? Lavoreremo con te per risolvere o forniremo un rimborso completo.",
+    "faq": "Domande Frequenti",
+    "faqSubtitle": "Hai domande? Abbiamo le risposte. Se non trovi quello che cerchi, contattaci liberamente.",
+    "readyToStart": "Pronto per Iniziare?",
+    "findPerfect": "Trova il fotografo perfetto per il tuo prossimo evento, sessione ritratto o occasione speciale."
+  },
+  "common": {
+    "loading": "Caricamento...",
+    "error": "Errore",
+    "success": "Successo",
+    "cancel": "Annulla",
+    "save": "Salva",
+    "delete": "Elimina",
+    "edit": "Modifica",
+    "close": "Chiudi",
+    "back": "Indietro",
+    "next": "Avanti",
+    "submit": "Invia",
+    "language": "Lingua"
+  }
+}
