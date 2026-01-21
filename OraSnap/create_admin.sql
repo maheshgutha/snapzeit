@@ -16,9 +16,9 @@ INSERT INTO profiles (
   created_at,
   updated_at
 ) VALUES (
-  'YOUR_USER_ID_HERE', -- Replace with actual user ID
+  '4d1da160-7ef9-49c4-9a3d-2127ee345b03', -- Replace with actual user ID
   'Admin User',
-  'admin@orasnap.com',
+  'rabbanibasha590@gmail.com',
   NOW(),
   NOW()
 );
@@ -29,7 +29,7 @@ INSERT INTO user_roles (
   role,
   created_at
 ) VALUES (
-  'YOUR_USER_ID_HERE', -- Replace with actual user ID
+  '4d1da160-7ef9-49c4-9a3d-2127ee345b03', -- Replace with actual user ID
   'admin',
   NOW()
 );
