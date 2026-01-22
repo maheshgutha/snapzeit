@@ -85,7 +85,7 @@ export default function PhotographerOnboarding() {
       const { error: profileError } = await supabase
         .from('photographers')
         .insert({
-          id: user!.id,
+          user_id: user!.id,
           name: user!.user_metadata?.full_name || user!.email?.split('@')[0] || 'Photographer',
           email: user!.email!,
           phone: form.phone,

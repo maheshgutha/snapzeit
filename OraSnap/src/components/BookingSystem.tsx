@@ -8,6 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Calendar } from '@/components/ui/calendar';
 import { Badge } from '@/components/ui/badge';
 import { X, Calendar as CalendarIcon, Clock, CreditCard, CheckCircle } from 'lucide-react';
+import { initiatePayment } from '@/utils/payment-service';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface BookingSystemProps {
   photographerName: string;
@@ -58,27 +61,56 @@ export function BookingSystem({ photographerName, photographerId, pricePerHour, 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedDate) {
-      alert('Please select a date for your session.');
+      toast.error('Please select a date for your session.');
       return;
     }
 
     const selectedPkg = packages.find(p => p.id === selectedPackage);
-    
-    // Simulate booking submission
-    const bookingDetails = {
-      photographer: photographerName,
-      date: selectedDate.toDateString(),
-      package: selectedPkg?.name,
-      duration: selectedPkg?.hours,
-      total: selectedPkg?.price,
-      customer: bookingForm.name,
-      email: bookingForm.email,
-      eventType: bookingForm.eventType
-    };
+    if (!selectedPkg) return;
 
-    alert(`Booking Request Sent Successfully! 🎉\n\nDetails:\n- Photographer: ${bookingDetails.photographer}\n- Date: ${bookingDetails.date}\n- Package: ${bookingDetails.package}\n- Duration: ${bookingDetails.duration} hours\n- Total: $${bookingDetails.total}\n- Event Type: ${bookingDetails.eventType}\n\nYou will receive a confirmation email at ${bookingDetails.email} within 2 hours.\n\nThe photographer will contact you to finalize the details.`);
-    
-    onClose();
+    // First initiate Razorpay Payment
+    initiatePayment({
+      amount: selectedPkg.price,
+      currency: "INR", // Adjust based on your preferred currency
+      name: bookingForm.name,
+      description: `Booking for ${photographerName} - ${selectedPkg.name}`,
+      email: bookingForm.email,
+      contact: bookingForm.phone,
+      onSuccess: async (response) => {
+        // Payment successful, now create the booking in Supabase
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          
+          const bookingData = {
+            user_id: user?.id,
+            photographer_id: photographerId,
+            booking_date: selectedDate.toISOString().split('T')[0],
+            start_time: "10:00:00", // Default or select from UI
+            end_time: "12:00:00",
+            event_type: bookingForm.eventType,
+            location: "Client Location", // Or specific location from form
+            total_amount: selectedPkg.price,
+            payment_status: 'paid',
+            payment_intent_id: response.razorpay_payment_id,
+            status: 'confirmed'
+          };
+
+          const { error } = await supabase.from('bookings').insert(bookingData);
+
+          if (error) throw error;
+
+          toast.success(`Booking Confirmed! Payment ID: ${response.razorpay_payment_id}`);
+          onClose();
+        } catch (err: any) {
+          console.error("Booking creation failed:", err);
+          toast.error("Payment successful, but booking creation failed. Please contact support.");
+        }
+      },
+      onFailure: (error) => {
+        console.error("Payment failed:", error);
+        toast.error(`Payment Failed: ${error.description || 'Reason unknown'}`);
+      }
+    });
   };
 
   const handleInputChange = (field: string, value: string) => {

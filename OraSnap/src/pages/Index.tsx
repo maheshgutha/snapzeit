@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import Header from '@/components/Header';
 import PhotographerCard from '@/components/PhotographerCard';
-import { LiveChatWidget } from '@/components/LiveChatWidget';
 import { PhotographerCardSkeleton } from '@/components/LoadingSkeleton';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -1069,11 +1068,6 @@ export default function Index() {
       </section>
 
       <Footer />
-      
-      {/* Live Chat Widget */}
-      <div className="live-chat-widget">
-        <LiveChatWidget />
-      </div>
     </div>
   );
 }

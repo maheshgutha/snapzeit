@@ -170,7 +170,7 @@ export default function PhotographerRegister() {
 
       // Create photographer profile
       const { error: profileError } = await supabase.from('photographers').insert({
-        id: userId,
+        user_id: userId, // Reference to Auth ID
         name: formData.name,
         email: formData.email,
         phone: formData.phone,

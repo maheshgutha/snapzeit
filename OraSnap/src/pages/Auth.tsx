@@ -136,6 +136,19 @@ export default function Auth() {
           console.error('Role assignment error:', roleError);
         }
 
+        // Insert profile
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert({
+            user_id: data.user.id,
+            full_name: registerForm.name,
+            email: registerForm.email
+          });
+
+        if (profileError) {
+          console.error('Profile creation error:', profileError);
+        }
+
         toast.success('Account created successfully! Please check your email to verify your account.');
         navigate('/photographers');
       }

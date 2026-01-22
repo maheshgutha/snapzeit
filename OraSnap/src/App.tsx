@@ -28,6 +28,7 @@ import Categories from "./pages/Categories";
 import Pricing from "./pages/Pricing";
 import NotFound from "./pages/NotFound";
 import ApplicationTester from "./components/ApplicationTester";
+import { AIChatBot } from "./components/AIChatBot";
 
 const queryClient = new QueryClient();
 
@@ -63,6 +64,7 @@ const App = () => (
                     <Route path="/test" element={<ApplicationTester />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
+                  <AIChatBot />
                 </BrowserRouter>
               </TooltipProvider>
             </MessageProvider>
