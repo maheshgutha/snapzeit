@@ -72,7 +72,7 @@ export default function PhotographerProfile() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       setCurrentUser(user);
-      
+
       if (user && id) {
         // Check if current user is the photographer or has photographer role
         const { data: roles } = await supabase
@@ -80,10 +80,10 @@ export default function PhotographerProfile() {
           .select('role')
           .eq('user_id', user.id)
           .single();
-        
+
         const isPhotographerRole = roles?.role === 'photographer' || roles?.role === 'admin';
         const isProfileOwner = user.id === id;
-        
+
         setIsOwner(isPhotographerRole && isProfileOwner);
       } else {
         setIsOwner(false);
@@ -112,7 +112,7 @@ export default function PhotographerProfile() {
     // Simulate upload to storage (in real app, upload to Supabase Storage)
     const newImages = files.map(file => URL.createObjectURL(file));
     setPortfolioImages(prev => [...prev, ...newImages]);
-    
+
     // Show success message
     alert(`Successfully uploaded ${files.length} image(s) to your portfolio!`);
   };
@@ -121,7 +121,7 @@ export default function PhotographerProfile() {
     // Simulate upload to storage
     const newCoverUrl = URL.createObjectURL(file);
     setCoverPhoto(newCoverUrl);
-    
+
     alert('Cover photo updated successfully!');
   };
 
@@ -130,10 +130,10 @@ export default function PhotographerProfile() {
     if (!selectedDate || !photographer) return;
 
     const selectedPkg = packages.find(p => p.id === selectedPackage);
-    
+
     // Simulate booking submission
     alert(`Booking request sent to ${photographer.name}!\n\nDetails:\n- Date: ${selectedDate.toDateString()}\n- Package: ${selectedPkg?.name}\n- Duration: ${selectedPkg?.hours} hours\n- Total: $${selectedPkg?.price}\n\nYou will receive a confirmation email shortly.`);
-    
+
     // Reset form
     setBookingForm({ name: '', email: '', phone: '', message: '', duration: 2 });
     setSelectedDate(undefined);
@@ -189,7 +189,7 @@ export default function PhotographerProfile() {
             <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600" />
           )}
           <div className="absolute inset-0 bg-black/40" />
-          
+
           {/* Cover Photo Upload (Owner Only) */}
           {isOwner && (
             <div className="absolute top-4 right-4">
@@ -212,7 +212,7 @@ export default function PhotographerProfile() {
               </Dialog>
             </div>
           )}
-          
+
           {/* Action Buttons */}
           <div className="absolute top-4 left-4 flex gap-2">
             <Button variant="secondary" size="sm">
@@ -225,7 +225,7 @@ export default function PhotographerProfile() {
             </Button>
           </div>
         </div>
-        
+
         {/* Profile Info Overlay */}
         <div className="container relative -mt-20 z-10">
           <div className="grid md:grid-cols-3 gap-8">
@@ -282,7 +282,7 @@ export default function PhotographerProfile() {
                     </div>
                     <div className="text-gray-500">per hour</div>
                   </div>
-                  
+
                   <div className="space-y-4 mb-8">
                     <div className="flex items-center gap-3 text-sm bg-green-50 dark:bg-green-900/20 p-3 rounded-lg">
                       <Clock className="h-4 w-4 text-green-600" />
@@ -299,7 +299,7 @@ export default function PhotographerProfile() {
                   </div>
 
                   <div className="space-y-3">
-                    <Button 
+                    <Button
                       className="w-full h-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold text-lg rounded-xl shadow-lg hover:scale-105 transition-all"
                       onClick={() => setShowBooking(true)}
                     >
@@ -358,7 +358,7 @@ export default function PhotographerProfile() {
                 </Dialog>
               )}
             </div>
-            
+
             <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-4">
               {portfolioImages.length > 0 ? (
                 portfolioImages.map((image, index) => (
@@ -429,7 +429,7 @@ export default function PhotographerProfile() {
 
           <TabsContent value="reviews" className="mt-8">
             <div className="space-y-6">
-              {[1,2,3].map(i => (
+              {[1, 2, 3].map(i => (
                 <Card key={i}>
                   <CardContent className="p-6">
                     <div className="flex items-start gap-4">
@@ -440,7 +440,7 @@ export default function PhotographerProfile() {
                         <div className="flex items-center gap-2 mb-2">
                           <span className="font-semibold">Customer {i}</span>
                           <div className="flex items-center gap-1">
-                            {[1,2,3,4,5].map(star => (
+                            {[1, 2, 3, 4, 5].map(star => (
                               <Star key={star} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
                             ))}
                           </div>
@@ -455,70 +455,20 @@ export default function PhotographerProfile() {
           </TabsContent>
 
           <TabsContent value="booking" className="mt-8">
-            <div className="grid md:grid-cols-2 gap-8">
-              <div>
-                <h3 className="text-xl font-bold mb-4">Select Date</h3>
-                <Calendar
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={setSelectedDate}
-                  disabled={(date) => date < new Date()}
-                  className="rounded-md border"
-                />
-              </div>
-              
-              <div>
-                <h3 className="text-xl font-bold mb-4">Booking Details</h3>
-                <form onSubmit={handleBooking} className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Package</label>
-                    <Select value={selectedPackage} onValueChange={setSelectedPackage}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {packages.map(pkg => (
-                          <SelectItem key={pkg.id} value={pkg.id}>
-                            {pkg.name} - ${pkg.price}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <Input
-                    placeholder="Your Name"
-                    value={bookingForm.name}
-                    onChange={(e) => setBookingForm({...bookingForm, name: e.target.value})}
-                    required
-                  />
-                  
-                  <Input
-                    type="email"
-                    placeholder="Email"
-                    value={bookingForm.email}
-                    onChange={(e) => setBookingForm({...bookingForm, email: e.target.value})}
-                    required
-                  />
-                  
-                  <Input
-                    placeholder="Phone"
-                    value={bookingForm.phone}
-                    onChange={(e) => setBookingForm({...bookingForm, phone: e.target.value})}
-                  />
-                  
-                  <Textarea
-                    placeholder="Special requirements or message"
-                    value={bookingForm.message}
-                    onChange={(e) => setBookingForm({...bookingForm, message: e.target.value})}
-                  />
-                  
-                  <Button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700" disabled={!selectedDate}>
-                    <CreditCard className="h-4 w-4 mr-2" />
-                    Book Now - ${packages.find(p => p.id === selectedPackage)?.price}
-                  </Button>
-                </form>
-              </div>
+            <div className="flex flex-col items-center justify-center py-12 text-center bg-gray-50 dark:bg-gray-800 rounded-xl">
+              <CalendarIcon className="h-16 w-16 text-blue-600 mb-4" />
+              <h3 className="text-2xl font-bold mb-2">Ready to Book?</h3>
+              <p className="text-gray-600 dark:text-gray-400 max-w-md mb-8">
+                Select your preferred date and package to secure your session with {photographer.name}.
+              </p>
+              <Button
+                size="lg"
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold text-lg px-8 py-6 rounded-full shadow-lg hover:scale-105 transition-all"
+                onClick={() => setShowBooking(true)}
+              >
+                <CreditCard className="h-5 w-5 mr-2" />
+                Start Booking Process
+              </Button>
             </div>
           </TabsContent>
         </Tabs>

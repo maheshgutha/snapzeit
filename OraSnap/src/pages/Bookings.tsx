@@ -1,5 +1,8 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/lib/auth-context';
+import { useToast } from '@/hooks/use-toast';
 import Header from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,76 +13,90 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { 
-  Calendar, Camera, Star, MapPin, Clock, MessageCircle, 
-  Download, Eye, Heart, Award, CreditCard, CheckCircle, X 
+import {
+  Calendar, Camera, Star, MapPin, Clock, MessageCircle,
+  Download, Eye, Heart, Award, CreditCard, CheckCircle, X, Loader2
 } from 'lucide-react';
 
 export default function Bookings() {
-  const [bookings] = useState([
-    {
-      id: 1,
-      photographer: {
-        name: 'Sarah Johnson',
-        avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face',
-        specialty: 'Wedding Photography',
-        rating: 4.9,
-        location: 'New York, NY'
-      },
-      type: 'Wedding Photography',
-      date: '2024-03-15',
-      time: '10:00 AM',
-      duration: 8,
-      status: 'confirmed',
-      amount: 2500,
-      package: 'Premium Wedding Package',
-      location: 'Central Park, NYC',
-      notes: 'Outdoor ceremony followed by indoor reception',
-      photos: ['https://images.unsplash.com/photo-1519741497674-611481863552?w=400&h=300&fit=crop']
-    },
-    {
-      id: 2,
-      photographer: {
-        name: 'Michael Chen',
-        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
-        specialty: 'Portrait Photography',
-        rating: 4.8,
-        location: 'Los Angeles, CA'
-      },
-      type: 'Family Portrait',
-      date: '2024-02-28',
-      time: '2:00 PM',
-      duration: 2,
-      status: 'completed',
-      amount: 400,
-      package: 'Family Portrait Session',
-      location: 'Griffith Observatory',
-      notes: 'Golden hour family photos with city backdrop',
-      photos: [
-        'https://images.unsplash.com/photo-1465495976277-4387d4b0e4a6?w=400&h=300&fit=crop',
-        'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=400&h=300&fit=crop'
-      ]
-    },
-    {
-      id: 3,
-      photographer: {
-        name: 'Emma Wilson',
-        avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face',
-        specialty: 'Event Photography',
-        rating: 4.7,
-        location: 'Chicago, IL'
-      },
-      type: 'Corporate Event',
-      date: '2024-02-20',
-      time: '6:00 PM',
-      duration: 4,
-      status: 'pending',
-      amount: 800,
-      package: 'Corporate Event Coverage',
-      location: 'Hyatt Regency Chicago',
-      notes: 'Annual company gala and awards ceremony'
+  const { user, loading: authLoading } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [bookings, setBookings] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate('/auth');
+      return;
     }
-  ]);
+
+    if (user) {
+      fetchBookings();
+    }
+  }, [user, authLoading, navigate]);
+
+  const fetchBookings = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('bookings')
+        .select(`
+          *,
+          photographers (
+            id,
+            name,
+            avatar_url,
+            specialty,
+            rating,
+            location
+          )
+        `)
+        .eq('user_id', user!.id)
+        .order('booking_date', { ascending: false });
+
+      if (error) throw error;
+
+      const mappedBookings = data.map((b: any) => {
+        // Calculate duration
+        const start = new Date(`2000-01-01T${b.start_time}`);
+        const end = new Date(`2000-01-01T${b.end_time}`);
+        const duration = (end.getTime() - start.getTime()) / (1000 * 60 * 60);
+
+        return {
+          id: b.id,
+          photographer: {
+            name: b.photographers?.name || 'Unknown Photographer',
+            avatar: b.photographers?.avatar_url,
+            specialty: b.photographers?.specialty || 'Photography',
+            rating: b.photographers?.rating || 5.0,
+            location: b.photographers?.location || 'Unknown Location'
+          },
+          type: b.event_type,
+          date: new Date(b.booking_date).toLocaleDateString(),
+          time: new Date(`2000-01-01T${b.start_time}`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          duration: Math.max(duration, 0),
+          status: b.status,
+          amount: b.total_amount,
+          package: 'Standard Package', // Default for now
+          location: b.location,
+          notes: b.special_requests,
+          photos: [] // Photos functionality linked to another table usually
+        };
+      });
+
+      setBookings(mappedBookings);
+    } catch (error: any) {
+      console.error('Error fetching bookings:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load bookings",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const [selectedBooking, setSelectedBooking] = useState(null);
 
@@ -106,10 +123,18 @@ export default function Bookings() {
   const upcomingBookings = bookings.filter(b => b.status === 'confirmed' || b.status === 'pending');
   const pastBookings = bookings.filter(b => b.status === 'completed');
 
+  if (loading || authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Header />
-      
+
       {/* Page Header */}
       <section className="py-12 bg-white dark:bg-gray-800 border-b">
         <div className="container">
@@ -150,7 +175,7 @@ export default function Bookings() {
                             {booking.photographer.name.split(' ').map(n => n[0]).join('')}
                           </AvatarFallback>
                         </Avatar>
-                        
+
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-2">
                             <h3 className="text-xl font-bold">{booking.type}</h3>
@@ -159,7 +184,7 @@ export default function Bookings() {
                               <span className="ml-1 capitalize">{booking.status}</span>
                             </Badge>
                           </div>
-                          
+
                           <div className="grid md:grid-cols-2 gap-4 mb-4">
                             <div>
                               <p className="font-semibold text-gray-900 dark:text-white">{booking.photographer.name}</p>
@@ -170,7 +195,7 @@ export default function Bookings() {
                                 <span>{booking.photographer.specialty}</span>
                               </div>
                             </div>
-                            
+
                             <div>
                               <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 mb-1">
                                 <Calendar className="h-4 w-4" />
@@ -182,13 +207,13 @@ export default function Bookings() {
                               </div>
                             </div>
                           </div>
-                          
+
                           <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400 mb-4">
                             <span><strong>Package:</strong> {booking.package}</span>
                             <span><strong>Duration:</strong> {booking.duration} hours</span>
                             <span><strong>Total:</strong> <span className="font-bold text-green-600">${booking.amount}</span></span>
                           </div>
-                          
+
                           {booking.notes && (
                             <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                               <strong>Notes:</strong> {booking.notes}
@@ -196,7 +221,7 @@ export default function Bookings() {
                           )}
                         </div>
                       </div>
-                      
+
                       <div className="flex flex-col gap-2 ml-4">
                         <Dialog>
                           <DialogTrigger asChild>
@@ -243,12 +268,12 @@ export default function Bookings() {
                             </div>
                           </DialogContent>
                         </Dialog>
-                        
+
                         <Button variant="outline" size="sm">
                           <MessageCircle className="h-4 w-4 mr-2" />
                           Message
                         </Button>
-                        
+
                         {booking.status === 'pending' && (
                           <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
                             Cancel
@@ -259,7 +284,7 @@ export default function Bookings() {
                   </CardContent>
                 </Card>
               ))}
-              
+
               {upcomingBookings.length === 0 && (
                 <Card>
                   <CardContent className="p-12 text-center">
@@ -294,7 +319,7 @@ export default function Bookings() {
                             {booking.photographer.name.split(' ').map(n => n[0]).join('')}
                           </AvatarFallback>
                         </Avatar>
-                        
+
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-2">
                             <h3 className="text-xl font-bold">{booking.type}</h3>
@@ -303,7 +328,7 @@ export default function Bookings() {
                               <span className="ml-1 capitalize">{booking.status}</span>
                             </Badge>
                           </div>
-                          
+
                           <div className="grid md:grid-cols-2 gap-4 mb-4">
                             <div>
                               <p className="font-semibold text-gray-900 dark:text-white">{booking.photographer.name}</p>
@@ -314,7 +339,7 @@ export default function Bookings() {
                                 <span>{booking.photographer.specialty}</span>
                               </div>
                             </div>
-                            
+
                             <div>
                               <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 mb-1">
                                 <Calendar className="h-4 w-4" />
@@ -326,7 +351,7 @@ export default function Bookings() {
                               </div>
                             </div>
                           </div>
-                          
+
                           {booking.photos && booking.photos.length > 0 && (
                             <div className="mb-4">
                               <p className="text-sm font-semibold mb-2">Photos ({booking.photos.length})</p>
@@ -349,7 +374,7 @@ export default function Bookings() {
                           )}
                         </div>
                       </div>
-                      
+
                       <div className="flex flex-col gap-2 ml-4">
                         {booking.photos && booking.photos.length > 0 && (
                           <Button size="sm" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
@@ -357,17 +382,17 @@ export default function Bookings() {
                             Download Photos
                           </Button>
                         )}
-                        
+
                         <Button variant="outline" size="sm">
                           <Eye className="h-4 w-4 mr-2" />
                           View Gallery
                         </Button>
-                        
+
                         <Button variant="outline" size="sm">
                           <Star className="h-4 w-4 mr-2" />
                           Leave Review
                         </Button>
-                        
+
                         <Button variant="outline" size="sm">
                           <Heart className="h-4 w-4 mr-2" />
                           Book Again
@@ -377,7 +402,7 @@ export default function Bookings() {
                   </CardContent>
                 </Card>
               ))}
-              
+
               {pastBookings.length === 0 && (
                 <Card>
                   <CardContent className="p-12 text-center">

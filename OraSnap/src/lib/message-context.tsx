@@ -32,11 +32,11 @@ export function MessageProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (user) {
       fetchMessages();
-      
+
       // Subscribe to real-time messages
       const channel = supabase
         .channel('messages')
-        .on('postgres_changes', 
+        .on('postgres_changes',
           { event: '*', schema: 'public', table: 'messages', filter: `recipient_id=eq.${user.id}` },
           () => fetchMessages()
         )
@@ -52,7 +52,7 @@ export function MessageProvider({ children }: { children: ReactNode }) {
 
   const fetchMessages = async () => {
     if (!user) return;
-    
+
     try {
       const { data, error } = await supabase
         .from('messages')
@@ -63,18 +63,19 @@ export function MessageProvider({ children }: { children: ReactNode }) {
         `)
         .or(`sender_id.eq.${user.id},recipient_id.eq.${user.id}`)
         .order('created_at', { ascending: false });
-      
+
       if (error) {
         console.error('Error fetching messages:', error);
         return;
       }
-      
-      const formattedMessages = data?.map(msg => ({
+
+      const formattedMessages = (data as any)?.map((msg: any) => ({
         ...msg,
+        read: msg.is_read, // Map database column is_read to interface read
         sender_name: msg.sender?.full_name || 'Unknown',
         sender_type: 'user' as const
       })) || [];
-      
+
       setMessages(formattedMessages);
     } catch (error) {
       console.error('Error fetching messages:', error);
@@ -85,12 +86,12 @@ export function MessageProvider({ children }: { children: ReactNode }) {
     try {
       const { error } = await supabase
         .from('messages')
-        .update({ read: true })
+        .update({ is_read: true } as any) // Correct column name
         .eq('id', id);
-      
+
       if (!error) {
-        setMessages(prev => 
-          prev.map(msg => 
+        setMessages(prev =>
+          prev.map(msg =>
             msg.id === id ? { ...msg, read: true } : msg
           )
         );
@@ -101,7 +102,7 @@ export function MessageProvider({ children }: { children: ReactNode }) {
   };
 
   const markAllAsRead = () => {
-    setMessages(prev => 
+    setMessages(prev =>
       prev.map(msg => ({ ...msg, read: true }))
     );
   };
@@ -113,7 +114,7 @@ export function MessageProvider({ children }: { children: ReactNode }) {
       created_at: new Date().toISOString(),
       read: false
     };
-    
+
     setMessages(prev => [newMessage, ...prev]);
   };
 

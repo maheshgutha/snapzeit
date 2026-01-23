@@ -1,5 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/lib/auth-context';
+import { useToast } from '@/hooks/use-toast';
 import Header from '@/components/Header';
 import { ImageUpload, CoverPhotoUpload } from '@/components/ImageUpload';
 import { Button } from '@/components/ui/button';
@@ -11,47 +14,200 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { 
-  Camera, Calendar, DollarSign, Star, Users, TrendingUp, MessageCircle, 
-  Settings, Edit, Plus, Eye, Heart, Award, Clock, MapPin 
+import {
+  Camera, Calendar, DollarSign, Star, Users, TrendingUp, MessageCircle,
+  Settings, Edit, Plus, Eye, Heart, Award, Clock, MapPin, Loader2
 } from 'lucide-react';
 
 export default function PhotographerDashboard() {
-  const [photographer] = useState({
-    name: 'Sarah Johnson',
-    specialty: 'Wedding Photography',
-    location: 'New York, NY',
-    rating: 4.9,
-    reviewCount: 127,
-    totalBookings: 89,
-    totalEarnings: 45600,
-    profileViews: 2340,
-    responseRate: 98
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [loading, setLoading] = useState(true);
+
+  const [photographer, setPhotographer] = useState({
+    id: '',
+    name: '',
+    specialty: '',
+    location: '',
+    rating: 0,
+    reviewCount: 0,
+    totalBookings: 0,
+    totalEarnings: 0,
+    profileViews: 124, // Mock for now
+    responseRate: 95, // Mock for now
+    price_per_hour: 0,
+    bio: '',
+    avatar: ''
   });
 
-  const [bookings] = useState([
-    { id: 1, client: 'Emily & Michael', type: 'Wedding', date: '2024-02-15', status: 'confirmed', amount: 2500 },
-    { id: 2, client: 'Jessica Smith', type: 'Portrait', date: '2024-02-18', status: 'pending', amount: 300 },
-    { id: 3, client: 'Tech Corp', type: 'Corporate', date: '2024-02-20', status: 'completed', amount: 800 },
-    { id: 4, client: 'Baby Johnson', type: 'Newborn', date: '2024-02-22', status: 'confirmed', amount: 450 }
-  ]);
+  const [bookings, setBookings] = useState<any[]>([]);
+  const [messages, setMessages] = useState<any[]>([]);
+  const [portfolioImages, setPortfolioImages] = useState<string[]>([]);
 
-  const [messages] = useState([
-    { id: 1, client: 'Emily Rodriguez', message: 'Hi! I love your wedding portfolio...', time: '2 hours ago', unread: true },
-    { id: 2, client: 'Mark Thompson', message: 'Are you available for a corporate event...', time: '5 hours ago', unread: true },
-    { id: 3, client: 'Lisa Chen', message: 'Thank you for the amazing photos!', time: '1 day ago', unread: false }
-  ]);
+  useEffect(() => {
+    if (user) {
+      fetchDashboardData();
+    }
+  }, [user]);
 
-  const [portfolioImages, setPortfolioImages] = useState([
-    'https://images.unsplash.com/photo-1519741497674-611481863552?w=400&h=300&fit=crop',
-    'https://images.unsplash.com/photo-1465495976277-4387d4b0e4a6?w=400&h=300&fit=crop',
-    'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=400&h=300&fit=crop'
-  ]);
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
 
-  const handlePortfolioUpload = (files: File[]) => {
-    const newImages = files.map(file => URL.createObjectURL(file));
-    setPortfolioImages(prev => [...prev, ...newImages]);
-    alert(`Successfully uploaded ${files.length} image(s) to your portfolio!`);
+      // 1. Fetch Photographer Profile
+      const { data: profile, error: profileError } = await supabase
+        .from('photographers')
+        .select('*')
+        .eq('user_id', user!.id)
+        .single();
+
+      if (profileError) throw profileError;
+      if (!profile) return;
+
+      setPortfolioImages(profile.portfolio || []);
+
+      // 2. Fetch Bookings
+      const { data: bookingsData, error: bookingsError } = await supabase
+        .from('bookings')
+        .select('*')
+        .eq('photographer_id', profile.id)
+        .order('booking_date', { ascending: false });
+
+      if (bookingsError) throw bookingsError;
+
+      // Map bookings with client names (fetching profiles manually for now since no direct relation)
+      let mappedBookings: any[] = [];
+      if (bookingsData && bookingsData.length > 0) {
+        const userIds = [...new Set(bookingsData.map(b => b.user_id))];
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('user_id, full_name, email')
+          .in('user_id', userIds);
+
+        const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
+
+        mappedBookings = bookingsData.map(b => ({
+          id: b.id,
+          client: profileMap.get(b.user_id)?.full_name || 'Unknown Client', // Accessing full_name from profile
+          type: b.event_type,
+          date: b.booking_date,
+          status: b.status,
+          amount: b.total_amount
+        }));
+      }
+      setBookings(mappedBookings);
+
+      // 3. Calculate Stats
+      const totalEarnings = mappedBookings
+        .filter(b => b.status === 'completed' || b.status === 'paid')
+        .reduce((sum, b) => sum + Number(b.amount), 0);
+
+      const totalBookings = mappedBookings.length;
+
+      // 4. Update Photographer State
+      setPhotographer({
+        id: profile.id,
+        name: profile.name,
+        specialty: profile.specialty,
+        location: profile.location,
+        rating: Number(profile.rating) || 5.0,
+        reviewCount: profile.review_count || 0,
+        totalBookings,
+        totalEarnings,
+        profileViews: 1240, // Mocked
+        responseRate: 98, // Mocked
+        price_per_hour: profile.price_per_hour,
+        bio: profile.bio || '',
+        avatar: profile.avatar_url || ''
+      });
+
+      // 5. Fetch Messages (Mocking slightly if table empty, but trying real fetch)
+      // Assuming messages table has sender_id.
+      const { data: messagesData } = await supabase
+        .from('messages')
+        .select('*')
+        .eq('recipient_id', user!.id)
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      if (messagesData) {
+        // Fetch sender details
+        const senderIds = [...new Set(messagesData.map(m => m.sender_id))];
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('user_id, full_name')
+          .in('user_id', senderIds);
+
+        const senders = profilesData as any[];
+        const senderMap = new Map(senders?.map(s => [s.user_id, s]) || []);
+
+        const mappedMessages = messagesData.map((m: any) => ({
+          id: m.id,
+          client: senderMap.get(m.sender_id)?.full_name || 'Unknown User',
+          message: m.content,
+          time: new Date(m.created_at).toLocaleDateString(),
+          unread: !m.is_read
+        }));
+
+        if (mappedMessages.length > 0) {
+          setMessages(mappedMessages);
+        } else {
+          // Keep some mock messages for empty state visualization if needed, or set empty
+          // setMessages([]); 
+          // Leaving the hardcoded messages as fallback if real data is empty? No, cleaner to show empty.
+          // But user asked for dashboard, maybe they want to see it populated. 
+          // I'll leave the initial state empty and if empty populate with "No messages".
+        }
+      }
+
+    } catch (error: any) {
+      console.error('Error fetching dashboard data:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load dashboard data. " + error.message,
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePortfolioUpload = async (files: File[]) => {
+    if (!photographer.id) return;
+
+    try {
+      const uploadedUrls: string[] = [];
+
+      for (const file of files) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${photographer.id}/${Math.random()}.${fileExt}`;
+        const { error: uploadError } = await supabase.storage
+          .from('portfolio')
+          .upload(fileName, file);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('portfolio')
+          .getPublicUrl(fileName);
+
+        uploadedUrls.push(publicUrl);
+      }
+
+      // Update photographer record
+      const newPortfolio = [...portfolioImages, ...uploadedUrls];
+      const { error: updateError } = await supabase
+        .from('photographers')
+        .update({ portfolio: newPortfolio })
+        .eq('id', photographer.id);
+
+      if (updateError) throw updateError;
+
+      setPortfolioImages(newPortfolio);
+      toast({ title: "Success", description: "Portfolio updated successfully!" });
+    } catch (error: any) {
+      toast({ title: "Error", description: "Upload failed: " + error.message, variant: "destructive" });
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -63,18 +219,28 @@ export default function PhotographerDashboard() {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Header />
-      
+
       {/* Dashboard Header */}
       <section className="py-8 bg-white dark:bg-gray-800 border-b">
         <div className="container">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Avatar className="h-16 w-16">
-                <AvatarImage src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face" />
-                <AvatarFallback className="bg-gradient-to-r from-blue-600 to-purple-600 text-white text-xl">SJ</AvatarFallback>
+                <AvatarImage src={photographer.avatar} />
+                <AvatarFallback className="bg-gradient-to-r from-blue-600 to-purple-600 text-white text-xl">
+                  {photographer.name?.charAt(0) || 'P'}
+                </AvatarFallback>
               </Avatar>
               <div>
                 <h1 className="text-2xl font-bold">{photographer.name}</h1>
@@ -93,7 +259,7 @@ export default function PhotographerDashboard() {
               </div>
             </div>
             <div className="flex gap-3">
-              <Link to={`/photographer/demo-id`}>
+              <Link to={`/photographer/${photographer.id}`}>
                 <Button variant="outline">
                   <Eye className="h-4 w-4 mr-2" />
                   View Profile
@@ -122,7 +288,7 @@ export default function PhotographerDashboard() {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -134,7 +300,7 @@ export default function PhotographerDashboard() {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -146,7 +312,7 @@ export default function PhotographerDashboard() {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -315,7 +481,7 @@ export default function PhotographerDashboard() {
                   </div>
                 </CardContent>
               </Card>
-              
+
               <Card>
                 <CardHeader>
                   <CardTitle>Payment Methods</CardTitle>
@@ -354,16 +520,16 @@ export default function PhotographerDashboard() {
                       <Input id="specialty" defaultValue={photographer.specialty} />
                     </div>
                   </div>
-                  
+
                   <div>
                     <Label htmlFor="bio">Professional Bio</Label>
-                    <Textarea 
-                      id="bio" 
+                    <Textarea
+                      id="bio"
                       placeholder="Tell potential clients about your photography style..."
                       rows={4}
                     />
                   </div>
-                  
+
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="location">Location</Label>
@@ -374,7 +540,7 @@ export default function PhotographerDashboard() {
                       <Input id="price" type="number" defaultValue="250" />
                     </div>
                   </div>
-                  
+
                   <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
                     Save Changes
                   </Button>

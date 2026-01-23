@@ -31,26 +31,26 @@ export function BookingSystem({ photographerName, photographerId, pricePerHour, 
   });
 
   const packages = [
-    { 
-      id: 'basic', 
-      name: 'Basic Package', 
-      hours: 2, 
-      price: pricePerHour * 2, 
-      features: ['2 hours shooting', '20 edited photos', 'Online gallery', 'Basic retouching'] 
+    {
+      id: 'basic',
+      name: 'Basic Package',
+      hours: 2,
+      price: pricePerHour * 2,
+      features: ['2 hours shooting', '20 edited photos', 'Online gallery', 'Basic retouching']
     },
-    { 
-      id: 'standard', 
-      name: 'Standard Package', 
-      hours: 4, 
-      price: pricePerHour * 4, 
-      features: ['4 hours shooting', '50 edited photos', 'Online gallery', 'Advanced retouching', 'Print release'] 
+    {
+      id: 'standard',
+      name: 'Standard Package',
+      hours: 4,
+      price: pricePerHour * 4,
+      features: ['4 hours shooting', '50 edited photos', 'Online gallery', 'Advanced retouching', 'Print release']
     },
-    { 
-      id: 'premium', 
-      name: 'Premium Package', 
-      hours: 8, 
-      price: pricePerHour * 8, 
-      features: ['8 hours shooting', '100+ edited photos', 'Online gallery', 'Premium retouching', 'Print release', 'USB delivery'] 
+    {
+      id: 'premium',
+      name: 'Premium Package',
+      hours: 8,
+      price: pricePerHour * 8,
+      features: ['8 hours shooting', '100+ edited photos', 'Online gallery', 'Premium retouching', 'Print release', 'USB delivery']
     }
   ];
 
@@ -68,49 +68,73 @@ export function BookingSystem({ photographerName, photographerId, pricePerHour, 
     const selectedPkg = packages.find(p => p.id === selectedPackage);
     if (!selectedPkg) return;
 
-    // First initiate Razorpay Payment
-    initiatePayment({
-      amount: selectedPkg.price,
-      currency: "INR", // Adjust based on your preferred currency
-      name: bookingForm.name,
-      description: `Booking for ${photographerName} - ${selectedPkg.name}`,
-      email: bookingForm.email,
-      contact: bookingForm.phone,
-      onSuccess: async (response) => {
-        // Payment successful, now create the booking in Supabase
-        try {
-          const { data: { user } } = await supabase.auth.getUser();
-          
-          const bookingData = {
-            user_id: user?.id,
-            photographer_id: photographerId,
-            booking_date: selectedDate.toISOString().split('T')[0],
-            start_time: "10:00:00", // Default or select from UI
-            end_time: "12:00:00",
-            event_type: bookingForm.eventType,
-            location: "Client Location", // Or specific location from form
-            total_amount: selectedPkg.price,
-            payment_status: 'paid',
-            payment_intent_id: response.razorpay_payment_id,
-            status: 'confirmed'
-          };
+    // Check if Razorpay key is configured
+    const razorpayKey = import.meta.env.VITE_RAZORPAY_KEY_ID;
+    const isRazorpayConfigured = razorpayKey && razorpayKey !== "rzp_test_YOUR_KEY_ID";
 
-          const { error } = await supabase.from('bookings').insert(bookingData);
-
-          if (error) throw error;
-
-          toast.success(`Booking Confirmed! Payment ID: ${response.razorpay_payment_id}`);
-          onClose();
-        } catch (err: any) {
-          console.error("Booking creation failed:", err);
-          toast.error("Payment successful, but booking creation failed. Please contact support.");
+    if (isRazorpayConfigured) {
+      // Initiate Razorpay Payment
+      initiatePayment({
+        amount: selectedPkg.price,
+        currency: "INR",
+        name: bookingForm.name,
+        description: `Booking for ${photographerName} - ${selectedPkg.name}`,
+        email: bookingForm.email,
+        contact: bookingForm.phone,
+        onSuccess: async (response) => {
+          await createBooking(response.razorpay_payment_id, 'paid');
+        },
+        onFailure: (error) => {
+          console.error("Payment failed:", error);
+          toast.error(`Payment Failed: ${error.description || 'Reason unknown'}`);
         }
-      },
-      onFailure: (error) => {
-        console.error("Payment failed:", error);
-        toast.error(`Payment Failed: ${error.description || 'Reason unknown'}`);
+      });
+    } else {
+      // Bypass Payment (Mock Mode)
+      console.warn("Razorpay key not configured. Using Mock Payment.");
+      // Simulate API delay
+      toast.info("Test Mode: Simulating successful payment...");
+      setTimeout(async () => {
+        await createBooking('mock_payment_id_' + Date.now(), 'pending');
+      }, 1000);
+    }
+  };
+
+  const createBooking = async (paymentId: string, paymentStatus: string) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("Please login to book.");
+        return;
       }
-    });
+
+      const selectedPkg = packages.find(p => p.id === selectedPackage);
+      if (!selectedPkg) return;
+
+      const bookingData = {
+        user_id: user.id,
+        photographer_id: photographerId,
+        booking_date: selectedDate!.toISOString().split('T')[0],
+        start_time: "10:00:00",
+        end_time: "12:00:00", // Ideally calculated based on duration
+        event_type: bookingForm.eventType,
+        location: "Client Location",
+        total_amount: selectedPkg.price,
+        payment_status: paymentStatus,
+        payment_intent_id: paymentId,
+        status: 'confirmed'
+      };
+
+      const { error } = await supabase.from('bookings').insert(bookingData);
+
+      if (error) throw error;
+
+      toast.success(`Booking Confirmed! Reference: ${paymentId}`);
+      onClose();
+    } catch (err: any) {
+      console.error("Booking creation failed:", err);
+      toast.error("Booking creation failed: " + err.message);
+    }
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -142,11 +166,10 @@ export function BookingSystem({ photographerName, photographerId, pricePerHour, 
               </h3>
               <div className="grid md:grid-cols-3 gap-4">
                 {packages.map(pkg => (
-                  <Card 
-                    key={pkg.id} 
-                    className={`cursor-pointer transition-all hover:shadow-lg ${
-                      selectedPackage === pkg.id ? 'ring-2 ring-blue-600 bg-blue-50 dark:bg-blue-900/20' : ''
-                    }`}
+                  <Card
+                    key={pkg.id}
+                    className={`cursor-pointer transition-all hover:shadow-lg ${selectedPackage === pkg.id ? 'ring-2 ring-blue-600 bg-blue-50 dark:bg-blue-900/20' : ''
+                      }`}
                     onClick={() => setSelectedPackage(pkg.id)}
                   >
                     <CardContent className="p-4">
@@ -275,16 +298,16 @@ export function BookingSystem({ photographerName, photographerId, pricePerHour, 
 
             {/* Submit Button */}
             <div className="flex gap-4">
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
                 className="flex-1"
                 onClick={onClose}
               >
                 Cancel
               </Button>
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
                 disabled={!selectedDate || !bookingForm.name || !bookingForm.email}
               >
