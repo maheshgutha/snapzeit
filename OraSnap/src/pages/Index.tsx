@@ -72,7 +72,7 @@ export default function Index() {
     const localizedContent = getLocalizedContent(userCountry);
     const marketingCampaign = getCampaignForCountry(userCountry.code);
     const internationalSEO = generateCountrySEO(userCountry, '');
-    
+
     updateInternationalSEO({
       ...seoData.home,
       title: marketingCampaign.campaigns.hero.title + ` | OraSnap ${userCountry.name}`,
@@ -185,7 +185,7 @@ export default function Index() {
         console.error('Failed to initialize location:', error);
       }
     };
-    
+
     initializeLocation();
   }, []);
 
@@ -245,7 +245,7 @@ export default function Index() {
   const handleLocationChange = (value: string) => {
     setLocation(value);
     if (debounceRef.current) clearTimeout(debounceRef.current);
-    
+
     if (value.length >= 2) {
       debounceRef.current = setTimeout(() => {
         fetchLocationSuggestions(value);
@@ -269,7 +269,7 @@ export default function Index() {
   const handleFindMatch = async (e: React.FormEvent) => {
     e.preventDefault();
     setMatchLoading(true);
-    
+
     try {
       const { data } = await supabase.rpc('get_public_photographers');
       if (data) {
@@ -281,15 +281,15 @@ export default function Index() {
           const budgetMatch = totalCost <= budget;
           return specialtyMatch && countryMatch && locationMatch && budgetMatch;
         });
-        
+
         filtered = filtered.sort((a, b) => b.rating - a.rating);
         setMatchResults(filtered);
-        
+
         // Show AI matching for better results
         if (filtered.length > 3) {
           setShowSmartMatching(true);
         }
-        
+
         if (filtered.length > 0) {
           toast.success(`Found ${filtered.length} matches! AI recommendations shown below.`);
         } else {
@@ -326,7 +326,7 @@ export default function Index() {
         setLoading(false);
       }
     };
-    
+
     fetchPhotographers();
   }, []);
 
@@ -366,20 +366,20 @@ export default function Index() {
 
       {/* Hero Section - Simplified & More Engaging */}
       <section id="hero-section" className="relative min-h-screen flex items-center overflow-hidden" aria-labelledby="hero-title">
-        <div 
+        <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: "url('https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=1920&h=1080&fit=crop')" }}
         />
         <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/50 to-transparent" />
-        
+
         {/* Live Activity Badge - Enhanced */}
-        <div className="absolute top-6 right-6 bg-white/15 backdrop-blur-md rounded-2xl px-4 py-2 border border-white/20 shadow-2xl animate-pulse">
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 md:top-6 md:right-6 bg-white/15 backdrop-blur-md rounded-2xl px-4 py-2 border border-white/20 shadow-2xl animate-pulse">
           <div className="flex items-center gap-2 text-sm text-white font-semibold">
             <div className="w-2 h-2 bg-green-400 rounded-full animate-ping" />
             <span>{liveActivity.bookings} booked in last hour</span>
           </div>
         </div>
-        
+
         <div className="container relative z-10 py-20">
           <div className={`max-w-4xl transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
             {/* Trust Badge */}
@@ -418,15 +418,15 @@ export default function Index() {
             </div>
 
             {/* Enhanced Search */}
-            <form 
-              onSubmit={(e) => { e.preventDefault(); navigate(`/photographers?search=${searchQuery}`); }} 
+            <form
+              onSubmit={(e) => { e.preventDefault(); navigate(`/photographers?search=${searchQuery}`); }}
               className="relative flex gap-3 max-w-2xl mb-8"
             >
               <div className="relative flex-1">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/60" />
-                <Input 
-                  placeholder={t('hero.searchPlaceholder')} 
-                  value={searchQuery} 
+                <Input
+                  placeholder={t('hero.searchPlaceholder')}
+                  value={searchQuery}
                   onChange={(e) => handleSearchChange(e.target.value)}
                   className="pl-12 h-14 rounded-xl bg-white/15 backdrop-blur-md border-white/20 text-white placeholder:text-white/60 text-lg font-medium shadow-xl"
                 />
@@ -455,24 +455,24 @@ export default function Index() {
 
             {/* Quick Categories */}
             <div className="flex flex-wrap gap-3">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="bg-white/10 backdrop-blur-md border-white/20 text-white hover:bg-white/20 hover:scale-105 transition-all"
                 onClick={() => navigate('/photographers?category=wedding')}
               >
                 <Heart className="w-4 h-4 mr-2" />
                 Wedding
               </Button>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="bg-white/10 backdrop-blur-md border-white/20 text-white hover:bg-white/20 hover:scale-105 transition-all"
                 onClick={() => navigate('/photographers?category=portrait')}
               >
                 <User className="w-4 h-4 mr-2" />
                 Portrait
               </Button>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="bg-white/10 backdrop-blur-md border-white/20 text-white hover:bg-white/20 hover:scale-105 transition-all"
                 onClick={() => navigate('/photographers?category=event')}
               >
@@ -528,7 +528,7 @@ export default function Index() {
               {t('match.subtitle')}
             </p>
           </div>
-          
+
           <div className="max-w-4xl mx-auto">
             <div className="grid md:grid-cols-3 gap-6 mb-10">
               <div className="text-center p-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl border hover:border-blue-500/30 transition-all hover:scale-105 hover:shadow-lg">
@@ -553,10 +553,10 @@ export default function Index() {
                 <p className="text-sm text-gray-600 dark:text-gray-300">{t('match.styleAndBudget')}</p>
               </div>
             </div>
-            
+
             <div className="text-center">
-              <Button 
-                size="lg" 
+              <Button
+                size="lg"
                 className="h-14 px-10 rounded-xl bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 text-white font-bold text-lg shadow-xl hover:scale-105 transition-all"
                 onClick={() => {
                   document.getElementById('match-section')?.scrollIntoView({ behavior: 'smooth' });
@@ -611,14 +611,14 @@ export default function Index() {
                   ))}
                 </div>
               </div>
-              
+
               <div>
                 <Label className="text-base font-semibold mb-3 block">Duration: {duration} {duration === 1 ? 'hour' : 'hours'}</Label>
-                <input 
-                  type="range" 
-                  min={1} 
-                  max={12} 
-                  value={duration} 
+                <input
+                  type="range"
+                  min={1}
+                  max={12}
+                  value={duration}
                   onChange={e => setDuration(Number(e.target.value))}
                   className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
                 />
@@ -628,13 +628,13 @@ export default function Index() {
                 </div>
               </div>
             </div>
-            
+
             {/* Right Column */}
             <div className="space-y-6">
               <div>
                 <Label className="text-base font-semibold mb-3 block">Country</Label>
-                <select 
-                  value={country} 
+                <select
+                  value={country}
                   onChange={e => handleCountryChange(e.target.value)}
                   className="w-full h-12 px-4 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
@@ -643,7 +643,7 @@ export default function Index() {
                   ))}
                 </select>
               </div>
-              
+
               <div>
                 <Label className="text-base font-semibold mb-3 block">Location</Label>
                 <div className="relative">
@@ -674,7 +674,7 @@ export default function Index() {
                   )}
                 </div>
               </div>
-              
+
               <div>
                 <Label className="text-base font-semibold mb-3 block">Budget (total)</Label>
                 <div className="flex gap-3">
@@ -786,11 +786,11 @@ export default function Index() {
                     <option value="ZMW">ZMW</option>
                     <option value="ZWL">ZWL</option>
                   </select>
-                  <Input 
-                    type="number" 
-                    min={100} 
-                    step={50} 
-                    value={budget} 
+                  <Input
+                    type="number"
+                    min={100}
+                    step={50}
+                    value={budget}
                     onChange={e => setBudget(Number(e.target.value))}
                     className="flex-1 h-12 focus:ring-2 focus:ring-blue-500"
                     placeholder="1000"
@@ -799,11 +799,11 @@ export default function Index() {
               </div>
             </div>
           </div>
-          
+
           <div className="mt-8 text-center">
-            <Button 
-              type="submit" 
-              className="w-full md:w-auto h-12 px-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold text-lg rounded-xl shadow-lg hover:scale-105 transition-all" 
+            <Button
+              type="submit"
+              className="w-full md:w-auto h-12 px-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold text-lg rounded-xl shadow-lg hover:scale-105 transition-all"
               disabled={matchLoading}
             >
               {matchLoading ? (
@@ -820,11 +820,11 @@ export default function Index() {
             </Button>
           </div>
         </form>
-        
+
         {/* AI Smart Matching Results */}
         {showSmartMatching && matchResults.length > 0 && (
           <div className="mt-8">
-            <SmartMatching 
+            <SmartMatching
               userPreferences={{
                 budget,
                 location: `${location}, ${country}`,
@@ -838,7 +838,7 @@ export default function Index() {
             />
           </div>
         )}
-        
+
         {/* Results */}
         {matchResults.length > 0 && (
           <div className="mt-12">
@@ -895,7 +895,7 @@ export default function Index() {
               <p className="text-sm text-gray-600 dark:text-gray-300">{t('features.pay.desc')}</p>
             </div>
           </div>
-          
+
           {/* Trust indicators */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-12 max-w-2xl mx-auto">
             <div className="text-center p-3">
@@ -931,7 +931,7 @@ export default function Index() {
             </Button>
           </Link>
         </div>
-        
+
         {/* Pricing info */}
         <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 mb-8 flex items-center justify-between">
           <div>
@@ -942,7 +942,7 @@ export default function Index() {
             View Pricing
           </Button>
         </div>
-        
+
         {loading ? (
           <div className="grid md:grid-cols-3 gap-6">
             {[1, 2, 3].map(i => (
@@ -1016,7 +1016,7 @@ export default function Index() {
           <div className="absolute top-0 left-0 w-96 h-96 bg-white/10 rounded-full blur-3xl animate-pulse" />
           <div className="absolute bottom-0 right-0 w-80 h-80 bg-white/5 rounded-full blur-2xl animate-pulse delay-1000" />
         </div>
-        
+
         <div className="container text-center relative z-10">
           <div className="max-w-3xl mx-auto">
             <h2 className="text-3xl md:text-5xl font-black mb-6 text-white">
@@ -1025,18 +1025,18 @@ export default function Index() {
             <p className="mb-10 text-white/90 text-lg md:text-xl max-w-2xl mx-auto">
               {t('cta.joinThousands')}
             </p>
-            
+
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-              <Button 
-                size="lg" 
+              <Button
+                size="lg"
                 className="h-14 px-10 rounded-xl bg-white text-gray-900 hover:bg-gray-100 font-bold text-lg shadow-xl hover:scale-105 transition-all"
                 onClick={() => navigate('/photographers')}
               >
                 <Search className="w-5 h-5 mr-2" />
                 {t('nav.findPhotographers')}
               </Button>
-              <Button 
-                size="lg" 
+              <Button
+                size="lg"
                 className="h-14 px-10 rounded-xl bg-transparent border-2 border-white text-white hover:bg-white hover:text-gray-900 font-bold text-lg hover:scale-105 transition-all"
                 onClick={() => navigate('/photographer/register')}
               >
@@ -1044,7 +1044,7 @@ export default function Index() {
                 Become a Photographer
               </Button>
             </div>
-            
+
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-white/90 max-w-2xl mx-auto text-sm">
               <div className="flex items-center gap-2">
                 <CheckCircle className="h-4 w-4 text-emerald-300" />

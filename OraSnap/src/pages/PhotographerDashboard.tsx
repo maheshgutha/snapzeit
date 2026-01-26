@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import Header from '@/components/Header';
+import { LeadsList } from '@/components/LeadsList';
 import { ImageUpload, CoverPhotoUpload } from '@/components/ImageUpload';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,13 +17,15 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import {
   Camera, Calendar, DollarSign, Star, Users, TrendingUp, MessageCircle,
-  Settings, Edit, Plus, Eye, Heart, Award, Clock, MapPin, Loader2
+  Settings, Edit, Plus, Eye, Heart, Award, Clock, MapPin, Loader2, Zap
 } from 'lucide-react';
 
 export default function PhotographerDashboard() {
-  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   const [photographer, setPhotographer] = useState({
     id: '',
@@ -33,8 +36,8 @@ export default function PhotographerDashboard() {
     reviewCount: 0,
     totalBookings: 0,
     totalEarnings: 0,
-    profileViews: 124, // Mock for now
-    responseRate: 95, // Mock for now
+    profileViews: 124,
+    responseRate: 95,
     price_per_hour: 0,
     bio: '',
     avatar: ''
@@ -45,12 +48,19 @@ export default function PhotographerDashboard() {
   const [portfolioImages, setPortfolioImages] = useState<string[]>([]);
 
   useEffect(() => {
+    if (!authLoading && !user) {
+      navigate('/auth');
+    }
+  }, [user, authLoading, navigate]);
+
+  useEffect(() => {
     if (user) {
       fetchDashboardData();
     }
   }, [user]);
 
   const fetchDashboardData = async () => {
+
     try {
       setLoading(true);
 
@@ -210,6 +220,36 @@ export default function PhotographerDashboard() {
     }
   };
 
+  const handleUpdateProfile = async () => {
+    if (!photographer.id) return;
+
+    try {
+      setSaving(true);
+      const { error } = await supabase
+        .from('photographers')
+        .update({
+          name: photographer.name,
+          specialty: photographer.specialty,
+          location: photographer.location,
+          bio: photographer.bio,
+          price_per_hour: Number(photographer.price_per_hour)
+        })
+        .eq('id', photographer.id);
+
+      if (error) throw error;
+
+      toast({ title: "Success", description: "Profile updated successfully!" });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: "Failed to update profile: " + error.message,
+        variant: "destructive"
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'confirmed': return 'bg-green-100 text-green-800';
@@ -231,27 +271,31 @@ export default function PhotographerDashboard() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Header />
 
-      {/* Dashboard Header */}
-      <section className="py-8 bg-white dark:bg-gray-800 border-b">
-        <div className="container">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Avatar className="h-16 w-16">
+      {/* Premium Dashboard Header */}
+      <section className="relative py-12 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/10 via-purple-600/10 to-blue-600/10 dark:from-indigo-900/20 dark:via-purple-900/20 dark:to-blue-900/20" />
+        <div className="container relative z-10">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-6">
+              <Avatar className="h-24 w-24 ring-4 ring-white dark:ring-gray-800 shadow-xl">
                 <AvatarImage src={photographer.avatar} />
-                <AvatarFallback className="bg-gradient-to-r from-blue-600 to-purple-600 text-white text-xl">
+                <AvatarFallback className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-3xl font-bold">
                   {photographer.name?.charAt(0) || 'P'}
                 </AvatarFallback>
               </Avatar>
               <div>
-                <h1 className="text-2xl font-bold">{photographer.name}</h1>
-                <p className="text-gray-600 dark:text-gray-300">{photographer.specialty} • {photographer.location}</p>
-                <div className="flex items-center gap-4 mt-1">
-                  <div className="flex items-center gap-1">
+                <h1 className="text-3xl font-black text-gray-900 dark:text-white mb-2">{photographer.name}</h1>
+                <div className="flex items-center gap-3 text-gray-600 dark:text-gray-300 mb-2">
+                  <Badge variant="outline" className="border-purple-200 bg-purple-50 text-purple-700">{photographer.specialty}</Badge>
+                  <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {photographer.location}</span>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-1 bg-yellow-50 dark:bg-yellow-900/20 px-2 py-1 rounded-md">
                     <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                    <span className="font-semibold">{photographer.rating}</span>
-                    <span className="text-gray-500">({photographer.reviewCount} reviews)</span>
+                    <span className="font-bold text-gray-900 dark:text-white">{photographer.rating}</span>
+                    <span className="text-xs text-gray-500">({photographer.reviewCount})</span>
                   </div>
-                  <Badge className="bg-green-100 text-green-800">
+                  <Badge className="bg-gradient-to-r from-blue-600 to-cyan-500 text-white border-0 shadow-sm">
                     <Award className="h-3 w-3 mr-1" />
                     Verified Pro
                   </Badge>
@@ -260,12 +304,12 @@ export default function PhotographerDashboard() {
             </div>
             <div className="flex gap-3">
               <Link to={`/photographer/${photographer.id}`}>
-                <Button variant="outline">
+                <Button variant="outline" className="bg-white/50 backdrop-blur-sm border-gray-200 hover:bg-white hover:shadow-md transition-all">
                   <Eye className="h-4 w-4 mr-2" />
-                  View Profile
+                  View Public Profile
                 </Button>
               </Link>
-              <Button>
+              <Button className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg hover:shadow-indigo-500/25 hover:translate-y-[-2px] transition-all">
                 <Settings className="h-4 w-4 mr-2" />
                 Settings
               </Button>
@@ -275,52 +319,60 @@ export default function PhotographerDashboard() {
       </section>
 
       {/* Stats Overview */}
-      <section className="py-8 container">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
-          <Card>
+      <section className="py-8 container relative z-10 -mt-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
+          <Card className="glass-card border-0 hover:translate-y-[-4px] transition-transform duration-300">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Total Earnings</p>
-                  <p className="text-2xl font-bold">${photographer.totalEarnings.toLocaleString()}</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Earnings</p>
+                  <p className="text-2xl font-black text-gray-900 dark:text-white mt-1">${photographer.totalEarnings.toLocaleString()}</p>
                 </div>
-                <DollarSign className="h-8 w-8 text-green-600" />
+                <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-xl">
+                  <DollarSign className="h-6 w-6 text-green-600" />
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="glass-card border-0 hover:translate-y-[-4px] transition-transform duration-300">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Total Bookings</p>
-                  <p className="text-2xl font-bold">{photographer.totalBookings}</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Bookings</p>
+                  <p className="text-2xl font-black text-gray-900 dark:text-white mt-1">{photographer.totalBookings}</p>
                 </div>
-                <Calendar className="h-8 w-8 text-blue-600" />
+                <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-xl">
+                  <Calendar className="h-6 w-6 text-blue-600" />
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="glass-card border-0 hover:translate-y-[-4px] transition-transform duration-300">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Profile Views</p>
-                  <p className="text-2xl font-bold">{photographer.profileViews.toLocaleString()}</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Views</p>
+                  <p className="text-2xl font-black text-gray-900 dark:text-white mt-1">{photographer.profileViews.toLocaleString()}</p>
                 </div>
-                <Eye className="h-8 w-8 text-purple-600" />
+                <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-xl">
+                  <Eye className="h-6 w-6 text-purple-600" />
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="glass-card border-0 hover:translate-y-[-4px] transition-transform duration-300">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Response Rate</p>
-                  <p className="text-2xl font-bold">{photographer.responseRate}%</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Res. Rate</p>
+                  <p className="text-2xl font-black text-gray-900 dark:text-white mt-1">{photographer.responseRate}%</p>
                 </div>
-                <TrendingUp className="h-8 w-8 text-orange-600" />
+                <div className="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-xl">
+                  <TrendingUp className="h-6 w-6 text-orange-600" />
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -328,46 +380,64 @@ export default function PhotographerDashboard() {
 
         {/* Main Dashboard Content */}
         <Tabs defaultValue="bookings" className="w-full">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="bookings">Bookings</TabsTrigger>
-            <TabsTrigger value="messages">Messages</TabsTrigger>
-            <TabsTrigger value="portfolio">Portfolio</TabsTrigger>
-            <TabsTrigger value="earnings">Earnings</TabsTrigger>
-            <TabsTrigger value="profile">Profile</TabsTrigger>
+          <TabsList className="flex flex-wrap h-auto gap-2 bg-transparent p-1 mb-8">
+            <TabsTrigger value="bookings" className="px-5 py-2.5 rounded-full data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-purple-600 data-[state=active]:text-white shadow-sm border border-transparent data-[state=active]:border-0 transition-all">Bookings</TabsTrigger>
+            <TabsTrigger value="leads" className="px-5 py-2.5 rounded-full data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-purple-600 data-[state=active]:text-white shadow-sm border border-transparent data-[state=active]:border-0 transition-all">
+              Leads <Badge variant="secondary" className="ml-2 bg-red-500 text-white hover:bg-red-600 text-[10px] px-1.5 py-0.5 border-0">New</Badge>
+            </TabsTrigger>
+            <TabsTrigger value="messages" className="px-5 py-2.5 rounded-full data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-purple-600 data-[state=active]:text-white shadow-sm border border-transparent data-[state=active]:border-0 transition-all">Messages</TabsTrigger>
+            <TabsTrigger value="portfolio" className="px-5 py-2.5 rounded-full data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-purple-600 data-[state=active]:text-white shadow-sm border border-transparent data-[state=active]:border-0 transition-all">Portfolio</TabsTrigger>
+            <TabsTrigger value="earnings" className="px-5 py-2.5 rounded-full data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-purple-600 data-[state=active]:text-white shadow-sm border border-transparent data-[state=active]:border-0 transition-all">Earnings</TabsTrigger>
+            <TabsTrigger value="profile" className="px-5 py-2.5 rounded-full data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-purple-600 data-[state=active]:text-white shadow-sm border border-transparent data-[state=active]:border-0 transition-all">Profile</TabsTrigger>
           </TabsList>
 
           {/* Bookings Tab */}
           <TabsContent value="bookings" className="mt-6">
-            <Card>
+            <Card className="glass-card border-0">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Calendar className="h-5 w-5" />
+                  <Calendar className="h-5 w-5 text-blue-600" />
                   Recent Bookings
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   {bookings.map(booking => (
-                    <div key={booking.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                    <div key={booking.id} className="flex items-center justify-between p-4 bg-white/50 dark:bg-gray-800/50 rounded-xl hover:bg-white dark:hover:bg-gray-800 transition-colors border border-transparent hover:border-gray-100 dark:hover:border-gray-700 shadow-sm">
                       <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+                        <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-purple-500/20">
                           <Camera className="h-6 w-6 text-white" />
                         </div>
                         <div>
-                          <h3 className="font-semibold">{booking.client}</h3>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">{booking.type} • {booking.date}</p>
+                          <h3 className="font-bold text-gray-900 dark:text-white">{booking.client}</h3>
+                          <p className="text-sm font-medium text-gray-500">{booking.type} • {booking.date}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-4">
-                        <Badge className={getStatusColor(booking.status)}>
+                        <Badge className={`${getStatusColor(booking.status)} px-3 py-1 rounded-full`}>
                           {booking.status}
                         </Badge>
-                        <span className="font-bold">${booking.amount}</span>
-                        <Button variant="outline" size="sm">View Details</Button>
+                        <span className="font-bold text-lg">${booking.amount}</span>
+                        <Button variant="ghost" size="sm" className="hover:bg-blue-50 text-blue-600">View Details</Button>
                       </div>
                     </div>
                   ))}
                 </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Leads Tab */}
+          <TabsContent value="leads" className="mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Zap className="h-5 w-5 text-yellow-500 fill-yellow-500" />
+                  New Opportunities (Leads)
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <LeadsList />
               </CardContent>
             </Card>
           </TabsContent>
@@ -513,11 +583,19 @@ export default function PhotographerDashboard() {
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="name">Full Name</Label>
-                      <Input id="name" defaultValue={photographer.name} />
+                      <Input
+                        id="name"
+                        value={photographer.name}
+                        onChange={(e) => setPhotographer(prev => ({ ...prev, name: e.target.value }))}
+                      />
                     </div>
                     <div>
                       <Label htmlFor="specialty">Specialty</Label>
-                      <Input id="specialty" defaultValue={photographer.specialty} />
+                      <Input
+                        id="specialty"
+                        value={photographer.specialty}
+                        onChange={(e) => setPhotographer(prev => ({ ...prev, specialty: e.target.value }))}
+                      />
                     </div>
                   </div>
 
@@ -527,22 +605,44 @@ export default function PhotographerDashboard() {
                       id="bio"
                       placeholder="Tell potential clients about your photography style..."
                       rows={4}
+                      value={photographer.bio}
+                      onChange={(e) => setPhotographer(prev => ({ ...prev, bio: e.target.value }))}
                     />
                   </div>
 
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="location">Location</Label>
-                      <Input id="location" defaultValue={photographer.location} />
+                      <Input
+                        id="location"
+                        value={photographer.location}
+                        onChange={(e) => setPhotographer(prev => ({ ...prev, location: e.target.value }))}
+                      />
                     </div>
                     <div>
                       <Label htmlFor="price">Price per Hour ($)</Label>
-                      <Input id="price" type="number" defaultValue="250" />
+                      <Input
+                        id="price"
+                        type="number"
+                        value={photographer.price_per_hour}
+                        onChange={(e) => setPhotographer(prev => ({ ...prev, price_per_hour: Number(e.target.value) }))}
+                      />
                     </div>
                   </div>
 
-                  <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
-                    Save Changes
+                  <Button
+                    onClick={handleUpdateProfile}
+                    disabled={saving}
+                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                  >
+                    {saving ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      'Save Changes'
+                    )}
                   </Button>
                 </div>
               </CardContent>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { ShareButton } from '@/components/ShareButton';
 import { supabase } from '@/integrations/supabase/client';
 import Header from '@/components/Header';
 import { MessagingSystem } from '@/components/MessagingSystem';
@@ -215,10 +216,11 @@ export default function PhotographerProfile() {
 
           {/* Action Buttons */}
           <div className="absolute top-4 left-4 flex gap-2">
-            <Button variant="secondary" size="sm">
-              <Share2 className="h-4 w-4 mr-2" />
-              Share
-            </Button>
+            <ShareButton
+              title={`Check out ${photographer.name} on OraSnap`}
+              text={`I found this amazing ${photographer.specialty} photographer!`}
+              variant="secondary"
+            />
             <Button variant="secondary" size="sm">
               <Eye className="h-4 w-4 mr-2" />
               {Math.floor(Math.random() * 1000) + 500} views

@@ -32,10 +32,10 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import {
-  Users, Camera, Calendar, DollarSign, TrendingUp, CheckCircle, 
+  Users, Camera, Calendar, DollarSign, TrendingUp, CheckCircle,
   XCircle, Search, Eye, Shield, Trash2, Ban, UserCheck, ShieldOff,
   BarChart3, Activity, Settings, Bell, MessageSquare, FileText,
-  Download, AlertTriangle, Zap, Globe, Star, Clock, ArrowUp, ArrowDown
+  Download, AlertTriangle, Zap, Globe, Star, Clock, ArrowUp, ArrowDown, Package
 } from 'lucide-react';
 import { getSettings, updateSettings, defaultSettings, AdminSettings } from '@/utils/adminSettings';
 
@@ -101,14 +101,16 @@ export default function AdminPanel() {
   const [users, setUsers] = useState<User[]>([]);
   const [photographers, setPhotographers] = useState<Photographer[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [leads, setLeads] = useState<any[]>([]);
+  const [rentals, setRentals] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
   const [searchQuery, setSearchQuery] = useState('');
   const [userSearchQuery, setUserSearchQuery] = useState('');
-  
+
   // Settings state
   const [settings, setSettings] = useState<AdminSettings>(defaultSettings);
-  
+
   const [deleteDialog, setDeleteDialog] = useState<{
     open: boolean;
     type: 'user' | 'photographer';
@@ -139,16 +141,20 @@ export default function AdminPanel() {
 
   const fetchData = async () => {
     try {
-      const [usersRes, photographersRes, bookingsRes] = await Promise.all([
+      const [usersRes, photographersRes, bookingsRes, leadsRes, rentalsRes] = await Promise.all([
         supabase.from('profiles').select('*').order('created_at', { ascending: false }),
         supabase.from('photographers').select('*').order('created_at', { ascending: false }),
-        supabase.from('bookings').select('*, photographers(name, country, location)').order('created_at', { ascending: false })
+        supabase.from('bookings').select('*, photographers(name, country, location)').order('created_at', { ascending: false }),
+        supabase.from('leads').select('*').order('created_at', { ascending: false }),
+        supabase.from('rental_bookings').select('*, equipment(name)').order('created_at', { ascending: false })
       ]);
 
       if (usersRes.data) setUsers(usersRes.data);
       if (photographersRes.data) setPhotographers(photographersRes.data);
       if (bookingsRes.data) setBookings(bookingsRes.data);
-      
+      if (leadsRes.data) setLeads(leadsRes.data);
+      if (rentalsRes.data) setRentals(rentalsRes.data);
+
       // Load settings from localStorage
       const adminSettings = getSettings();
       setSettings(adminSettings);
@@ -170,7 +176,7 @@ export default function AdminPanel() {
   const saveSettings = () => {
     try {
       const success = updateSettings(settings);
-      
+
       if (success) {
         toast({ title: 'Success', description: 'Settings saved successfully' });
       } else {
@@ -234,12 +240,12 @@ export default function AdminPanel() {
         toast({ title: 'Error', description: profileError.message, variant: 'destructive' });
         return;
       }
-      
+
       const { error: roleError } = await supabase.from('user_roles').delete().eq('user_id', userId);
       if (roleError) {
         toast({ title: 'Warning', description: 'User deleted but role cleanup failed', variant: 'destructive' });
       }
-      
+
       toast({ title: 'Success', description: 'User deleted successfully' });
       setDeleteDialog(null);
       fetchData();
@@ -259,22 +265,22 @@ export default function AdminPanel() {
     }
   };
 
-  const filteredPhotographers = useMemo(() => 
-    photographers.filter(p => 
+  const filteredPhotographers = useMemo(() =>
+    photographers.filter(p =>
       p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.email.toLowerCase().includes(searchQuery.toLowerCase())
     ), [photographers, searchQuery]);
 
-  const filteredUsers = useMemo(() => 
-    users.filter(u => 
-      (u.full_name?.toLowerCase() || '').includes(userSearchQuery.toLowerCase()) || 
+  const filteredUsers = useMemo(() =>
+    users.filter(u =>
+      (u.full_name?.toLowerCase() || '').includes(userSearchQuery.toLowerCase()) ||
       u.email.toLowerCase().includes(userSearchQuery.toLowerCase())
     ), [users, userSearchQuery]);
 
   const ToggleButton = ({ enabled, onClick, label }: { enabled: boolean; onClick: () => void; label: string }) => (
-    <Button 
-      size="sm" 
-      variant="outline" 
+    <Button
+      size="sm"
+      variant="outline"
       onClick={onClick}
       className={enabled ? "text-green-600 border-green-200 bg-green-50 dark:bg-green-900/20" : "text-red-600 border-red-200 bg-red-50 dark:bg-red-900/20"}
     >
@@ -303,14 +309,17 @@ export default function AdminPanel() {
   }
 
   const StatCard = ({ title, value, icon: Icon, color, bgColor }: any) => (
-    <Card className="relative overflow-hidden border-0 shadow-lg bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
-      <CardContent className="p-6">
+    <Card className="relative overflow-hidden border-0 shadow-lg glass-card hover:scale-105 transition-all duration-300 group">
+      <div className={`absolute top-0 right-0 p-20 opacity-10 rounded-bl-full ${bgColor.split(' ')[0]}`} />
+      <CardContent className="p-6 relative z-10">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-slate-600 dark:text-slate-400">{title}</p>
-            <p className="text-3xl font-bold text-slate-900 dark:text-white">{value}</p>
+            <p className="text-sm font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">{title}</p>
+            <p className="text-4xl font-black text-slate-900 dark:text-white mt-2 group-hover:bg-clip-text group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-gray-900 group-hover:to-gray-600 dark:group-hover:from-white dark:group-hover:to-gray-400 transition-all">
+              {value}
+            </p>
           </div>
-          <div className={`p-4 rounded-2xl ${bgColor}`}>
+          <div className={`p-4 rounded-2xl ${bgColor} shadow-inner`}>
             <Icon className={`h-8 w-8 ${color}`} />
           </div>
         </div>
@@ -321,16 +330,15 @@ export default function AdminPanel() {
   const TabButton = ({ id, label, icon: Icon, active, onClick, badge }: any) => (
     <button
       onClick={() => onClick(id)}
-      className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-left transition-all duration-200 ${
-        active 
-          ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' 
-          : 'text-slate-600 dark:text-slate-400 hover:bg-white/60 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-white'
-      }`}
+      className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-left transition-all duration-300 ${active
+        ? 'bg-gradient-primary text-white shadow-lg shadow-orange-500/20 scale-[1.02]'
+        : 'text-slate-600 dark:text-slate-400 hover:bg-white/50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white hover:pl-5'
+        }`}
     >
-      <Icon className="h-5 w-5" />
+      <Icon className={`h-5 w-5 ${active ? 'animate-pulse-soft' : ''}`} />
       <span className="font-medium">{label}</span>
       {badge > 0 && (
-        <Badge className="ml-auto bg-red-500 text-white text-xs px-2 py-1">{badge}</Badge>
+        <Badge className="ml-auto bg-white/20 text-white border-0 text-xs px-2 py-0.5">{badge}</Badge>
       )}
     </button>
   );
@@ -357,6 +365,8 @@ export default function AdminPanel() {
             <TabButton id="photographers" label="Photographers" icon={Camera} active={activeTab === 'photographers'} onClick={setActiveTab} badge={pendingPhotographers.length} />
             <TabButton id="users" label="Users" icon={Users} active={activeTab === 'users'} onClick={setActiveTab} />
             <TabButton id="bookings" label="Bookings" icon={Calendar} active={activeTab === 'bookings'} onClick={setActiveTab} />
+            <TabButton id="leads" label="Leads" icon={Zap} active={activeTab === 'leads'} onClick={setActiveTab} badge={leads.length} />
+            <TabButton id="rentals" label="Rentals" icon={Package} active={activeTab === 'rentals'} onClick={setActiveTab} badge={rentals.length} />
             <TabButton id="payments" label="Payments" icon={DollarSign} active={activeTab === 'payments'} onClick={setActiveTab} />
             <TabButton id="analytics" label="Analytics" icon={TrendingUp} active={activeTab === 'analytics'} onClick={setActiveTab} />
             <TabButton id="settings" label="Settings" icon={Settings} active={activeTab === 'settings'} onClick={setActiveTab} />
@@ -369,33 +379,33 @@ export default function AdminPanel() {
             <div className="space-y-8">
               {/* Stats Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <StatCard 
-                  title="Total Users" 
-                  value={users.length.toLocaleString()} 
-                  icon={Users} 
-                  color="text-blue-600" 
-                  bgColor="bg-blue-100 dark:bg-blue-900/30" 
+                <StatCard
+                  title="Total Users"
+                  value={users.length.toLocaleString()}
+                  icon={Users}
+                  color="text-blue-600"
+                  bgColor="bg-blue-100 dark:bg-blue-900/30"
                 />
-                <StatCard 
-                  title="Photographers" 
-                  value={approvedPhotographers.length.toLocaleString()} 
-                  icon={Camera} 
-                  color="text-purple-600" 
-                  bgColor="bg-purple-100 dark:bg-purple-900/30" 
+                <StatCard
+                  title="Photographers"
+                  value={approvedPhotographers.length.toLocaleString()}
+                  icon={Camera}
+                  color="text-purple-600"
+                  bgColor="bg-purple-100 dark:bg-purple-900/30"
                 />
-                <StatCard 
-                  title="Revenue" 
-                  value={`$${totalRevenue.toLocaleString()}`} 
-                  icon={DollarSign} 
-                  color="text-emerald-600" 
-                  bgColor="bg-emerald-100 dark:bg-emerald-900/30" 
+                <StatCard
+                  title="Revenue"
+                  value={`$${totalRevenue.toLocaleString()}`}
+                  icon={DollarSign}
+                  color="text-emerald-600"
+                  bgColor="bg-emerald-100 dark:bg-emerald-900/30"
                 />
-                <StatCard 
-                  title="Commission" 
-                  value={`$${totalCommission.toLocaleString()}`} 
-                  icon={TrendingUp} 
-                  color="text-orange-600" 
-                  bgColor="bg-orange-100 dark:bg-orange-900/30" 
+                <StatCard
+                  title="Commission"
+                  value={`$${totalCommission.toLocaleString()}`}
+                  icon={TrendingUp}
+                  color="text-orange-600"
+                  bgColor="bg-orange-100 dark:bg-orange-900/30"
                 />
               </div>
 
@@ -413,7 +423,7 @@ export default function AdminPanel() {
                           <p className="text-amber-700 dark:text-amber-300">{pendingPhotographers.length} photographer{pendingPhotographers.length > 1 ? 's' : ''} awaiting review</p>
                         </div>
                       </div>
-                      <Button 
+                      <Button
                         onClick={() => setActiveTab('photographers')}
                         className="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white shadow-lg"
                       >
@@ -472,17 +482,17 @@ export default function AdminPanel() {
           )}
 
           {activeTab === 'photographers' && (
-            <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
+            <Card className="border-0 shadow-xl glass-card animate-fade-in-up">
               <CardHeader className="border-b border-slate-200 dark:border-slate-700">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-2xl font-bold text-slate-900 dark:text-white">Photographer Management</CardTitle>
                   <div className="relative w-80">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                    <Input 
-                      placeholder="Search photographers..." 
-                      value={searchQuery} 
-                      onChange={(e) => setSearchQuery(e.target.value)} 
-                      className="pl-10 bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700" 
+                    <Input
+                      placeholder="Search photographers..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-10 bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
                     />
                   </div>
                 </div>
@@ -565,17 +575,17 @@ export default function AdminPanel() {
           )}
 
           {activeTab === 'users' && (
-            <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
+            <Card className="border-0 shadow-xl glass-card animate-fade-in-up">
               <CardHeader className="border-b border-slate-200 dark:border-slate-700">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-2xl font-bold text-slate-900 dark:text-white">User Management</CardTitle>
                   <div className="relative w-80">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                    <Input 
-                      placeholder="Search users..." 
-                      value={userSearchQuery} 
-                      onChange={(e) => setUserSearchQuery(e.target.value)} 
-                      className="pl-10 bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700" 
+                    <Input
+                      placeholder="Search users..."
+                      value={userSearchQuery}
+                      onChange={(e) => setUserSearchQuery(e.target.value)}
+                      className="pl-10 bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
                     />
                   </div>
                 </div>
@@ -635,7 +645,7 @@ export default function AdminPanel() {
           )}
 
           {activeTab === 'bookings' && (
-            <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
+            <Card className="border-0 shadow-xl glass-card animate-fade-in-up">
               <CardHeader className="border-b border-slate-200 dark:border-slate-700">
                 <CardTitle className="text-2xl font-bold text-slate-900 dark:text-white">Booking Management</CardTitle>
               </CardHeader>
@@ -670,8 +680,86 @@ export default function AdminPanel() {
             </Card>
           )}
 
+
+
+          {activeTab === 'leads' && (
+            <Card className="border-0 shadow-xl glass-card animate-fade-in-up">
+              <CardHeader className="border-b border-slate-200 dark:border-slate-700">
+                <CardTitle className="text-2xl font-bold text-slate-900 dark:text-white">Leads / Job Requests</CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="border-slate-200 dark:border-slate-700">
+                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Date Posted</TableHead>
+                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Service Type</TableHead>
+                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Location</TableHead>
+                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Budget</TableHead>
+                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Status</TableHead>
+                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {leads.map(lead => (
+                      <TableRow key={lead.id} className="border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                        <TableCell className="text-slate-700 dark:text-slate-300">{new Date(lead.created_at).toLocaleDateString()}</TableCell>
+                        <TableCell className="font-medium text-slate-900 dark:text-white">{lead.service_type}</TableCell>
+                        <TableCell className="text-slate-700 dark:text-slate-300">{lead.location}</TableCell>
+                        <TableCell className="text-slate-700 dark:text-slate-300">{lead.budget_range}</TableCell>
+                        <TableCell>
+                          <Badge className={lead.status === 'open' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>{lead.status}</Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Button size="sm" variant="ghost" className="text-red-500 hover:text-red-600">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          )}
+
+          {activeTab === 'rentals' && (
+            <Card className="border-0 shadow-xl glass-card animate-fade-in-up">
+              <CardHeader className="border-b border-slate-200 dark:border-slate-700">
+                <CardTitle className="text-2xl font-bold text-slate-900 dark:text-white">Equipment Rentals</CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="border-slate-200 dark:border-slate-700">
+                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Rented On</TableHead>
+                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Equipment</TableHead>
+                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Period</TableHead>
+                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Total Price</TableHead>
+                      <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {rentals.map(rental => (
+                      <TableRow key={rental.id} className="border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                        <TableCell className="text-slate-700 dark:text-slate-300">{new Date(rental.created_at).toLocaleDateString()}</TableCell>
+                        <TableCell className="font-medium text-slate-900 dark:text-white">{rental.equipment?.name || 'Unknown Item'}</TableCell>
+                        <TableCell className="text-slate-700 dark:text-slate-300">
+                          {new Date(rental.start_date).toLocaleDateString()} - {new Date(rental.end_date).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell className="font-semibold text-slate-900 dark:text-white">${rental.total_price}</TableCell>
+                        <TableCell>
+                          <Badge className={STATUS_COLORS[rental.status] || 'bg-gray-100'}>{rental.status}</Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          )}
+
           {activeTab === 'payments' && (
-            <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
+            <Card className="border-0 shadow-xl glass-card animate-fade-in-up">
               <CardHeader className="border-b border-slate-200 dark:border-slate-700">
                 <CardTitle className="text-2xl font-bold text-slate-900 dark:text-white">Payment Transactions</CardTitle>
               </CardHeader>
@@ -726,17 +814,17 @@ export default function AdminPanel() {
                           acc[country].bookings += 1;
                           return acc;
                         }, {} as Record<string, { revenue: number; bookings: number }>))
-                        .sort(([,a], [,b]) => b.revenue - a.revenue)
-                        .slice(0, 5)
-                        .map(([country, data]) => (
-                          <div key={country} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                            <span className="font-medium text-slate-900 dark:text-white">{country}</span>
-                            <div className="text-right">
-                              <p className="font-semibold text-slate-900 dark:text-white">${data.revenue.toLocaleString()}</p>
-                              <p className="text-sm text-slate-500 dark:text-slate-400">{data.bookings} bookings</p>
+                          .sort(([, a], [, b]) => b.revenue - a.revenue)
+                          .slice(0, 5)
+                          .map(([country, data]) => (
+                            <div key={country} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                              <span className="font-medium text-slate-900 dark:text-white">{country}</span>
+                              <div className="text-right">
+                                <p className="font-semibold text-slate-900 dark:text-white">${data.revenue.toLocaleString()}</p>
+                                <p className="text-sm text-slate-500 dark:text-slate-400">{data.bookings} bookings</p>
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          ))}
                       </div>
                     </div>
                     <div>
@@ -749,17 +837,17 @@ export default function AdminPanel() {
                           acc[city].bookings += 1;
                           return acc;
                         }, {} as Record<string, { revenue: number; bookings: number }>))
-                        .sort(([,a], [,b]) => b.revenue - a.revenue)
-                        .slice(0, 5)
-                        .map(([city, data]) => (
-                          <div key={city} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                            <span className="font-medium text-slate-900 dark:text-white">{city}</span>
-                            <div className="text-right">
-                              <p className="font-semibold text-slate-900 dark:text-white">${data.revenue.toLocaleString()}</p>
-                              <p className="text-sm text-slate-500 dark:text-slate-400">{data.bookings} bookings</p>
+                          .sort(([, a], [, b]) => b.revenue - a.revenue)
+                          .slice(0, 5)
+                          .map(([city, data]) => (
+                            <div key={city} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                              <span className="font-medium text-slate-900 dark:text-white">{city}</span>
+                              <div className="text-right">
+                                <p className="font-semibold text-slate-900 dark:text-white">${data.revenue.toLocaleString()}</p>
+                                <p className="text-sm text-slate-500 dark:text-slate-400">{data.bookings} bookings</p>
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          ))}
                       </div>
                     </div>
                   </div>
@@ -789,37 +877,37 @@ export default function AdminPanel() {
                       <div className="space-y-4">
                         <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
                           <Label className="text-slate-700 dark:text-slate-300 font-medium">Default Commission Rate (%)</Label>
-                          <Input 
-                            className="mt-2" 
-                            type="number" 
+                          <Input
+                            className="mt-2"
+                            type="number"
                             value={settings.commissionRate}
                             onChange={(e) => updateSetting('commissionRate', Number(e.target.value))}
-                            min="0" 
-                            max="50" 
+                            min="0"
+                            max="50"
                           />
                           <p className="text-xs text-slate-500 mt-1">Platform commission on completed bookings</p>
                         </div>
                         <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
                           <Label className="text-slate-700 dark:text-slate-300 font-medium">Minimum Booking Amount ($)</Label>
-                          <Input 
-                            className="mt-2" 
-                            type="number" 
+                          <Input
+                            className="mt-2"
+                            type="number"
                             value={settings.minBookingAmount}
                             onChange={(e) => updateSetting('minBookingAmount', Number(e.target.value))}
-                            min="1" 
+                            min="1"
                           />
                           <p className="text-xs text-slate-500 mt-1">Minimum amount for bookings</p>
                         </div>
                         <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
                           <Label className="text-slate-700 dark:text-slate-300 font-medium">Payment Processing Fee (%)</Label>
-                          <Input 
-                            className="mt-2" 
-                            type="number" 
+                          <Input
+                            className="mt-2"
+                            type="number"
                             value={settings.processingFee}
                             onChange={(e) => updateSetting('processingFee', Number(e.target.value))}
-                            min="0" 
-                            max="10" 
-                            step="0.1" 
+                            min="0"
+                            max="10"
+                            step="0.1"
                           />
                           <p className="text-xs text-slate-500 mt-1">Additional processing fee</p>
                         </div>
@@ -838,9 +926,9 @@ export default function AdminPanel() {
                             <span className="font-medium text-slate-700 dark:text-slate-300">Auto-approve photographers</span>
                             <p className="text-xs text-slate-500">Skip manual review process</p>
                           </div>
-                          <ToggleButton 
-                            enabled={settings.autoApprovePhotographers} 
-                            onClick={() => toggleSetting('autoApprovePhotographers')} 
+                          <ToggleButton
+                            enabled={settings.autoApprovePhotographers}
+                            onClick={() => toggleSetting('autoApprovePhotographers')}
                             label="Auto-approve photographers"
                           />
                         </div>
@@ -849,9 +937,9 @@ export default function AdminPanel() {
                             <span className="font-medium text-slate-700 dark:text-slate-300">Email verification required</span>
                             <p className="text-xs text-slate-500">Require email verification for new users</p>
                           </div>
-                          <ToggleButton 
-                            enabled={settings.emailVerificationRequired} 
-                            onClick={() => toggleSetting('emailVerificationRequired')} 
+                          <ToggleButton
+                            enabled={settings.emailVerificationRequired}
+                            onClick={() => toggleSetting('emailVerificationRequired')}
                             label="Email verification"
                           />
                         </div>
@@ -860,9 +948,9 @@ export default function AdminPanel() {
                             <span className="font-medium text-slate-700 dark:text-slate-300">Profile verification</span>
                             <p className="text-xs text-slate-500">Require ID verification for photographers</p>
                           </div>
-                          <ToggleButton 
-                            enabled={settings.profileVerificationRequired} 
-                            onClick={() => toggleSetting('profileVerificationRequired')} 
+                          <ToggleButton
+                            enabled={settings.profileVerificationRequired}
+                            onClick={() => toggleSetting('profileVerificationRequired')}
                             label="Profile verification"
                           />
                         </div>
@@ -882,9 +970,9 @@ export default function AdminPanel() {
                           <span className="font-medium text-slate-700 dark:text-slate-300">Email notifications</span>
                           <p className="text-xs text-slate-500">Send email updates</p>
                         </div>
-                        <ToggleButton 
-                          enabled={settings.emailNotifications} 
-                          onClick={() => toggleSetting('emailNotifications')} 
+                        <ToggleButton
+                          enabled={settings.emailNotifications}
+                          onClick={() => toggleSetting('emailNotifications')}
                           label="Email notifications"
                         />
                       </div>
@@ -893,9 +981,9 @@ export default function AdminPanel() {
                           <span className="font-medium text-slate-700 dark:text-slate-300">SMS notifications</span>
                           <p className="text-xs text-slate-500">Send SMS alerts</p>
                         </div>
-                        <ToggleButton 
-                          enabled={settings.smsNotifications} 
-                          onClick={() => toggleSetting('smsNotifications')} 
+                        <ToggleButton
+                          enabled={settings.smsNotifications}
+                          onClick={() => toggleSetting('smsNotifications')}
                           label="SMS notifications"
                         />
                       </div>
@@ -904,9 +992,9 @@ export default function AdminPanel() {
                           <span className="font-medium text-slate-700 dark:text-slate-300">Push notifications</span>
                           <p className="text-xs text-slate-500">Browser push alerts</p>
                         </div>
-                        <ToggleButton 
-                          enabled={settings.pushNotifications} 
-                          onClick={() => toggleSetting('pushNotifications')} 
+                        <ToggleButton
+                          enabled={settings.pushNotifications}
+                          onClick={() => toggleSetting('pushNotifications')}
                           label="Push notifications"
                         />
                       </div>
@@ -923,25 +1011,25 @@ export default function AdminPanel() {
                       <div className="space-y-4">
                         <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
                           <Label className="text-slate-700 dark:text-slate-300 font-medium">Session Timeout (minutes)</Label>
-                          <Input 
-                            className="mt-2" 
-                            type="number" 
+                          <Input
+                            className="mt-2"
+                            type="number"
                             value={settings.sessionTimeout}
                             onChange={(e) => updateSetting('sessionTimeout', Number(e.target.value))}
-                            min="5" 
-                            max="1440" 
+                            min="5"
+                            max="1440"
                           />
                           <p className="text-xs text-slate-500 mt-1">Auto-logout inactive users</p>
                         </div>
                         <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
                           <Label className="text-slate-700 dark:text-slate-300 font-medium">Max Login Attempts</Label>
-                          <Input 
-                            className="mt-2" 
-                            type="number" 
+                          <Input
+                            className="mt-2"
+                            type="number"
                             value={settings.maxLoginAttempts}
                             onChange={(e) => updateSetting('maxLoginAttempts', Number(e.target.value))}
-                            min="3" 
-                            max="10" 
+                            min="3"
+                            max="10"
                           />
                           <p className="text-xs text-slate-500 mt-1">Block after failed attempts</p>
                         </div>
@@ -1084,7 +1172,7 @@ export default function AdminPanel() {
 
                   {/* Save Button */}
                   <div className="flex justify-end pt-6 border-t border-slate-200 dark:border-slate-700">
-                    <Button 
+                    <Button
                       onClick={saveSettings}
                       className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8"
                     >

@@ -2,7 +2,7 @@ import { Phone, MapPin, Mail } from 'lucide-react';
 
 export default function Footer() {
   return (
-    <footer className="bg-slate-900 text-white py-12">
+    <footer className="bg-slate-900 text-white py-12 pb-32 md:pb-12">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand */}
@@ -51,7 +51,7 @@ export default function Footer() {
 
         {/* Bottom Bar */}
         <div className="border-t border-slate-700 mt-8 pt-8 text-center text-slate-400">
-          <p>&copy; 2026 OraSnap. All rights reserved. Developed by Rabbani Basha</p>
+          <p className="mx-auto max-w-[200px] md:max-w-none">&copy; 2026 OraSnap. All rights reserved. Developed by Rabbani Basha</p>
         </div>
       </div>
     </footer>

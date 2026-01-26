@@ -21,12 +21,12 @@ import {
 } from '@/components/ui/navigation-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Camera, Menu, X, User, Calendar, Settings, LogOut, Shield, CameraIcon, 
+import {
+  Camera, Menu, X, User, Calendar, Settings, LogOut, Shield, CameraIcon,
   Search, Bell, Heart, MessageCircle, Star, MapPin, Filter, Zap,
   Users, BookOpen, Award, Briefcase, Phone
 } from 'lucide-react';
-import { sanitizeText } from '../utils/sanitize';
+
 import NotificationDropdown from '@/components/NotificationDropdown';
 import { useMessages } from '@/lib/message-context';
 
@@ -46,6 +46,7 @@ const sanitizeHtml = (text: string): string => {
 
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { PostLeadModal } from '@/components/PostLeadModal';
 
 export default function Header() {
   const navigate = useNavigate();
@@ -56,6 +57,7 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [scrolled, setScrolled] = useState(false);
+  const [postLeadOpen, setPostLeadOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
@@ -85,11 +87,10 @@ export default function Header() {
     .toUpperCase() || user?.email?.[0].toUpperCase() || 'U';
 
   return (
-    <header className={`sticky top-0 z-50 w-full transition-all duration-300 ${
-      scrolled 
-        ? 'border-b border-border/30 bg-background/95 backdrop-blur-xl shadow-lg' 
-        : 'border-b border-border/10 bg-background/90 backdrop-blur-md'
-    }`}>
+    <header className={`sticky top-0 z-50 w-full transition-all duration-300 ${scrolled
+      ? 'border-b border-border/30 bg-background/95 backdrop-blur-xl shadow-lg'
+      : 'border-b border-border/10 bg-background/90 backdrop-blur-md'
+      }`}>
       <div className="container">
         {/* Main Header */}
         <div className="flex h-16 items-center justify-between">
@@ -129,6 +130,15 @@ export default function Header() {
                         <div>
                           <div className="font-medium">{t('nav.findPhotographers')}</div>
                           <div className="text-sm text-muted-foreground">{t('photographers.subtitle')}</div>
+                        </div>
+                      </Link>
+                    </NavigationMenuLink>
+                    <NavigationMenuLink asChild>
+                      <Link to="/rentals" className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors">
+                        <Camera className="h-5 w-5 text-primary" />
+                        <div>
+                          <div className="font-medium">Rent Equipment</div>
+                          <div className="text-sm text-muted-foreground">Cameras, lenses, and drones</div>
                         </div>
                       </Link>
                     </NavigationMenuLink>
@@ -194,8 +204,8 @@ export default function Header() {
               {hasRole('photographer') && (
                 <NavigationMenuItem>
                   <NavigationMenuLink asChild>
-                    <Link 
-                      to="/photographer/dashboard" 
+                    <Link
+                      to="/photographer/dashboard"
                       className={`h-9 px-4 inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 ${isActive('/photographer/dashboard') ? 'text-primary' : ''}`}
                     >
                       <Briefcase className="h-4 w-4 mr-2" />
@@ -209,15 +219,22 @@ export default function Header() {
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center gap-2">
+            <Button
+              className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-bold shadow-md mr-2"
+              onClick={() => setPostLeadOpen(true)}
+            >
+              <Zap className="h-4 w-4 mr-2" />
+              Get Best Quotes
+            </Button>
             {user && (
               <>
                 <Button variant="ghost" size="icon" className="h-9 w-9 relative">
                   <Heart className="h-4 w-4" />
                 </Button>
 
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
+                <Button
+                  variant="ghost"
+                  size="icon"
                   className="h-9 w-9 relative"
                   onClick={() => navigate('/messages')}
                 >
@@ -321,9 +338,9 @@ export default function Header() {
               </DropdownMenu>
             ) : (
               <>
-                <Button 
-                  variant="outline" 
-                  className="text-sm font-medium border-purple-200 text-purple-700 hover:bg-purple-50 dark:border-purple-800 dark:text-purple-300 dark:hover:bg-purple-900/20" 
+                <Button
+                  variant="outline"
+                  className="text-sm font-medium border-purple-200 text-purple-700 hover:bg-purple-50 dark:border-purple-800 dark:text-purple-300 dark:hover:bg-purple-900/20"
                   onClick={() => navigate('/photographer/register')}
                 >
                   <Camera className="h-4 w-4 mr-2" />
@@ -369,7 +386,7 @@ export default function Header() {
       {/* Enhanced Mobile Menu */}
       {mobileMenuOpen && (
         <div className="md:hidden border-t bg-background/95 backdrop-blur-xl">
-          <div className="container py-6 space-y-6">
+          <div className="container py-6 pb-28 space-y-6">
             {/* Mobile Search */}
             <form onSubmit={handleSearch} className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -446,7 +463,7 @@ export default function Header() {
                     <div className="text-sm text-muted-foreground">{sanitizeHtml(user.email || '')}</div>
                   </div>
                 </div>
-                
+
                 <div className="grid grid-cols-2 gap-2">
                   <Button variant="outline" size="sm" onClick={() => { navigate('/profile'); setMobileMenuOpen(false); }}>
                     <User className="h-4 w-4 mr-2" />
@@ -467,8 +484,8 @@ export default function Header() {
                 </div>
 
                 {hasRole('photographer') && (
-                  <Button 
-                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white" 
+                  <Button
+                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white"
                     onClick={() => { navigate('/photographer/dashboard'); setMobileMenuOpen(false); }}
                   >
                     <CameraIcon className="h-4 w-4 mr-2" />
@@ -490,9 +507,9 @@ export default function Header() {
               </div>
             ) : (
               <div className="flex flex-col gap-3 pt-4 border-t">
-                <Button 
-                  variant="outline" 
-                  className="border-purple-200 text-purple-700 hover:bg-purple-50 dark:border-purple-800 dark:text-purple-300 dark:hover:bg-purple-900/20" 
+                <Button
+                  variant="outline"
+                  className="border-purple-200 text-purple-700 hover:bg-purple-50 dark:border-purple-800 dark:text-purple-300 dark:hover:bg-purple-900/20"
                   onClick={() => { navigate('/photographer/register'); setMobileMenuOpen(false); }}
                 >
                   <Camera className="h-4 w-4 mr-2" />
@@ -515,6 +532,7 @@ export default function Header() {
           </div>
         </div>
       )}
+      <PostLeadModal isOpen={postLeadOpen} onClose={() => setPostLeadOpen(false)} />
     </header>
   );
 }

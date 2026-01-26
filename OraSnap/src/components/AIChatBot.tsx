@@ -60,11 +60,11 @@ export function AIChatBot() {
       // Try to extract location
       const words = lowerText.split(' ');
       let location = "";
-      
+
       // Look for locations in our database
       const availableLocations = [...new Set(allPhotographers.map(p => p.location.toLowerCase()))];
       const foundLocation = availableLocations.find(loc => lowerText.includes(loc));
-      
+
       if (foundLocation) {
         suggestions = allPhotographers.filter(p => p.location.toLowerCase().includes(foundLocation));
         response = `I found ${suggestions.length} photographers in ${foundLocation}. Here are some recommendations:`;
@@ -118,7 +118,7 @@ export function AIChatBot() {
   return (
     <>
       {/* Floating Action Button */}
-      <div className="fixed bottom-6 right-6 z-50">
+      <div className="fixed bottom-24 md:bottom-6 right-6 z-50">
         <Button
           onClick={() => setIsOpen(!isOpen)}
           className="w-14 h-14 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 shadow-xl hover:scale-110 transition-transform flex items-center justify-center p-0"
@@ -135,7 +135,7 @@ export function AIChatBot() {
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="fixed bottom-24 right-6 w-[350px] md:w-[400px] h-[500px] bg-white dark:bg-gray-900 border border-border rounded-2xl shadow-2xl z-50 flex flex-col overflow-hidden animate-in slide-in-from-bottom-5">
+        <div className="fixed bottom-40 md:bottom-24 right-6 w-[350px] md:w-[400px] h-[500px] bg-white dark:bg-gray-900 border border-border rounded-2xl shadow-2xl z-50 flex flex-col overflow-hidden animate-in slide-in-from-bottom-5">
           {/* Header */}
           <div className="p-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -154,32 +154,30 @@ export function AIChatBot() {
               <X className="h-5 w-5" />
             </Button>
           </div>
-          
+
           {/* Messages */}
           <ScrollArea className="flex-1 p-4 bg-gray-50 dark:bg-gray-800/50">
             <div className="space-y-4" ref={scrollRef}>
               {messages.map((msg) => (
                 <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                   <div className={`flex gap-2 max-w-[85%] ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-                    <div className={`mt-1 w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                      msg.role === 'user' ? 'bg-indigo-100 dark:bg-indigo-900' : 'bg-blue-100 dark:bg-blue-900'
-                    }`}>
+                    <div className={`mt-1 w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${msg.role === 'user' ? 'bg-indigo-100 dark:bg-indigo-900' : 'bg-blue-100 dark:bg-blue-900'
+                      }`}>
                       {msg.role === 'user' ? <User className="h-4 w-4 text-indigo-600" /> : <Bot className="h-4 w-4 text-blue-600" />}
                     </div>
                     <div className="space-y-2">
-                      <div className={`p-3 rounded-2xl text-sm shadow-sm ${
-                        msg.role === 'user' 
-                          ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-tr-none' 
-                          : 'bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-tl-none'
-                      }`}>
+                      <div className={`p-3 rounded-2xl text-sm shadow-sm ${msg.role === 'user'
+                        ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-tr-none'
+                        : 'bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-tl-none'
+                        }`}>
                         {msg.content}
                       </div>
-                      
+
                       {msg.suggestions && msg.suggestions.length > 0 && (
                         <div className="grid gap-2 mt-2">
                           {msg.suggestions.map((p, idx) => (
-                            <div 
-                              key={idx} 
+                            <div
+                              key={idx}
                               className="bg-white dark:bg-gray-800 p-3 rounded-xl border border-gray-100 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-700 cursor-pointer transition-all hover:shadow-md"
                               onClick={() => {
                                 setIsOpen(false);
@@ -217,7 +215,7 @@ export function AIChatBot() {
               )}
             </div>
           </ScrollArea>
-          
+
           {/* Input */}
           <div className="p-4 bg-white dark:bg-gray-900 border-t border-border">
             <div className="flex gap-2">
