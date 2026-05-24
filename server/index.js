@@ -578,10 +578,10 @@ app.post('/api/payments/webhook', express.raw({ type: '*/*' }), async (req, res)
 
     // Handle common events
     const event = JSON.parse(raw);
-    const { event: eventType, payload } = event;
+    const { event: eventType, payload: eventPayload } = event;
 
     if (eventType === 'payment.captured') {
-      const payment = payload?.payment?.entity;
+      const payment = eventPayload?.payment?.entity;
       if (payment && payment.order_id) {
         const bookingsColl = db.collection('bookings');
         await bookingsColl.updateMany({ payment_order_id: payment.order_id }, { $set: { payment_status: 'paid', payment_intent_id: payment.id, updated_at: new Date() } });
@@ -589,7 +589,7 @@ app.post('/api/payments/webhook', express.raw({ type: '*/*' }), async (req, res)
     }
 
     if (eventType === 'payment.failed') {
-      const payment = payload?.payment?.entity;
+      const payment = eventPayload?.payment?.entity;
       if (payment && payment.order_id) {
         const bookingsColl = db.collection('bookings');
         await bookingsColl.updateMany({ payment_order_id: payment.order_id }, { $set: { payment_status: 'failed', updated_at: new Date() } });
