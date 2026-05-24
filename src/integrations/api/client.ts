@@ -1,0 +1,349 @@
+// API Client Adapter (replaces previous Supabase integration)
+// Provides a compat API named `supabase` so existing code imports remain simple.
+
+const getBaseUrl = () => {
+  // @ts-ignore
+  return import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+};
+
+const authListeners = new Set<(event: string, session: any) => void>();
+
+const getStoredSession = () => {
+  const sessionStr = localStorage.getItem('orasnap_session');
+  if (!sessionStr) return null;
+  try {
+    return JSON.parse(sessionStr);
+  } catch (e) {
+    return null;
+  }
+};
+
+class ApiQueryBuilder {
+  private table: string;
+  private filters: Record<string, string> = {};
+  private orderByParam: string = '';
+  private limitParam: number | null = null;
+  private offsetParam: number | null = null;
+  private isSingle: boolean = false;
+
+  constructor(table: string) {
+    this.table = table;
+  }
+
+  select(columns?: string) {
+    this.filters['select'] = columns || '*';
+    return this;
+  }
+
+  insert(values: any) {
+    return this.execute('POST', values);
+  }
+
+  update(values: any) {
+    return this.execute('PATCH', values);
+  }
+
+  delete() {
+    return this.execute('DELETE');
+  }
+
+  eq(column: string, value: any) {
+    this.filters[column] = `eq.${value}`;
+    return this;
+  }
+
+  like(column: string, pattern: string) {
+    this.filters[column] = `like.${pattern}`;
+    return this;
+  }
+
+  ilike(column: string, pattern: string) {
+    this.filters[column] = `ilike.${pattern}`;
+    return this;
+  }
+
+  gt(column: string, value: any) {
+    this.filters[column] = `gt.${value}`;
+    return this;
+  }
+
+  lt(column: string, value: any) {
+    this.filters[column] = `lt.${value}`;
+    return this;
+  }
+
+  gte(column: string, value: any) {
+    this.filters[column] = `gte.${value}`;
+    return this;
+  }
+
+  lte(column: string, value: any) {
+    this.filters[column] = `lte.${value}`;
+    return this;
+  }
+
+  order(column: string, options?: { ascending?: boolean }) {
+    const dir = options?.ascending === false ? 'desc' : 'asc';
+    this.orderByParam = `${column}.${dir}`;
+    return this;
+  }
+
+  limit(count: number) {
+    this.limitParam = count;
+    return this;
+  }
+
+  offset(count: number) {
+    this.offsetParam = count;
+    return this;
+  }
+
+  single() {
+    this.isSingle = true;
+    return this;
+  }
+
+  private async execute(method: string, body?: any) {
+    let url = `${getBaseUrl()}/api/db/${this.table}`;
+
+    const searchParams = new URLSearchParams();
+    for (const [k, v] of Object.entries(this.filters)) {
+      if (k === 'select') continue;
+      searchParams.append(k, v);
+    }
+    if (this.orderByParam) searchParams.append('order', this.orderByParam);
+    if (this.limitParam !== null) searchParams.append('limit', String(this.limitParam));
+    if (this.offsetParam !== null) searchParams.append('offset', String(this.offsetParam));
+    if (this.isSingle) searchParams.append('single', 'true');
+
+    const queryString = searchParams.toString();
+    if (queryString) {
+      url += `?${queryString}`;
+    }
+
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    const session = getStoredSession();
+    if (session?.access_token) {
+      headers['Authorization'] = `Bearer ${session.access_token}`;
+    }
+
+    try {
+      const response = await fetch(url, {
+        method,
+        headers,
+        body: body ? JSON.stringify(body) : undefined,
+      });
+
+      const result = await response.json();
+      return {
+        data: result.data,
+        error: result.error,
+        count: Array.isArray(result.data) ? result.data.length : (result.data ? 1 : 0),
+      };
+    } catch (err: any) {
+      console.warn(`API Client Error [${method} ${this.table}]:`, err);
+      return {
+        data: null,
+        error: { message: err.message || 'Network request failed' },
+        count: null,
+      };
+    }
+  }
+
+  then(onfulfilled?: (value: any) => any, onrejected?: (reason: any) => any) {
+    return this.execute('GET').then(onfulfilled, onrejected);
+  }
+}
+
+export const supabase = {
+  from(table: string) {
+    return new ApiQueryBuilder(table);
+  },
+
+  async rpc(func: string, params?: any) {
+    const url = `${getBaseUrl()}/api/rpc/${func}`;
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    const session = getStoredSession();
+    if (session?.access_token) {
+      headers['Authorization'] = `Bearer ${session.access_token}`;
+    }
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers,
+        body: params ? JSON.stringify(params) : undefined,
+      });
+
+      const result = await response.json();
+      return {
+        data: result.data,
+        error: result.error,
+      };
+    } catch (err: any) {
+      console.warn(`API Client Error [RPC ${func}]:`, err);
+      return {
+        data: null,
+        error: { message: err.message || 'Network request failed' },
+      };
+    }
+  },
+
+  auth: {
+    async signUp(credentials: { email: string; password?: string; options?: { data?: any } }) {
+      const url = `${getBaseUrl()}/api/auth/signup`;
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: credentials.email,
+            password: credentials.password,
+            data: credentials.options?.data || {},
+          }),
+        });
+
+        const result = await response.json();
+        if (!result.error && result.data?.session) {
+          localStorage.setItem('orasnap_session', JSON.stringify(result.data.session));
+          authListeners.forEach(listener => listener('SIGNED_IN', result.data.session));
+        }
+        return result;
+      } catch (err: any) {
+        return { data: null, error: { message: err.message || 'Signup failed' } };
+      }
+    },
+
+    async signInWithPassword(credentials: { email: string; password?: string }) {
+      const url = `${getBaseUrl()}/api/auth/signin`;
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: credentials.email,
+            password: credentials.password,
+          }),
+        });
+
+        const result = await response.json();
+        if (!result.error && result.data?.session) {
+          localStorage.setItem('orasnap_session', JSON.stringify(result.data.session));
+          authListeners.forEach(listener => listener('SIGNED_IN', result.data.session));
+        }
+        return result;
+      } catch (err: any) {
+        return { data: null, error: { message: err.message || 'Signin failed' } };
+      }
+    },
+
+    async signOut() {
+      const url = `${getBaseUrl()}/api/auth/signout`;
+      try {
+        const session = getStoredSession();
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json',
+        };
+        if (session?.access_token) {
+          headers['Authorization'] = `Bearer ${session.access_token}`;
+        }
+
+        await fetch(url, { method: 'POST', headers });
+      } catch (e) {
+        console.warn('Signout API error', e);
+      } finally {
+        localStorage.removeItem('orasnap_session');
+        authListeners.forEach(listener => listener('SIGNED_OUT', null));
+      }
+      return { error: null };
+    },
+
+    async getSession() {
+      const session = getStoredSession();
+      if (!session) {
+        return { data: { session: null }, error: null };
+      }
+
+      const url = `${getBaseUrl()}/api/auth/session`;
+      try {
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        });
+        const result = await response.json();
+        if (result.error || !result.data?.session) {
+          localStorage.removeItem('orasnap_session');
+          return { data: { session: null }, error: null };
+        }
+        return { data: { session: result.data.session }, error: null };
+      } catch (err) {
+        return { data: { session }, error: null };
+      }
+    },
+
+    async getUser() {
+      const session = getStoredSession();
+      if (!session?.user) {
+        return { data: { user: null }, error: null };
+      }
+      return { data: { user: session.user }, error: null };
+    },
+
+    onAuthStateChange(callback: (event: string, session: any) => void) {
+      authListeners.add(callback);
+      const session = getStoredSession();
+      setTimeout(() => {
+        callback(session ? 'INITIAL_SESSION' : 'SIGNED_OUT', session);
+      }, 0);
+
+      return {
+        data: {
+          subscription: {
+            unsubscribe() {
+              authListeners.delete(callback);
+            },
+          },
+        },
+      };
+    },
+    async signInWithOAuth(params: { provider: string; options?: any }) {
+      // OAuth flow is not configured in this lightweight adapter.
+      // Return a friendly error so UI can fall back to other methods.
+      return { data: null, error: { message: 'OAuth sign-in is not configured for this environment' } };
+    }
+  },
+  // Lightweight functions namespace to mimic Supabase Edge Functions
+  functions: {
+    async invoke(name: string, payload?: any) {
+      const url = `${getBaseUrl()}/api/functions/${encodeURIComponent(name)}`;
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      const session = getStoredSession();
+      if (session?.access_token) headers['Authorization'] = `Bearer ${session.access_token}`;
+      try {
+        const resp = await fetch(url, { method: 'POST', headers, body: payload ? JSON.stringify(payload) : undefined });
+        const result = await resp.json();
+        return { data: result.data, error: result.error };
+      } catch (err: any) {
+        return { data: null, error: { message: err.message || 'Function invocation failed' } };
+      }
+    }
+  },
+
+  // No-op for realtime channel removal (was Supabase-specific)
+  removeChannel() {
+    return;
+  },
+};
+
+// Backwards-compatible exports
+export const apiClient = supabase;
+export default apiClient;

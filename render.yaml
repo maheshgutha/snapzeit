@@ -1,0 +1,17 @@
+services:
+  - type: web_service
+    name: orasnap-backend
+    env: node
+    plan: free
+    region: oregon
+    buildCommand: "npm install"
+    startCommand: "npm start"
+    envVars:
+      - key: MONGO_URI
+        value: "${MONGO_URI}"
+      - key: MONGO_DB_NAME
+        value: "${MONGO_DB_NAME}"
+      - key: JWT_SECRET
+        value: "${JWT_SECRET}"
+      - key: NODE_ENV
+        value: "production"
