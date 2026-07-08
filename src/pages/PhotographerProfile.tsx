@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ShareButton } from '@/components/ShareButton';
-import { apiClient } from '@/integrations/api/client';
+import { supabase } from '@/integrations/api/client';
 import Header from '@/components/Header';
 import { MessagingSystem } from '@/components/MessagingSystem';
 import { BookingSystem } from '@/components/BookingSystem';

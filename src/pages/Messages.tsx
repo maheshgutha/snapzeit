@@ -25,7 +25,7 @@ interface Message {
 
 export default function Messages() {
   const navigate = useNavigate();
-  const { user, hasRole, loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const { messages, markAsRead, unreadCount } = useMessages();
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
@@ -34,15 +34,10 @@ export default function Messages() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!authLoading) {
-      if (!user) {
-        navigate('/auth');
-      } else if (!hasRole('admin')) {
-        navigate('/');
-        toast({ title: 'Access denied', description: 'Admin privileges required', variant: 'destructive' });
-      }
+    if (!authLoading && !user) {
+      navigate('/auth');
     }
-  }, [user, authLoading, hasRole, navigate, toast]);
+  }, [user, authLoading, navigate]);
 
   const handleMessageClick = (message: Message) => {
     setSelectedMessage(message);

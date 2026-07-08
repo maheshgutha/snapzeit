@@ -56,18 +56,6 @@ export default function ActivityLogs() {
 
   useEffect(() => {
     fetchLogs();
-
-    // Real-time subscription
-    const channel = supabase
-      .channel('activity-logs')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'activity_logs' }, () => {
-        fetchLogs();
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
   }, []);
 
   const filteredLogs = logs.filter(log =>

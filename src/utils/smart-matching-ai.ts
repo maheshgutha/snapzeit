@@ -1,4 +1,4 @@
-import { apiClient } from '@/integrations/api/client';
+import { apiClient, supabase } from '@/integrations/api/client';
 
 export interface MatchingCriteria {
   eventType?: string;
@@ -223,7 +223,7 @@ export async function smartMatchPhotographers(
         styleMatch * weights.styleMatch +
         locationProximity * weights.locationProximity +
         priceAlignment * weights.priceAlignment +
-        experienceLevel * weights.experienceLevel +
+        experienceScore * weights.experienceLevel +
         availabilityScore * weights.availabilityScore +
         reviewScore * weights.reviewScore;
 
@@ -244,7 +244,7 @@ export async function smartMatchPhotographers(
           styleMatch: Math.round(styleMatch),
           locationProximity: Math.round(locationProximity),
           priceAlignment: Math.round(priceAlignment),
-          experienceLevel: Math.round(experienceLevel),
+          experienceLevel: Math.round(experienceScore),
           availabilityScore: Math.round(availabilityScore),
           reviewScore: Math.round(reviewScore),
         },

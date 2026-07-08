@@ -237,7 +237,7 @@ export default function ApplicationTester() {
                         </Badge>
                       </div>
                       <div className="text-xs text-gray-600">
-                        {booking.event_type} • {booking.event_date} • {formatPriceLocal(booking.total_amount, booking.currency || 'USD')}
+                        {booking.event_type} • {booking.event_date} • {formatPriceLocal(booking.total_amount)}
                       </div>
                     </div>
                   ))}

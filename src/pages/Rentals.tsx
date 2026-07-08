@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Camera, Search, MapPin } from 'lucide-react';
-import { apiClient } from '@/integrations/api/client';
+import { supabase } from '@/integrations/api/client';
 import { RentalBookingModal } from '@/components/RentalBookingModal';
 
 interface Equipment {

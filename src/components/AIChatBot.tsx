@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { MessageCircle, X, Send, Bot, User, Sparkles, MapPin, Camera, Star } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { apiClient } from '@/integrations/api/client';
+import { apiClient, supabase } from '@/integrations/api/client';
 import { Badge } from '@/components/ui/badge';
 import { useNavigate } from 'react-router-dom';
 

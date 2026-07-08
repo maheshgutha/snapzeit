@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { apiClient } from '@/integrations/api/client';
+import { supabase } from '@/integrations/api/client';
 import { useAuth } from '@/lib/auth-context';
 import Header from '@/components/Header';
 import { Button } from '@/components/ui/button';

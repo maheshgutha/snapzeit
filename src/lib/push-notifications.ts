@@ -1,3 +1,7 @@
+// @ts-nocheck
+// Not currently imported anywhere; the tail of this file targets a
+// service worker context (self, ExtendableEvent, clients) which isn't
+// type-compatible with the main app's DOM lib.
 /**
  * PWA Push Notification Service for OraSnap
  * Handles subscription management and push notifications

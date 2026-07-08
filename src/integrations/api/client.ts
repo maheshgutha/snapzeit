@@ -25,6 +25,7 @@ class ApiQueryBuilder {
   private limitParam: number | null = null;
   private offsetParam: number | null = null;
   private isSingle: boolean = false;
+  private isMaybeSingle: boolean = false;
   private method: string = 'GET';
   private body: any = undefined;
 
@@ -32,7 +33,7 @@ class ApiQueryBuilder {
     this.table = table;
   }
 
-  select(columns?: string) {
+  select(columns?: string, _options?: { count?: 'exact' | 'planned' | 'estimated' }) {
     this.filters['select'] = columns || '*';
     return this;
   }
@@ -127,8 +128,22 @@ class ApiQueryBuilder {
     return this;
   }
 
+  // Postgrest-style inclusive range; translates to offset/limit.
+  range(from: number, to: number) {
+    this.offsetParam = from;
+    this.limitParam = to - from + 1;
+    return this;
+  }
+
   single() {
     this.isSingle = true;
+    return this;
+  }
+
+  // Like single(), but treats "no row found" as a null result instead of an error.
+  maybeSingle() {
+    this.isSingle = true;
+    this.isMaybeSingle = true;
     return this;
   }
 
@@ -167,6 +182,11 @@ class ApiQueryBuilder {
       });
 
       const result = await response.json();
+
+      if (this.isMaybeSingle && response.status === 404) {
+        return { data: null, error: null, count: 0 };
+      }
+
       return {
         data: result.data,
         error: result.error,
@@ -291,6 +311,34 @@ export const supabase = {
         authListeners.forEach(listener => listener('SIGNED_OUT', null));
       }
       return { error: null };
+    },
+
+    async updateUser(attributes: { password?: string; data?: Record<string, any> }) {
+      const session = getStoredSession();
+      const url = `${getBaseUrl()}/api/auth/update-user`;
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (session?.access_token) headers['Authorization'] = `Bearer ${session.access_token}`;
+
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(attributes),
+        });
+        const result = await response.json();
+
+        if (!result.error && session) {
+          const updatedSession = {
+            ...session,
+            user: { ...session.user, user_metadata: { ...session.user.user_metadata, ...(result.data?.user?.user_metadata || {}) } },
+          };
+          localStorage.setItem('orasnap_session', JSON.stringify(updatedSession));
+        }
+
+        return result;
+      } catch (err: any) {
+        return { data: null, error: { message: err.message || 'Update failed' } };
+      }
     },
 
     async getSession() {

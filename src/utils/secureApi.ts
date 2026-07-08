@@ -1,4 +1,4 @@
-import { apiClient } from '@/integrations/api/client';
+import { apiClient, supabase } from '@/integrations/api/client';
 import { rateLimit, sanitizeInput, validateSqlInput, validateXssInput, logSecurityEvent } from './security';
 
 interface SecureRequestOptions {

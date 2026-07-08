@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/lib/auth-context';
-import { apiClient } from '@/integrations/api/client';
+import { supabase } from '@/integrations/api/client';
 import Header from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -83,7 +83,7 @@ export default function Profile() {
 
   const fetchProfile = async () => {
     if (!user) return;
-    
+
     setProfileLoading(true);
     const { data, error } = await supabase
       .from('profiles')

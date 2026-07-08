@@ -442,6 +442,46 @@ app.post('/api/auth/signout', (req, res) => {
   res.json({ error: null });
 });
 
+// Update the current user's password and/or profile metadata
+app.post('/api/auth/update-user', async (req, res) => {
+  const sessionUser = authenticateToken(req);
+  if (!sessionUser) {
+    return res.status(401).json({ data: null, error: { message: 'Not authenticated' } });
+  }
+
+  try {
+    const { password, data } = req.body;
+    const profilesColl = db.collection('profiles');
+    const update = { updated_at: new Date() };
+
+    if (password) {
+      update.hashed_password = await bcrypt.hash(password, 10);
+    }
+    if (data?.full_name !== undefined) update.full_name = data.full_name;
+    if (data?.avatar_url !== undefined) update.avatar_url = data.avatar_url;
+
+    await profilesColl.updateOne({ user_id: sessionUser.userId }, { $set: update });
+
+    const profile = await profilesColl.findOne({ user_id: sessionUser.userId });
+    res.json({
+      data: {
+        user: {
+          id: sessionUser.userId,
+          email: sessionUser.email,
+          user_metadata: {
+            full_name: profile?.full_name,
+            avatar_url: profile?.avatar_url,
+          },
+        },
+      },
+      error: null,
+    });
+  } catch (err) {
+    console.error('Update user error:', err);
+    res.status(500).json({ data: null, error: { message: err.message } });
+  }
+});
+
 
 // -------------------------------------------------------------------
 // 2. RPC (STORED PROCEDURES) EMULATION

@@ -8,8 +8,8 @@ export default function Footer() {
           {/* Brand */}
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center gap-3 mb-4">
-              <img src="/assets/orasnap-logo.png" alt="OraSnap Logo" className="h-8 w-auto" />
-              <h3 className="text-2xl font-bold">OraSnap</h3>
+              <img src="/assets/orasnap-logo.png" alt="OraSnap Logo" className="h-8 w-auto rounded-lg" />
+              <h3 className="text-2xl font-bold">Ora<span className="text-purple-400">Snap</span></h3>
             </div>
             <p className="text-slate-300 mb-4">
               Professional photography booking platform connecting clients with talented photographers worldwide.

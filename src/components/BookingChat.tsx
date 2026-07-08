@@ -1,12 +1,12 @@
 import { useEffect, useState, useRef } from 'react';
-import { apiClient } from '@/integrations/api/client';
+import { apiClient, supabase } from '@/integrations/api/client';
 import { useAuth } from '@/lib/auth-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Send } from 'lucide-react';
-import { sanitizeLog, sanitizeHtml } from '../utils/sanitize';
+import { sanitizeHtml } from '../utils/sanitize';
 
 interface Message {
   id: string;
@@ -31,28 +31,6 @@ export default function BookingChat({ bookingId, otherPartyName }: BookingChatPr
 
   useEffect(() => {
     fetchMessages();
-    
-    // Subscribe to realtime messages
-    const channel = apiClient
-      .channel(`booking-chat-${bookingId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages',
-          filter: `booking_id=eq.${bookingId}`
-        },
-        (payload) => {
-          console.log('New message received:', sanitizeLog(JSON.stringify(payload)));
-          setMessages(prev => [...prev, payload.new as Message]);
-        }
-      )
-      .subscribe();
-
-    return () => {
-      apiClient.removeChannel?.(channel);
-    };
   }, [bookingId]);
 
   useEffect(() => {

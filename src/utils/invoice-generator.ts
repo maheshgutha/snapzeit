@@ -1,4 +1,4 @@
-import { apiClient } from '@/integrations/api/client';
+import { supabase } from '@/integrations/api/client';
 
 export interface Invoice {
   id: string;

@@ -8,7 +8,7 @@ import {
   Sparkles, Upload, CheckCircle2, Lightbulb, Loader2, 
   X, Image as ImageIcon, BarChart3, TrendingUp 
 } from "lucide-react";
-import { apiClient } from "@/integrations/api/client";
+import { apiClient, supabase } from "@/integrations/api/client";
 import { toast } from "sonner";
 
 // Security: Sanitize user input to prevent XSS

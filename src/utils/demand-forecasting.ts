@@ -1,4 +1,11 @@
-import { apiClient } from '@/integrations/api/client';
+import { apiClient, supabase } from '@/integrations/api/client';
+
+function calculateStdDev(values: number[]): number {
+  if (values.length === 0) return 0;
+  const avg = values.reduce((a, b) => a + b, 0) / values.length;
+  const squareDiffs = values.map(value => Math.pow(value - avg, 2));
+  return Math.sqrt(squareDiffs.reduce((a, b) => a + b, 0) / values.length);
+}
 
 export interface DemandForecast {
   forecastDate: Date;
@@ -113,7 +120,7 @@ export async function generateDemandForecast(
     const predictedRevenue = predictedBookings * avgRevenuePerBooking;
 
     // Confidence score based on data consistency
-    const variance = Math.std(...weeklyBookings);
+    const variance = calculateStdDev(weeklyBookings);
     const confidenceScore = Math.max(0.5, Math.min(1.0, 1 - variance / (avgBookings * 2)));
 
     // Generate insights
@@ -361,14 +368,4 @@ export async function getRevenueInsights(
       warnings: [],
     };
   }
-}
-
-// Helper function for standard deviation (if not available)
-if (!Math.std) {
-  (Math as any).std = function(values: number[]): number {
-    if (values.length === 0) return 0;
-    const avg = values.reduce((a, b) => a + b, 0) / values.length;
-    const squareDiffs = values.map(value => Math.pow(value - avg, 2));
-    return Math.sqrt(squareDiffs.reduce((a, b) => a + b, 0) / values.length);
-  };
 }

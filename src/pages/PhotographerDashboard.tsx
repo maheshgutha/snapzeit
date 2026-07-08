@@ -98,7 +98,7 @@ export default function PhotographerDashboard() {
 
         mappedBookings = bookingsData.map(b => ({
           id: b.id,
-          client: profileMap.get(b.user_id)?.full_name || 'Unknown Client', // Accessing full_name from profile
+          client: (profileMap.get(b.user_id) as any)?.full_name || 'Unknown Client', // Accessing full_name from profile
           type: b.event_type,
           date: b.booking_date,
           status: b.status,

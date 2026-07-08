@@ -74,9 +74,7 @@ export default function LocationLanding() {
                 query = query.or(`location.ilike.%${city}%,bio.ilike.%${name}%,specialty.ilike.%${name}%`);
             } else {
                 // It is a city
-                query = query.textSearch('location', `'${name}'`);
-                // Note: textSearch might be strict. Using ilike is safer for partial matches
-                // query = query.ilike('location', `%${name}%`);
+                query = query.ilike('location', `%${name}%`);
             }
 
             const { data, error } = await query.limit(20);
