@@ -62,7 +62,7 @@ function useDebounce(value: string, delay: number) {
   useEffect(() => {
     const handler = setTimeout(() => setDebouncedValue(value), delay);
     return () => clearTimeout(handler);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [value, delay]);
   return debouncedValue;
 }
@@ -101,14 +101,14 @@ export default function Photographers() {
     sortBy
   });
 
-  const photographers = (data?.photographers as Photographer[]) || [];
+  const photographers = React.useMemo(() => (data?.photographers as Photographer[]) || [], [data?.photographers]);
   const totalCount = data?.total || 0;
   const totalPages = Math.ceil(totalCount / pageSize);
 
   // Reset page when filters change
   useEffect(() => {
     setPage(1);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [debouncedSearch, specialty, country, city, priceRange, selectedStyle, sortBy]);
 
   // SEO Update
@@ -135,7 +135,7 @@ export default function Photographers() {
         }))
       }
     }, userCountry);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [photographers, totalCount, debouncedSearch, specialty]);
 
   // Currency Handling

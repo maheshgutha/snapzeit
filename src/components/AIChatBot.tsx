@@ -51,7 +51,7 @@ export function AIChatBot() {
       }
     } catch (err) {
       // Backend may be down during local development; avoid noisy errors
-      // eslint-disable-next-line no-console
+       
       console.warn('AIChatBot: failed to fetch photographers, continuing without suggestions', err);
       setAllPhotographers([]);
     }

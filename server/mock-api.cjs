@@ -82,6 +82,6 @@ app.get('/api/auth/session', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  // eslint-disable-next-line no-console
+   
   console.log(`SnapZeiT mock API listening on http://localhost:${PORT}`);
 });
