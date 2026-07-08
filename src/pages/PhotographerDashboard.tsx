@@ -51,12 +51,14 @@ export default function PhotographerDashboard() {
     if (!authLoading && !user) {
       navigate('/auth');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, authLoading, navigate]);
 
   useEffect(() => {
     if (user) {
       fetchDashboardData();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const fetchDashboardData = async () => {

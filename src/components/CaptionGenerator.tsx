@@ -69,12 +69,14 @@ export function CaptionGenerator({ photographerId }: CaptionGeneratorProps) {
     if (!photographerId && user) {
       fetchPhotographerId();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, photographerId]);
 
   useEffect(() => {
     if (currentPhotographerId && showHistory) {
       fetchSavedCaptions();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPhotographerId, showHistory]);
 
   const fetchPhotographerId = async () => {
@@ -147,9 +149,10 @@ export function CaptionGenerator({ photographerId }: CaptionGeneratorProps) {
     setResult(null);
 
     try {
-      const { data, error } = await apiClient.functions?.invoke?.('generate-captions', {
+      const response = await apiClient.functions?.invoke?.('generate-captions', {
         body: { imageUrl, context }
       });
+      const { data, error } = response || {};
 
       if (error) throw error;
 

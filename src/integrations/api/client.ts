@@ -83,11 +83,6 @@ class ApiQueryBuilder {
     return this;
   }
 
-  in(column: string, values: any[]) {
-    this.filters[column] = `in.(${values.join(',')})`;
-    return this;
-  }
-
   neq(column: string, value: any) {
     this.filters[column] = `neq.${value}`;
     return this;

@@ -67,9 +67,10 @@ export function ImageAnalyzer() {
     setAnalysis(null);
 
     try {
-      const { data, error } = await apiClient.functions?.invoke?.("analyze-portfolio-image", {
+      const response = await apiClient.functions?.invoke?.("analyze-portfolio-image", {
         body: { imageUrl },
       });
+      const { data, error } = response || {};
 
       if (error) {
         throw new Error(error.message);

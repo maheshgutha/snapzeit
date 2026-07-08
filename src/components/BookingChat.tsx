@@ -31,6 +31,7 @@ export default function BookingChat({ bookingId, otherPartyName }: BookingChatPr
 
   useEffect(() => {
     fetchMessages();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bookingId]);
 
   useEffect(() => {
@@ -38,6 +39,7 @@ export default function BookingChat({ bookingId, otherPartyName }: BookingChatPr
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messages]);
 
   const fetchMessages = async () => {

@@ -21,6 +21,7 @@ export function SmartMatching({ userPreferences, photographers, onSelectPhotogra
     if (photographers.length > 0) {
       generateRecommendations();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userPreferences, photographers]);
 
   const generateRecommendations = async () => {

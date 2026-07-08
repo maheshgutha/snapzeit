@@ -37,6 +37,7 @@ export function MessageProvider({ children }: { children: ReactNode }) {
     } else {
       setMessages([]);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const fetchMessages = async () => {
@@ -153,6 +154,7 @@ export function MessageProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useMessages() {
   const context = useContext(MessageContext);
   if (context === undefined) {

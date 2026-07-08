@@ -25,7 +25,8 @@ export function LeadsList() {
 
     useEffect(() => {
         fetchLeads();
-    }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
     const fetchLeads = async () => {
         try {

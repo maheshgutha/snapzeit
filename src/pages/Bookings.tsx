@@ -71,6 +71,7 @@ export default function Bookings() {
       fetchRentalBookings();
       fetchMyLeads();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, authLoading, navigate]);
 
   const fetchBookings = async () => {

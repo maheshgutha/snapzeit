@@ -119,9 +119,10 @@ export class SecurityMiddleware {
     // For now, using Supabase functions as an example
     if (endpoint.startsWith('supabase:')) {
       const functionName = endpoint.replace('supabase:', '');
-      const { data, error } = await apiClient.functions?.invoke?.(functionName, {
+      const response = await apiClient.functions?.invoke?.(functionName, {
         body: options.body
       });
+      const { data, error } = response || {};
       
       if (error) throw error;
       return data;

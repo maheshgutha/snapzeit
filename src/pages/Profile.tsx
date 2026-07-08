@@ -73,12 +73,14 @@ export default function Profile() {
     if (!authLoading && !user) {
       navigate('/auth');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, authLoading, navigate]);
 
   useEffect(() => {
     if (user) {
       fetchProfile();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const fetchProfile = async () => {

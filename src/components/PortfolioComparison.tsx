@@ -122,9 +122,10 @@ export function PortfolioComparison() {
     setResult(null);
 
     try {
-      const { data, error } = await apiClient.functions?.invoke?.("compare-portfolio", {
+      const response = await apiClient.functions?.invoke?.("compare-portfolio", {
         body: { imageUrls: images.map(img => img.url), niche },
       });
+      const { data, error } = response || {};
 
       if (error) throw new Error(error.message);
       if (data.error) throw new Error(data.error);

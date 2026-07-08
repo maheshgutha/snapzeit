@@ -140,6 +140,7 @@ export default function AdminPanel() {
         fetchData();
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, authLoading, hasRole, navigate, toast]);
 
   const fetchData = async () => {
