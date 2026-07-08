@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useAuth } from './auth-context';
-import { apiClient } from '@/integrations/api/client';
+import { supabase } from '@/integrations/api/client';
 
 interface Notification {
   id: string;
@@ -30,19 +30,6 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (user) {
       fetchNotifications();
-      
-      // Subscribe to real-time notifications
-      const channel = supabase
-        .channel('notifications')
-        .on('postgres_changes', 
-          { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },
-          () => fetchNotifications()
-        )
-        .subscribe();
-
-      return () => {
-        supabase.removeChannel(channel);
-      };
     }
   }, [user]);
 

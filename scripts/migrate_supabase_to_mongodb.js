@@ -1,7 +1,12 @@
 import { MongoClient } from 'mongodb';
 
-const mongoUri = process.env.MONGO_URI || "mongodb+srv://rabbanibasha590_db_user:o2kZNFEtzAtCR0sp@cluster0.ekjvjge.mongodb.net/?appName=Cluster0";
+const mongoUri = process.env.MONGO_URI;
 const mongoDbName = process.env.MONGO_DB_NAME || 'orasnap';
+
+if (!mongoUri) {
+  console.error("MONGO_URI is not set. Create a .env file (see .env.example) with your MongoDB connection string.");
+  process.exit(1);
+}
 
 // High-quality seed data
 const profiles = [

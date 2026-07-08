@@ -38,6 +38,7 @@ import {
   Download, AlertTriangle, Zap, Globe, Star, Clock, ArrowUp, ArrowDown, Package
 } from 'lucide-react';
 import { getSettings, updateSettings, defaultSettings, AdminSettings } from '@/utils/adminSettings';
+import { formatPriceLocal } from '@/lib/currency';
 
 interface User {
   id: string;
@@ -58,6 +59,7 @@ interface Photographer {
   specialty: string;
   location: string;
   country?: string;
+  currency?: string;
   price_per_hour: number;
   status: string;
   created_at: string;
@@ -77,6 +79,7 @@ interface Booking {
   status: string;
   payment_status: string;
   total_amount: number;
+  currency?: string;
   commission_rate: number;
   created_at: string;
   photographers?: { name: string; country?: string; location?: string };
@@ -188,7 +191,7 @@ export default function AdminPanel() {
   };
 
   const updatePhotographerStatus = async (id: string, status: string) => {
-    const { error } = await supabase.from('photographers').update({ status }).eq('id', id);
+    const { error } = await supabase.from('photographers').eq('id', id).update({ status });
     if (error) {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
     } else {
@@ -202,7 +205,7 @@ export default function AdminPanel() {
     if (!currentlyBlocked && reason) updateData.block_reason = reason;
     else if (currentlyBlocked) updateData.block_reason = null;
 
-    const { error } = await supabase.from('profiles').update(updateData).eq('user_id', userId);
+    const { error } = await supabase.from('profiles').eq('user_id', userId).update(updateData);
     if (error) {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
     } else {
@@ -216,7 +219,7 @@ export default function AdminPanel() {
     if (!currentlyBlocked && reason) updateData.block_reason = reason;
     else if (currentlyBlocked) updateData.block_reason = null;
 
-    const { error } = await supabase.from('photographers').update(updateData).eq('id', id);
+    const { error } = await supabase.from('photographers').eq('id', id).update(updateData);
     if (error) {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
     } else {
@@ -235,13 +238,13 @@ export default function AdminPanel() {
 
   const deleteUser = async (userId: string) => {
     try {
-      const { error: profileError } = await supabase.from('profiles').delete().eq('user_id', userId);
+      const { error: profileError } = await supabase.from('profiles').eq('user_id', userId).delete();
       if (profileError) {
         toast({ title: 'Error', description: profileError.message, variant: 'destructive' });
         return;
       }
 
-      const { error: roleError } = await supabase.from('user_roles').delete().eq('user_id', userId);
+      const { error: roleError } = await supabase.from('user_roles').eq('user_id', userId).delete();
       if (roleError) {
         toast({ title: 'Warning', description: 'User deleted but role cleanup failed', variant: 'destructive' });
       }
@@ -255,7 +258,7 @@ export default function AdminPanel() {
   };
 
   const deletePhotographer = async (id: string) => {
-    const { error } = await supabase.from('photographers').delete().eq('id', id);
+    const { error } = await supabase.from('photographers').eq('id', id).delete();
     if (error) {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
     } else {
@@ -395,14 +398,14 @@ export default function AdminPanel() {
                 />
                 <StatCard
                   title="Revenue"
-                  value={`$${totalRevenue.toLocaleString()}`}
+                  value={formatPriceLocal(totalRevenue, 'USD')}
                   icon={DollarSign}
                   color="text-emerald-600"
                   bgColor="bg-emerald-100 dark:bg-emerald-900/30"
                 />
                 <StatCard
                   title="Commission"
-                  value={`$${totalCommission.toLocaleString()}`}
+                  value={formatPriceLocal(totalCommission, 'USD')}
                   icon={TrendingUp}
                   color="text-orange-600"
                   bgColor="bg-orange-100 dark:bg-orange-900/30"
@@ -526,7 +529,7 @@ export default function AdminPanel() {
                         </TableCell>
                         <TableCell className="text-slate-700 dark:text-slate-300">{photographer.specialty}</TableCell>
                         <TableCell className="text-slate-700 dark:text-slate-300">{photographer.location}</TableCell>
-                        <TableCell className="font-semibold text-slate-900 dark:text-white">${photographer.price_per_hour}/hr</TableCell>
+                        <TableCell className="font-semibold text-slate-900 dark:text-white">{formatPriceLocal(photographer.price_per_hour, photographer.currency || 'USD')} /hr</TableCell>
                         <TableCell>
                           <div className="flex items-center gap-1">
                             <Star className="h-4 w-4 text-yellow-500 fill-current" />
@@ -669,7 +672,7 @@ export default function AdminPanel() {
                         <TableCell className="text-slate-700 dark:text-slate-300">{booking.photographers?.name || '-'}</TableCell>
                         <TableCell className="text-slate-700 dark:text-slate-300">{booking.event_type}</TableCell>
                         <TableCell className="text-slate-700 dark:text-slate-300">{booking.location}</TableCell>
-                        <TableCell className="font-semibold text-slate-900 dark:text-white">${booking.total_amount}</TableCell>
+                        <TableCell className="font-semibold text-slate-900 dark:text-white">{formatPriceLocal(booking.total_amount, booking.currency || 'USD')}</TableCell>
                         <TableCell><Badge className={STATUS_COLORS[booking.status]}>{booking.status}</Badge></TableCell>
                         <TableCell><Badge className={STATUS_COLORS[booking.payment_status]}>{booking.payment_status}</Badge></TableCell>
                       </TableRow>
@@ -746,7 +749,7 @@ export default function AdminPanel() {
                         <TableCell className="text-slate-700 dark:text-slate-300">
                           {new Date(rental.start_date).toLocaleDateString()} - {new Date(rental.end_date).toLocaleDateString()}
                         </TableCell>
-                        <TableCell className="font-semibold text-slate-900 dark:text-white">${rental.total_price}</TableCell>
+                        <TableCell className="font-semibold text-slate-900 dark:text-white">{formatPriceLocal(rental.total_price, rental.currency || 'USD')}</TableCell>
                         <TableCell>
                           <Badge className={STATUS_COLORS[rental.status] || 'bg-gray-100'}>{rental.status}</Badge>
                         </TableCell>
@@ -783,9 +786,9 @@ export default function AdminPanel() {
                         <TableRow key={booking.id} className="border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50">
                           <TableCell className="text-slate-700 dark:text-slate-300">{new Date(booking.booking_date).toLocaleDateString()}</TableCell>
                           <TableCell className="text-slate-700 dark:text-slate-300">{booking.photographers?.name}</TableCell>
-                          <TableCell className="font-semibold text-slate-900 dark:text-white">${booking.total_amount}</TableCell>
-                          <TableCell className="text-emerald-600 font-semibold">${commission.toFixed(2)}</TableCell>
-                          <TableCell className="font-semibold text-slate-900 dark:text-white">${payout.toFixed(2)}</TableCell>
+                          <TableCell className="font-semibold text-slate-900 dark:text-white">{formatPriceLocal(booking.total_amount, booking.currency || 'USD')}</TableCell>
+                          <TableCell className="text-emerald-600 font-semibold">{formatPriceLocal(commission, 'USD')}</TableCell>
+                          <TableCell className="font-semibold text-slate-900 dark:text-white">{formatPriceLocal(payout, 'USD')}</TableCell>
                           <TableCell><Badge className={STATUS_COLORS[booking.payment_status]}>{booking.payment_status}</Badge></TableCell>
                         </TableRow>
                       );
@@ -820,7 +823,7 @@ export default function AdminPanel() {
                             <div key={country} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
                               <span className="font-medium text-slate-900 dark:text-white">{country}</span>
                               <div className="text-right">
-                                <p className="font-semibold text-slate-900 dark:text-white">${data.revenue.toLocaleString()}</p>
+                                <p className="font-semibold text-slate-900 dark:text-white">{formatPriceLocal(data.revenue, 'USD')}</p>
                                 <p className="text-sm text-slate-500 dark:text-slate-400">{data.bookings} bookings</p>
                               </div>
                             </div>
@@ -843,7 +846,7 @@ export default function AdminPanel() {
                             <div key={city} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
                               <span className="font-medium text-slate-900 dark:text-white">{city}</span>
                               <div className="text-right">
-                                <p className="font-semibold text-slate-900 dark:text-white">${data.revenue.toLocaleString()}</p>
+                                <p className="font-semibold text-slate-900 dark:text-white">{formatPriceLocal(data.revenue, 'USD')}</p>
                                 <p className="text-sm text-slate-500 dark:text-slate-400">{data.bookings} bookings</p>
                               </div>
                             </div>

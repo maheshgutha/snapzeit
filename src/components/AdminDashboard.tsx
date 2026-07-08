@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { apiClient } from "@/integrations/api/client";
 import { useNavigate } from "react-router-dom";
+import { formatPriceLocal } from '@/lib/currency';
 
 interface AdminStats {
   totalUsers: number;
@@ -202,7 +203,7 @@ export function AdminDashboard() {
               <DollarSign className="h-8 w-8 text-yellow-500" />
               <div className="ml-4">
                 <p className="text-sm font-medium text-muted-foreground">Revenue</p>
-                <p className="text-2xl font-bold">${stats.totalRevenue.toLocaleString()}</p>
+                <p className="text-2xl font-bold">{formatPriceLocal(stats.totalRevenue, 'USD')}</p>
               </div>
             </div>
           </CardContent>

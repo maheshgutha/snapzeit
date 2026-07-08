@@ -9,7 +9,7 @@ const projectRoot = path.resolve(__dirname, '..');
 console.log("Starting OraSnap Dev Environment with MongoDB Backend...");
 
 // 1. Start Express Backend Server
-const serverProcess = spawn('node', ['server/index.js'], {
+const serverProcess = spawn('node', ['--env-file=.env', 'server/index.js'], {
   cwd: projectRoot,
   shell: true,
   stdio: 'inherit' // Direct output to parent process

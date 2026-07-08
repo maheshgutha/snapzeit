@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Star, MapPin, Clock, Camera, Award, Heart, MessageCircle, Eye } from 'lucide-react';
-import { formatPrice } from '@/lib/currency';
+import { formatPriceLocal } from '@/lib/currency';
 
 interface Photographer {
   id: string;
@@ -113,7 +113,7 @@ export default function PhotographerCard({ photographer }: PhotographerCardProps
             </div>
             <div className="text-right text-white">
               <div className="text-3xl font-black drop-shadow-lg">
-                {formatPrice(displayPrice, displayCurrency)}
+                {formatPriceLocal(displayPrice, displayCurrency)}
               </div>
               <span className="text-sm opacity-90 font-semibold">/{t('photographers.perHour')}</span>
             </div>

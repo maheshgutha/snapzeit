@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { testScenarios, mockPhotographers, mockBookings, mockAnalytics } from '@/utils/mockData';
+import { formatPriceLocal } from '@/lib/currency';
 import { Play, CheckCircle, XCircle, Users, Calendar, DollarSign, Star, TrendingUp } from 'lucide-react';
 
 interface TestResult {
@@ -213,7 +214,7 @@ export default function ApplicationTester() {
                         <div className="text-xs text-gray-600">{photographer.specialty} • {photographer.location}</div>
                       </div>
                       <div className="text-right">
-                        <div className="text-sm font-semibold">${photographer.price_per_hour}/hr</div>
+                        <div className="text-sm font-semibold">{formatPriceLocal(photographer.price_per_hour, photographer.currency || 'USD')} /hr</div>
                         <div className="text-xs text-yellow-600">★ {photographer.rating}</div>
                       </div>
                     </div>
@@ -236,7 +237,7 @@ export default function ApplicationTester() {
                         </Badge>
                       </div>
                       <div className="text-xs text-gray-600">
-                        {booking.event_type} • {booking.event_date} • ${booking.total_amount}
+                        {booking.event_type} • {booking.event_date} • {formatPriceLocal(booking.total_amount, booking.currency || 'USD')}
                       </div>
                     </div>
                   ))}

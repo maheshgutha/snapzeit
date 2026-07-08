@@ -25,6 +25,8 @@ class ApiQueryBuilder {
   private limitParam: number | null = null;
   private offsetParam: number | null = null;
   private isSingle: boolean = false;
+  private method: string = 'GET';
+  private body: any = undefined;
 
   constructor(table: string) {
     this.table = table;
@@ -35,20 +37,47 @@ class ApiQueryBuilder {
     return this;
   }
 
+  // insert/update/delete are lazy (like real Supabase) so filters can be
+  // chained either before or after them; nothing executes until awaited.
   insert(values: any) {
-    return this.execute('POST', values);
+    this.method = 'POST';
+    this.body = values;
+    return this;
   }
 
   update(values: any) {
-    return this.execute('PATCH', values);
+    this.method = 'PATCH';
+    this.body = values;
+    return this;
   }
 
   delete() {
-    return this.execute('DELETE');
+    this.method = 'DELETE';
+    return this;
   }
 
   eq(column: string, value: any) {
     this.filters[column] = `eq.${value}`;
+    return this;
+  }
+
+  or(filterString: string) {
+    this.filters['or'] = filterString;
+    return this;
+  }
+
+  in(column: string, values: any[]) {
+    this.filters[column] = `in.(${values.join(',')})`;
+    return this;
+  }
+
+  neq(column: string, value: any) {
+    this.filters[column] = `neq.${value}`;
+    return this;
+  }
+
+  is(column: string, value: any) {
+    this.filters[column] = `is.${value}`;
     return this;
   }
 
@@ -103,7 +132,7 @@ class ApiQueryBuilder {
     return this;
   }
 
-  private async execute(method: string, body?: any) {
+  private async execute() {
     let url = `${getBaseUrl()}/api/db/${this.table}`;
 
     const searchParams = new URLSearchParams();
@@ -132,9 +161,9 @@ class ApiQueryBuilder {
 
     try {
       const response = await fetch(url, {
-        method,
+        method: this.method,
         headers,
-        body: body ? JSON.stringify(body) : undefined,
+        body: this.body ? JSON.stringify(this.body) : undefined,
       });
 
       const result = await response.json();
@@ -144,7 +173,7 @@ class ApiQueryBuilder {
         count: Array.isArray(result.data) ? result.data.length : (result.data ? 1 : 0),
       };
     } catch (err: any) {
-      console.warn(`API Client Error [${method} ${this.table}]:`, err);
+      console.warn(`API Client Error [${this.method} ${this.table}]:`, err);
       return {
         data: null,
         error: { message: err.message || 'Network request failed' },
@@ -154,7 +183,7 @@ class ApiQueryBuilder {
   }
 
   then(onfulfilled?: (value: any) => any, onrejected?: (reason: any) => any) {
-    return this.execute('GET').then(onfulfilled, onrejected);
+    return this.execute().then(onfulfilled, onrejected);
   }
 }
 

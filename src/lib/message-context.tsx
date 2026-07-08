@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useAuth } from './auth-context';
-import { apiClient } from '@/integrations/api/client';
+import { supabase } from '@/integrations/api/client';
 
 interface Message {
   id: string;
@@ -32,19 +32,6 @@ export function MessageProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (user) {
       fetchMessages();
-
-      // Subscribe to real-time messages
-      const channel = supabase
-        .channel('messages')
-        .on('postgres_changes',
-          { event: '*', schema: 'public', table: 'messages', filter: `recipient_id=eq.${user.id}` },
-          () => fetchMessages()
-        )
-        .subscribe();
-
-      return () => {
-        supabase.removeChannel(channel);
-      };
     } else {
       setMessages([]);
     }
@@ -56,11 +43,7 @@ export function MessageProvider({ children }: { children: ReactNode }) {
     try {
       const { data, error } = await supabase
         .from('messages')
-        .select(`
-          *,
-          sender:profiles!messages_sender_id_fkey(full_name),
-          recipient:profiles!messages_recipient_id_fkey(full_name)
-        `)
+        .select('*')
         .or(`sender_id.eq.${user.id},recipient_id.eq.${user.id}`)
         .order('created_at', { ascending: false });
 
@@ -69,10 +52,21 @@ export function MessageProvider({ children }: { children: ReactNode }) {
         return;
       }
 
+      const senderIds = Array.from(new Set((data || []).map((msg: any) => msg.sender_id).filter(Boolean)));
+      const nameByUserId: Record<string, string> = {};
+      await Promise.all(senderIds.map(async (userId: string) => {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('user_id', userId)
+          .single();
+        if (profile?.full_name) nameByUserId[userId] = profile.full_name;
+      }));
+
       const formattedMessages = (data as any)?.map((msg: any) => ({
         ...msg,
         read: msg.is_read, // Map database column is_read to interface read
-        sender_name: msg.sender?.full_name || 'Unknown',
+        sender_name: nameByUserId[msg.sender_id] || 'Unknown',
         sender_type: 'user' as const
       })) || [];
 

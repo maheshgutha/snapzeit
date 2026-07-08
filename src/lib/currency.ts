@@ -40,6 +40,68 @@ export function formatPrice(amount: number, currencyCode: string = 'USD'): strin
   return `${symbol}${amount.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
 }
 
+// Simple static exchange rates (relative to USD). Update as needed or replace with live rates.
+export const EXCHANGE_RATES: Record<string, number> = {
+  USD: 1,
+  EUR: 0.92,
+  GBP: 0.79,
+  INR: 82.5,
+  AUD: 1.54,
+  CAD: 1.36,
+  JPY: 156.7,
+  CNY: 7.2,
+  BRL: 5.25,
+  MXN: 17.1,
+  AED: 3.67,
+  SGD: 1.35,
+  CHF: 0.9,
+  ZAR: 18.0,
+  SEK: 10.5,
+  NZD: 1.7,
+  KRW: 1350,
+  THB: 34.5,
+  PHP: 56.0,
+  IDR: 15600,
+};
+
+export function convertAmount(amount: number, from: string, to: string) {
+  const fromRate = EXCHANGE_RATES[from] || 1;
+  const toRate = EXCHANGE_RATES[to] || 1;
+  // Convert from 'from' to USD, then to 'to'
+  const inUsd = amount / fromRate;
+  const converted = inUsd * toRate;
+  return converted;
+}
+
+// Detect user's country from browser locale (e.g., en-US -> US)
+export function detectUserCountryCode(): string {
+  try {
+    if (typeof navigator !== 'undefined') {
+      const locale = (navigator.languages && navigator.languages[0]) || navigator.language || 'en-US';
+      const parts = locale.split('-');
+      if (parts.length === 2) return parts[1].toUpperCase();
+    }
+  } catch (e) {
+    // ignore
+  }
+  return 'US';
+}
+
+export function getUserCurrency(): string {
+  const countryCode = detectUserCountryCode();
+  const found = COUNTRIES.find(c => c.code === countryCode);
+  return found?.currency || 'USD';
+}
+
+// Convert an amount from `fromCurrency` to user's currency and format it.
+export function formatPriceLocal(amount: number, fromCurrency: string = 'USD') {
+  const toCurrency = getUserCurrency();
+  if (!fromCurrency) fromCurrency = 'USD';
+  if (fromCurrency === toCurrency) return formatPrice(amount, fromCurrency);
+  const converted = convertAmount(amount, fromCurrency, toCurrency);
+  return formatPrice(Number(converted.toFixed(2)), toCurrency);
+}
+
 // Common countries with their default currencies
 export const COUNTRIES = [
   { name: 'United States', code: 'US', currency: 'USD' },

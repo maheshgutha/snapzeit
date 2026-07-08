@@ -15,7 +15,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { cn } from '@/lib/utils';
 import { Search, X, MapPin, CalendarIcon, Camera, Filter, Users, Star, Award, Heart, ChevronLeft, ChevronRight, Clock, Globe } from 'lucide-react';
 import { COUNTRIES } from '@/lib/currency';
-import { updateInternationalSEO, generateCountrySEO, formatPrice, detectUserCountry } from '@/utils/international-seo';
+import { updateInternationalSEO, generateCountrySEO, detectUserCountry } from '@/utils/international-seo';
+import { formatPriceLocal } from '@/lib/currency';
 import Breadcrumb from '@/components/Breadcrumb';
 import { usePhotographers } from '@/hooks/usePhotographers';
 import { seoData } from '@/utils/seo';
@@ -128,7 +129,7 @@ export default function Photographers() {
           "@type": "LocalBusiness",
           "name": p.name,
           "description": `Professional ${p.specialty} photographer`,
-          "priceRange": formatPrice(p.price_per_hour, userCountry) + '/hour'
+          "priceRange": formatPriceLocal(p.price_per_hour, p.currency || 'USD') + '/hour'
         }))
       }
     }, userCountry);

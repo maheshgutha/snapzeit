@@ -14,7 +14,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { CalendarIcon, Clock, MapPin } from 'lucide-react';
-import { formatPrice } from '@/lib/currency';
+import { formatPriceLocal } from '@/lib/currency';
 
 interface Photographer {
   id: string;
@@ -150,7 +150,7 @@ export default function BookingForm({ photographer }: BookingFormProps) {
           <span>Book {photographer.name}</span>
         </CardTitle>
         <div className="text-2xl font-bold text-primary">
-          {formatPrice(photographer.price_per_hour, photographer.currency || 'USD')}
+          {formatPriceLocal(photographer.price_per_hour, photographer.currency || 'USD')}
           <span className="text-sm font-normal text-muted-foreground">/hour</span>
         </div>
       </CardHeader>
@@ -280,12 +280,12 @@ export default function BookingForm({ photographer }: BookingFormProps) {
           {/* Price Summary */}
           <div className="rounded-lg bg-muted p-4 space-y-2">
             <div className="flex justify-between text-sm">
-              <span>{formatPrice(photographer.price_per_hour, photographer.currency || 'USD')} × {duration} hours</span>
-              <span>{formatPrice(totalAmount, photographer.currency || 'USD')}</span>
+              <span>{formatPriceLocal(photographer.price_per_hour, photographer.currency || 'USD')} × {duration} hours</span>
+              <span>{formatPriceLocal(totalAmount, photographer.currency || 'USD')}</span>
             </div>
             <div className="flex justify-between font-semibold text-lg border-t pt-2">
               <span>Total</span>
-              <span className="text-primary">{formatPrice(totalAmount, photographer.currency || 'USD')}</span>
+              <span className="text-primary">{formatPriceLocal(totalAmount, photographer.currency || 'USD')}</span>
             </div>
           </div>
 

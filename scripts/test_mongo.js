@@ -1,7 +1,12 @@
 import { MongoClient } from 'mongodb';
 
-const uri = "mongodb+srv://rabbanibasha590_db_user:o2kZNFEtzAtCR0sp@cluster0.ekjvjge.mongodb.net/?appName=Cluster0";
-const dbName = "orasnap";
+const uri = process.env.MONGO_URI;
+const dbName = process.env.MONGO_DB_NAME || "orasnap";
+
+if (!uri) {
+  console.error("MONGO_URI is not set. Create a .env file (see .env.example) with your MongoDB connection string.");
+  process.exit(1);
+}
 
 async function run() {
   const client = new MongoClient(uri);
