@@ -104,7 +104,7 @@ export const detectUserCountry = (): CountryData => {
 
 // Generate country-specific SEO data
 export const generateCountrySEO = (country: CountryData, page: string) => {
-  const baseTitle = 'SnapZeit - Professional Photographers';
+  const baseTitle = 'SnapZeiT - Professional Photographers';
   const baseDesc = 'Book verified professional photographers for weddings, events, portraits and more.';
   
   return {
@@ -116,7 +116,7 @@ export const generateCountrySEO = (country: CountryData, page: string) => {
     structuredData: {
       "@context": "https://schema.org",
       "@type": "LocalBusiness",
-      "name": `SnapZeit ${country.name}`,
+      "name": `SnapZeiT ${country.name}`,
       "description": `Professional photographer booking platform in ${country.name}`,
       "url": `https://snapzeit.com/${country.code.toLowerCase()}`,
       "areaServed": {
@@ -132,7 +132,7 @@ export const generateCountrySEO = (country: CountryData, page: string) => {
 // Generate city-specific SEO data
 export const generateCitySEO = (city: string, country: CountryData, photographerCount: number) => {
   return {
-    title: `Professional Photographers in ${city}, ${country.name} | Book Now | SnapZeit`,
+    title: `Professional Photographers in ${city}, ${country.name} | Book Now | SnapZeiT`,
     description: `Find ${photographerCount}+ verified photographers in ${city}. Wedding, portrait, event photography. Prices in ${country.currencySymbol}. Instant booking.`,
     keywords: `photographers ${city}, ${city} photographers, ${country.name} photographers, professional photography ${city}`,
     canonical: `https://snapzeit.com/${country.code.toLowerCase()}/${city.toLowerCase().replace(/\s+/g, '-')}`,

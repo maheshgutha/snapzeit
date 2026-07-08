@@ -51,21 +51,21 @@
   },
   "testimonials": {
     "title": "What Our Clients Say",
-    "subtitle": "Thousands of happy clients have found their perfect photographer through SnapZeit"
+    "subtitle": "Thousands of happy clients have found their perfect photographer through SnapZeiT"
   },
   "cta": {
     "title": "Are You a Photographer?",
     "subtitle": "Join our growing network of professionals. Reach more clients, manage bookings effortlessly, and grow your business.",
     "button": "Join as Photographer",
     "readyToCapture": "Ready to Capture Your Perfect Moments?",
-    "joinThousands": "Join thousands who trust SnapZeit for their photography needs. Book now and get amazing results."
+    "joinThousands": "Join thousands who trust SnapZeiT for their photography needs. Book now and get amazing results."
   },
   "footer": {
     "photographers": "Photographers",
     "howItWorks": "How It Works",
     "contact": "Contact",
     "signIn": "Sign In",
-    "copyright": "© 2024 SnapZeit. All rights reserved."
+    "copyright": "© 2024 SnapZeiT. All rights reserved."
   },
   "photographers": {
     "title": "Find Your Perfect Photographer",
@@ -129,7 +129,7 @@
     "createAccount": "Create Account",
     "areYouPhotographer": "Are you a photographer?",
     "joinAsPhotographer": "Join as Photographer",
-    "joinSnapZeit": "Join SnapZeit Today",
+    "joinSnapZeiT": "Join SnapZeiT Today",
     "connectPhotographers": "Connect with amazing photographers or showcase your work to thousands of potential clients",
     "resetPassword": "Reset your password",
     "resetDescription": "Enter your email address and we will send you a link to reset your password.",
@@ -405,7 +405,7 @@
       "subtitle": "Have a question or need help? We are here for you"
     },
     "howItWorks": {
-      "title": "How SnapZeit Works",
+      "title": "How SnapZeiT Works",
       "subtitle": "Booking a professional photographer has never been easier"
     },
     "pricing": {

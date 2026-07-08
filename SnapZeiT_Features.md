@@ -1,4 +1,4 @@
-# SnapZeit - Comprehensive Application Feature Specification
+# SnapZeiT - Comprehensive Application Feature Specification
 **Date:** January 26, 2026  
 **Version:** 1.0  
 **Status:** In Development  
@@ -6,7 +6,7 @@
 ---
 
 ## 1. Executive Summary
-SnapZeit is a cutting-edge, AI-powered marketplace connecting clients with professional photographers and videographers. Built with a modern tech stack (React, Vite, Express, MongoDB), the platform emphasizes user experience through "Smart Matching," seamless booking workflows, and a suite of AI tools that assist both creatives and clients.
+SnapZeiT is a cutting-edge, AI-powered marketplace connecting clients with professional photographers and videographers. Built with a modern tech stack (React, Vite, Express, MongoDB), the platform emphasizes user experience through "Smart Matching," seamless booking workflows, and a suite of AI tools that assist both creatives and clients.
 
 ## 2. User Roles & Portals
 
@@ -56,8 +56,8 @@ For platform owners to manage operations.
 *   **Live Chat Widget:** Support tool for immediate assistance.
 *   **AI ChatBot:** Automated assistant to answer common queries.
 
-### 🤖 Advanced AI Suite (The "SnapZeit" Edge)
-SnapZeit differentiates itself with significant AI integration:
+### 🤖 Advanced AI Suite (The "SnapZeiT" Edge)
+SnapZeiT differentiates itself with significant AI integration:
 *   **Image Analyzer:** Technical analysis of image quality/metadata.
 *   **Predictive Analytics:** Forecasting trends or demand (likely for admins/photographers).
 *   **SEO Image Optimization:** Automated handling of image SEO features.

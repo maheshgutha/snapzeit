@@ -5,6 +5,6 @@ const PORT = process.env.PORT || 3001;
 // Start server after connecting to Mongo
 connectToMongo().then(() => {
   app.listen(PORT, () => {
-    console.log(`SnapZeit Express Backend is running on port ${PORT}`);
+    console.log(`SnapZeiT Express Backend is running on port ${PORT}`);
   });
 });

@@ -1,4 +1,4 @@
-# SnapZeit Photography Platform - Robots.txt
+# SnapZeiT Photography Platform - Robots.txt
 # International SEO optimized for worldwide markets
 
 User-agent: Googlebot

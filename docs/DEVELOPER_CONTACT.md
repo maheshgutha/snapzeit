@@ -6,7 +6,7 @@
 
 ---
 
-## Project: SnapZeit
+## Project: SnapZeiT
 **Status**: Admin Panel Complete ✅  
 **Features Implemented**:
 - Modern glass-morphism admin panel

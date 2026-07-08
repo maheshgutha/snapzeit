@@ -96,7 +96,7 @@ export default function Header() {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-            <img src="/assets/snapzeit-logo.png" alt="SnapZeit Logo" className="h-10 w-10 rounded-xl shadow-lg" />
+            <img src="/assets/snapzeit-logo.png" alt="SnapZeiT Logo" className="h-10 w-10 rounded-xl shadow-lg" />
             <span className="text-2xl font-bold text-foreground">
               Snap<span className="text-purple-500">Zeit</span>
             </span>

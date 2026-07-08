@@ -75,14 +75,14 @@ export default function Index() {
 
     updateInternationalSEO({
       ...seoData.home,
-      title: marketingCampaign.campaigns.hero.title + ` | SnapZeit ${userCountry.name}`,
+      title: marketingCampaign.campaigns.hero.title + ` | SnapZeiT ${userCountry.name}`,
       description: `${marketingCampaign.campaigns.hero.subtitle} Prices in ${userCountry.currency}. ${userCountry.culturalPrefs.join(', ')} photography styles.`,
       keywords: `${internationalSEO.keywords}, ${userCountry.culturalPrefs.join(', ')}, ${userCountry.currency} pricing, ${marketingCampaign.campaigns.cultural.event}`,
       structuredData: {
         ...seoData.home.structuredData,
         "mainEntity": {
           "@type": "Organization",
-          "name": "SnapZeit",
+          "name": "SnapZeiT",
           "description": "Professional photographer booking platform",
           "url": "https://snapzeit.com",
           "logo": "https://snapzeit.com/assets/snapzeit-logo.png",
@@ -346,19 +346,19 @@ export default function Index() {
       role: 'Business Owner',
       avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face',
       rating: 5,
-      text: "I needed professional headshots for my team quickly. Found a great photographer on SnapZeit, booked within minutes, and had the photos delivered the next week. Highly recommend!",
+      text: "I needed professional headshots for my team quickly. Found a great photographer on SnapZeiT, booked within minutes, and had the photos delivered the next week. Highly recommend!",
     },
     {
       name: 'Emily Rodriguez',
       role: 'Event Planner',
       avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face',
       rating: 5,
-      text: "As an event planner, I use SnapZeit for all my clients. The variety of photographers and the easy booking system saves me so much time. The quality is consistently excellent.",
+      text: "As an event planner, I use SnapZeiT for all my clients. The variety of photographers and the easy booking system saves me so much time. The quality is consistently excellent.",
     },
   ];
 
   return (
-    <div className="min-h-screen bg-background" role="main" aria-label="SnapZeit Photography Platform">
+    <div className="min-h-screen bg-background" role="main" aria-label="SnapZeiT Photography Platform">
       <Header />
 
       {/* Hero Section - Simplified & More Engaging */}

@@ -58,7 +58,7 @@ export const initiatePayment = async (options: {
       key: keyId,
       amount: order.amount, // already in smallest currency unit (paise)
       currency: order.currency,
-      name: 'SnapZeit',
+      name: 'SnapZeiT',
       description: options.description,
       order_id: order.id,
       handler: function (response: any) {
@@ -70,7 +70,7 @@ export const initiatePayment = async (options: {
         contact: options.contact,
       },
       notes: {
-        address: 'SnapZeit Corporate Office',
+        address: 'SnapZeiT Corporate Office',
       },
       theme: { color: '#3B82F6' },
     };

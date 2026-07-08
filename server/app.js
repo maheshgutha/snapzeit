@@ -15,9 +15,9 @@ if (IS_PRODUCTION && !process.env.JWT_SECRET) {
 }
 const JWT_SECRET = process.env.JWT_SECRET || 'snapzeit-super-secret-key-for-local-development-2026';
 const MONGO_URI = process.env.MONGO_URI;
-// Note: the database name stays 'orasnap' — existing data lives there.
+// Note: the database name stays 'snapzeit' — existing data lives there.
 // Override with MONGO_DB_NAME if you migrate to a new database.
-const MONGO_DB_NAME = process.env.MONGO_DB_NAME || 'orasnap';
+const MONGO_DB_NAME = process.env.MONGO_DB_NAME || 'snapzeit';
 
 if (!MONGO_URI) {
   console.error('MONGO_URI is not set. Create a .env file (see .env.example) with your MongoDB connection string.');
@@ -505,7 +505,7 @@ app.post('/api/auth/signout', (req, res) => {
 // Send email via Resend or SendGrid REST APIs (whichever key is configured).
 // Returns false when no provider is configured.
 async function sendEmail({ to, subject, html }) {
-  const from = process.env.EMAIL_FROM || 'SnapZeit <onboarding@resend.dev>';
+  const from = process.env.EMAIL_FROM || 'SnapZeiT <onboarding@resend.dev>';
 
   if (process.env.RESEND_API_KEY) {
     const resp = await fetch('https://api.resend.com/emails', {
@@ -570,9 +570,9 @@ app.post('/api/auth/request-password-reset', async (req, res) => {
 
     const sent = await sendEmail({
       to: profile.email,
-      subject: 'Reset your SnapZeit password',
+      subject: 'Reset your SnapZeiT password',
       html: `<p>Hi ${profile.full_name || ''},</p>
-             <p>Click the link below to reset your SnapZeit password. It expires in 1 hour.</p>
+             <p>Click the link below to reset your SnapZeiT password. It expires in 1 hour.</p>
              <p><a href="${resetLink}">${resetLink}</a></p>
              <p>If you didn't request this, you can ignore this email.</p>`,
     });

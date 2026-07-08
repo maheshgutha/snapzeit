@@ -125,7 +125,7 @@ export function generateInvoicePDF(invoice: Invoice): Blob {
     </head>
     <body>
       <div class="header">
-        <div class="logo">SnapZeit</div>
+        <div class="logo">SnapZeiT</div>
         <div class="invoice-meta">
           <p><strong>Invoice #:</strong> ${invoice.invoiceNumber}</p>
           <p><strong>Issue Date:</strong> ${invoice.issueDate.toLocaleDateString()}</p>
@@ -139,7 +139,7 @@ export function generateInvoicePDF(invoice: Invoice): Blob {
         <tr>
           <td>
             <strong>From:</strong><br>
-            SnapZeit<br>
+            SnapZeiT<br>
             Photographer ID: ${invoice.photographerId}
           </td>
           <td style="text-align: right;">
@@ -175,7 +175,7 @@ export function generateInvoicePDF(invoice: Invoice): Blob {
       ${invoice.notes ? `<p><strong>Notes:</strong><br>${invoice.notes}</p>` : ''}
 
       <div class="footer">
-        <p>Thank you for using SnapZeit!</p>
+        <p>Thank you for using SnapZeiT!</p>
         <p>Payment Status: <strong>${invoice.paymentStatus.toUpperCase()}</strong></p>
       </div>
     </body>
@@ -219,7 +219,7 @@ export async function sendInvoiceEmail(
     // For now, log the email to be sent
     console.log('Email to be sent:', {
       to: recipientEmail,
-      subject: `Invoice ${invoice.invoiceNumber} from SnapZeit`,
+      subject: `Invoice ${invoice.invoiceNumber} from SnapZeiT`,
       body: `Dear ${profile?.full_name || 'Customer'},\n\nPlease find attached your invoice for booking #${invoice.bookingId.substring(0, 8)}.\n\nTotal Amount: $${invoice.totalAmount.toFixed(2)}\nDue Date: ${invoice.dueDate.toLocaleDateString()}\n\nThank you!`,
     });
 

@@ -1,5 +1,5 @@
 /**
- * Service Worker for SnapZeit PWA
+ * Service Worker for SnapZeiT PWA
  * Handles offline functionality, push notifications, and background sync
  */
 
@@ -113,7 +113,7 @@ self.addEventListener('push', (event) => {
   console.log('[Service Worker] Push notification received');
 
   let notificationData = {
-    title: 'SnapZeit',
+    title: 'SnapZeiT',
     body: 'You have a new notification',
     icon: '/icons/snapzeit-192.png',
     badge: '/icons/badge.png',

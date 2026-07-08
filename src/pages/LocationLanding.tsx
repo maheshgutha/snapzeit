@@ -29,7 +29,7 @@ export default function LocationLanding() {
 
                 // SEO Update
                 updatePageSEO({
-                    title: `Best Photographers in ${data.name} | Top Rated Pros | SnapZeit`,
+                    title: `Best Photographers in ${data.name} | Top Rated Pros | SnapZeiT`,
                     description: `Find and book the best photographers in ${data.name}. ${data.description} Verified reviews, portfolios, and instant booking available.`,
                     keywords: `photographers in ${data.name}, ${data.name} photography, hire photographer ${data.name}, professional photographers`,
                     canonical: `https://snapzeit.com/location/${slug}`,

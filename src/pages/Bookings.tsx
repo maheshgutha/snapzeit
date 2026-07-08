@@ -602,7 +602,7 @@ export default function Bookings() {
             <DialogTitle className="text-center border-b pb-4">
               <div className="flex items-center justify-center gap-2 mb-2">
                 <Package className="h-6 w-6 text-blue-600" />
-                <span className="font-black text-xl">SnapZeit Rentals</span>
+                <span className="font-black text-xl">SnapZeiT Rentals</span>
               </div>
               Rental Receipt
             </DialogTitle>

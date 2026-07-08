@@ -17,8 +17,8 @@ export default defineConfig(({ mode }) => ({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'robots.txt'],
       manifest: {
-        name: 'SnapZeit',
-        short_name: 'SnapZeit',
+        name: 'SnapZeiT',
+        short_name: 'SnapZeiT',
         description: 'Find Local Photographers & Rent Gear',
         theme_color: '#ffffff',
         display: 'standalone',

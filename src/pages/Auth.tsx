@@ -177,11 +177,11 @@ export default function Auth() {
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-blue-200 dark:border-blue-800 mb-6">
               <Camera className="h-4 w-4 text-blue-600" />
-              <span className="text-sm font-semibold text-blue-600">Join SnapZeit Community</span>
+              <span className="text-sm font-semibold text-blue-600">Join SnapZeiT Community</span>
             </div>
             
             <h1 className="text-5xl md:text-7xl font-black mb-6 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent leading-tight">
-              {t('auth.joinSnapZeit')}
+              {t('auth.joinSnapZeiT')}
             </h1>
             <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
               {t('auth.connectPhotographers')}
@@ -499,7 +499,7 @@ export default function Auth() {
             <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
               <Camera className="h-5 w-5 text-white" />
             </div>
-            <span className="font-bold text-xl">SnapZeit</span>
+            <span className="font-bold text-xl">SnapZeiT</span>
           </div>
           <p className="text-gray-600 dark:text-gray-300 mb-4">
             The world's largest marketplace for professional photography services

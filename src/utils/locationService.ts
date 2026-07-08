@@ -87,7 +87,7 @@ class LocationService {
 
     const response = await fetch(url, {
       headers: {
-        'User-Agent': 'SnapZeit/1.0 (photography platform)',
+        'User-Agent': 'SnapZeiT/1.0 (photography platform)',
         'Accept': 'application/json',
       },
     });

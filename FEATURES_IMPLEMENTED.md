@@ -1,4 +1,4 @@
-# SnapZeit - Features Implemented
+# SnapZeiT - Features Implemented
 ## All Critical Gaps Fixed - May 22, 2026
 
 ---

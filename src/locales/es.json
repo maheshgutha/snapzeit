@@ -51,21 +51,21 @@
   },
   "testimonials": {
     "title": "Lo Que Dicen Nuestros Clientes",
-    "subtitle": "Miles de clientes felices han encontrado su fotógrafo perfecto a través de SnapZeit"
+    "subtitle": "Miles de clientes felices han encontrado su fotógrafo perfecto a través de SnapZeiT"
   },
   "cta": {
     "title": "¿Eres Fotógrafo?",
     "subtitle": "Únete a nuestra creciente red de profesionales. Llega a más clientes, gestiona reservas sin esfuerzo y haz crecer tu negocio.",
     "button": "Únete como Fotógrafo",
     "readyToCapture": "¿Listo para Capturar tus Momentos Perfectos?",
-    "joinThousands": "Únete a miles que confían en SnapZeit para sus necesidades fotográficas. Reserva ahora y obtén resultados increíbles."
+    "joinThousands": "Únete a miles que confían en SnapZeiT para sus necesidades fotográficas. Reserva ahora y obtén resultados increíbles."
   },
   "footer": {
     "photographers": "Fotógrafos",
     "howItWorks": "Cómo Funciona",
     "contact": "Contacto",
     "signIn": "Iniciar Sesión",
-    "copyright": "© 2024 SnapZeit. Todos los derechos reservados."
+    "copyright": "© 2024 SnapZeiT. Todos los derechos reservados."
   },
   "photographers": {
     "title": "Encuentra Tu Fotógrafo Perfecto",
@@ -129,7 +129,7 @@
     "createAccount": "Crear Cuenta",
     "areYouPhotographer": "¿Eres fotógrafo?",
     "joinAsPhotographer": "Únete como Fotógrafo",
-    "joinSnapZeit": "Únete a SnapZeit Hoy",
+    "joinSnapZeiT": "Únete a SnapZeiT Hoy",
     "connectPhotographers": "Conecta con fotógrafos increíbles o muestra tu trabajo a miles de clientes potenciales",
     "resetPassword": "Restablecer tu contraseña",
     "resetDescription": "Ingresa tu email y te enviaremos un enlace para restablecer tu contraseña.",
@@ -194,7 +194,7 @@
     "completeFirstSession": "Completa tu primera sesión para ver ganancias"
   },
   "howItWorks": {
-    "title": "Cómo Funciona SnapZeit",
+    "title": "Cómo Funciona SnapZeiT",
     "subtitle": "Reservar un fotógrafo profesional nunca ha sido más fácil. Sigue estos simples pasos para capturar tus momentos perfectos.",
     "step": "Paso",
     "steps": {
@@ -219,7 +219,7 @@
         "desc": "Recibe tus fotos bellamente editadas entregadas digitalmente. Comparte tu experiencia para ayudar a otros a encontrar grandes fotógrafos."
       }
     },
-    "whyChoose": "¿Por Qué Elegir SnapZeit?",
+    "whyChoose": "¿Por Qué Elegir SnapZeiT?",
     "verifiedProfessionals": "Profesionales Verificados",
     "verifiedDesc": "Cada fotógrafo es evaluado por calidad, profesionalismo y confiabilidad antes de unirse a nuestra plataforma.",
     "securePayments": "Pagos Seguros",
@@ -405,7 +405,7 @@
       "subtitle": "¿Tienes una pregunta o necesitas ayuda? Estamos aquí para ti"
     },
     "howItWorks": {
-      "title": "Cómo Funciona SnapZeit",
+      "title": "Cómo Funciona SnapZeiT",
       "subtitle": "Reservar un fotógrafo profesional nunca ha sido más fácil"
     },
     "pricing": {

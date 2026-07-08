@@ -1,4 +1,4 @@
-// SEO utility functions for SnapZeit
+// SEO utility functions for SnapZeiT
 export interface SEOData {
   title: string;
   description: string;
@@ -107,7 +107,7 @@ const addStructuredData = (data: any) => {
 // SEO data for different pages
 export const seoData = {
   home: {
-    title: 'SnapZeit - Find Professional Photographers Near You | Book Instantly',
+    title: 'SnapZeiT - Find Professional Photographers Near You | Book Instantly',
     description: 'Book verified professional photographers for weddings, events, portraits and more. Browse 2,500+ photographers in 50+ countries. Instant booking, secure payments.',
     keywords: 'photography booking, professional photographers, wedding photographer, event photography, portrait photography, photographer near me',
     canonical: 'https://snapzeit.com/',
@@ -115,7 +115,7 @@ export const seoData = {
     structuredData: {
       "@context": "https://schema.org",
       "@type": "WebSite",
-      "name": "SnapZeit",
+      "name": "SnapZeiT",
       "description": "Professional photographer booking platform",
       "url": "https://snapzeit.com",
       "potentialAction": {
@@ -132,7 +132,7 @@ export const seoData = {
   },
   
   photographers: {
-    title: 'Professional Photographers Directory | Browse & Book | SnapZeit',
+    title: 'Professional Photographers Directory | Browse & Book | SnapZeiT',
     description: 'Browse 2,500+ verified professional photographers worldwide. Filter by location, specialty, price. View portfolios, read reviews, book instantly.',
     keywords: 'professional photographers, photographer directory, wedding photographers, portrait photographers, event photographers, photography services',
     canonical: 'https://snapzeit.com/photographers',
@@ -146,7 +146,7 @@ export const seoData = {
   },
 
   categories: {
-    title: 'Photography Categories | Wedding, Portrait, Event & More | SnapZeit',
+    title: 'Photography Categories | Wedding, Portrait, Event & More | SnapZeiT',
     description: 'Explore photography categories: Wedding, Portrait, Event, Commercial, Fashion, Product photography and more. Find specialists for your specific needs.',
     keywords: 'photography categories, wedding photography, portrait photography, event photography, commercial photography, fashion photography',
     canonical: 'https://snapzeit.com/categories',
@@ -160,7 +160,7 @@ export const seoData = {
   },
 
   locations: {
-    title: 'Find Photographers by Location | 50+ Countries | SnapZeit',
+    title: 'Find Photographers by Location | 50+ Countries | SnapZeiT',
     description: 'Find professional photographers in your city. Available in 200+ cities across 50+ countries. New York, London, Paris, Tokyo, Mumbai and more.',
     keywords: 'photographers by location, photographers near me, local photographers, city photographers, international photographers',
     canonical: 'https://snapzeit.com/locations',
@@ -174,7 +174,7 @@ export const seoData = {
   },
 
   pricing: {
-    title: 'Photography Pricing Guide | Transparent Rates | SnapZeit',
+    title: 'Photography Pricing Guide | Transparent Rates | SnapZeiT',
     description: 'Transparent photography pricing. Wedding photography from $2,500, Portrait sessions from $300, Event photography from $800. No hidden fees.',
     keywords: 'photography pricing, photographer rates, wedding photography cost, portrait photography price, event photography rates',
     canonical: 'https://snapzeit.com/pricing'
@@ -183,7 +183,7 @@ export const seoData = {
 
 // Generate photographer-specific SEO data
 export const generatePhotographerSEO = (photographer: any) => ({
-  title: `${photographer.name} - ${photographer.specialty} in ${photographer.location} | SnapZeit`,
+  title: `${photographer.name} - ${photographer.specialty} in ${photographer.location} | SnapZeiT`,
   description: `Book ${photographer.name}, professional ${photographer.specialty.toLowerCase()} in ${photographer.location}. ${photographer.experience_years}+ years experience, ${photographer.rating}★ rating. View portfolio and book instantly.`,
   keywords: `${photographer.name}, ${photographer.specialty}, ${photographer.location} photographer, professional photography, book photographer`,
   canonical: `https://snapzeit.com/photographer/${photographer.id}`,
@@ -224,7 +224,7 @@ export const generatePhotographerSEO = (photographer: any) => ({
 
 // Generate location-specific SEO data
 export const generateLocationSEO = (location: string, country: string, photographerCount: number) => ({
-  title: `Professional Photographers in ${location}, ${country} | Book Now | SnapZeit`,
+  title: `Professional Photographers in ${location}, ${country} | Book Now | SnapZeiT`,
   description: `Find and book ${photographerCount}+ professional photographers in ${location}, ${country}. Wedding, portrait, event photography. Verified profiles, instant booking.`,
   keywords: `photographers in ${location}, ${location} photographers, ${country} photographers, professional photography ${location}`,
   canonical: `https://snapzeit.com/locations/${location.toLowerCase().replace(/\s+/g, '-')}`,

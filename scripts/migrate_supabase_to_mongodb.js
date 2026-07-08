@@ -1,7 +1,7 @@
 import { MongoClient } from 'mongodb';
 
 const mongoUri = process.env.MONGO_URI;
-const mongoDbName = process.env.MONGO_DB_NAME || 'orasnap'; // existing data lives in the 'orasnap' db
+const mongoDbName = process.env.MONGO_DB_NAME || 'snapzeit'; // existing data lives in the 'snapzeit' db
 
 if (!mongoUri) {
   console.error("MONGO_URI is not set. Create a .env file (see .env.example) with your MongoDB connection string.");
@@ -359,7 +359,7 @@ const platformSettings = [
   {
     _id: "set-site-name",
     setting_key: "site_name",
-    setting_value: "SnapZeit",
+    setting_value: "SnapZeiT",
     description: "Platform name",
     is_public: true,
     created_at: new Date(),
@@ -415,7 +415,7 @@ const reviews = [
 const announcements = [
   {
     _id: "ann1",
-    title: "Welcome to the New SnapZeit!",
+    title: "Welcome to the New SnapZeiT!",
     content: "We have fully migrated our backend to MongoDB for blistering speed, higher uptime, and richer search filters. Enjoy booking professional creatives worldwide!",
     type: "success",
     target_audience: "all",

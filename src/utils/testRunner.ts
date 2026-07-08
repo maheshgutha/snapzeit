@@ -2,7 +2,7 @@ import { testScenarios } from '@/utils/mockData';
 
 // Execute comprehensive application tests
 export const runApplicationTests = async () => {
-  console.log('🚀 Starting SnapZeit Application Test Suite...\n');
+  console.log('🚀 Starting SnapZeiT Application Test Suite...\n');
   
   const results = {
     passed: 0,
@@ -66,7 +66,7 @@ export const runApplicationTests = async () => {
   
   if (results.failed === 0) {
     console.log('\n🎉 ALL TESTS PASSED! Application is working correctly.');
-    console.log('🚀 SnapZeit is ready for production deployment.');
+    console.log('🚀 SnapZeiT is ready for production deployment.');
   } else {
     console.log('\n⚠️  Some tests failed. Please check the details above.');
   }

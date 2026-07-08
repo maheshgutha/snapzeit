@@ -1,4 +1,4 @@
-// Comprehensive localization system for SnapZeit
+// Comprehensive localization system for SnapZeiT
 export interface LocalizedContent {
   [key: string]: {
     [key: string]: string;

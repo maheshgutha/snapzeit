@@ -17,7 +17,7 @@ const newEnglishKeys = {
       "subtitle": "Have a question or need help? We are here for you"
     },
     "howItWorks": {
-      "title": "How SnapZeit Works",
+      "title": "How SnapZeiT Works",
       "subtitle": "Booking a professional photographer has never been easier"
     },
     "pricing": {
@@ -64,7 +64,7 @@ const newSpanishKeys = {
       "subtitle": "¿Tienes una pregunta o necesitas ayuda? Estamos aquí para ti"
     },
     "howItWorks": {
-      "title": "Cómo Funciona SnapZeit",
+      "title": "Cómo Funciona SnapZeiT",
       "subtitle": "Reservar un fotógrafo profesional nunca ha sido más fácil"
     },
     "pricing": {

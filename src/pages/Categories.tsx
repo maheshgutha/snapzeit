@@ -109,7 +109,7 @@ export default function Categories() {
           "description": category.description,
           "provider": {
             "@type": "Organization",
-            "name": "SnapZeit"
+            "name": "SnapZeiT"
           },
           "areaServed": "Worldwide",
           "availableChannel": {
@@ -298,7 +298,7 @@ export default function Categories() {
           <div className="container">
             <div className="grid md:grid-cols-4 gap-8">
               <div>
-                <h3 className="text-lg font-bold mb-4">SnapZeit</h3>
+                <h3 className="text-lg font-bold mb-4">SnapZeiT</h3>
                 <p className="text-gray-400 text-sm">Find and book professional photographers worldwide.</p>
               </div>
               <div>
@@ -322,7 +322,7 @@ export default function Categories() {
               </div>
             </div>
             <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400 text-sm">
-              <p>&copy; 2024 SnapZeit. All rights reserved.</p>
+              <p>&copy; 2024 SnapZeiT. All rights reserved.</p>
             </div>
           </div>
         </footer>

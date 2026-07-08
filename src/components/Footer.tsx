@@ -8,7 +8,7 @@ export default function Footer() {
           {/* Brand */}
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center gap-3 mb-4">
-              <img src="/assets/snapzeit-logo.png" alt="SnapZeit Logo" className="h-8 w-auto rounded-lg" />
+              <img src="/assets/snapzeit-logo.png" alt="SnapZeiT Logo" className="h-8 w-auto rounded-lg" />
               <h3 className="text-2xl font-bold">Snap<span className="text-purple-400">Zeit</span></h3>
             </div>
             <p className="text-slate-300 mb-4">
@@ -51,7 +51,7 @@ export default function Footer() {
 
         {/* Bottom Bar */}
         <div className="border-t border-slate-700 mt-8 pt-8 text-center text-slate-400">
-          <p className="mx-auto max-w-[200px] md:max-w-none">&copy; 2026 SnapZeit. All rights reserved. Developed by Rabbani Basha</p>
+          <p className="mx-auto max-w-[200px] md:max-w-none">&copy; 2026 SnapZeiT. All rights reserved. Developed by Rabbani Basha</p>
         </div>
       </div>
     </footer>

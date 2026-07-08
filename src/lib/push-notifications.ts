@@ -3,7 +3,7 @@
 // service worker context (self, ExtendableEvent, clients) which isn't
 // type-compatible with the main app's DOM lib.
 /**
- * PWA Push Notification Service for SnapZeit
+ * PWA Push Notification Service for SnapZeiT
  * Handles subscription management and push notifications
  */
 
