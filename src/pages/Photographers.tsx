@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
@@ -101,7 +101,7 @@ export default function Photographers() {
     sortBy
   });
 
-  const photographers = React.useMemo(() => (data?.photographers as Photographer[]) || [], [data?.photographers]);
+  const photographers = useMemo(() => (data?.photographers as Photographer[]) || [], [data?.photographers]);
   const totalCount = data?.total || 0;
   const totalPages = Math.ceil(totalCount / pageSize);
 
