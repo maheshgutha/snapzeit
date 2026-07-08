@@ -75,17 +75,17 @@ export default function Index() {
 
     updateInternationalSEO({
       ...seoData.home,
-      title: marketingCampaign.campaigns.hero.title + ` | OraSnap ${userCountry.name}`,
+      title: marketingCampaign.campaigns.hero.title + ` | SnapZeit ${userCountry.name}`,
       description: `${marketingCampaign.campaigns.hero.subtitle} Prices in ${userCountry.currency}. ${userCountry.culturalPrefs.join(', ')} photography styles.`,
       keywords: `${internationalSEO.keywords}, ${userCountry.culturalPrefs.join(', ')}, ${userCountry.currency} pricing, ${marketingCampaign.campaigns.cultural.event}`,
       structuredData: {
         ...seoData.home.structuredData,
         "mainEntity": {
           "@type": "Organization",
-          "name": "OraSnap",
+          "name": "SnapZeit",
           "description": "Professional photographer booking platform",
-          "url": "https://orasnap.com",
-          "logo": "https://orasnap.com/assets/orasnap-logo.png",
+          "url": "https://snapzeit.com",
+          "logo": "https://snapzeit.com/assets/snapzeit-logo.png",
           "areaServed": {
             "@type": "Country",
             "name": userCountry.name
@@ -98,13 +98,6 @@ export default function Index() {
             "contactType": "customer service",
             "availableLanguage": [userCountry.language]
           },
-          "aggregateRating": {
-            "@type": "AggregateRating",
-            "ratingValue": "4.9",
-            "reviewCount": "10000",
-            "bestRating": "5",
-            "worstRating": "1"
-          }
         }
       }
     }, userCountry);
@@ -189,15 +182,19 @@ export default function Index() {
     initializeLocation();
   }, []);
 
-  // Live activity simulation
+  // Real platform stats (photographer count from the public API)
   useEffect(() => {
-    const interval = setInterval(() => {
-      setLiveActivity(prev => ({
-        bookings: Math.floor(Math.random() * 10) + 1,
-        photographers: Math.floor(Math.random() * 5) + 2
-      }));
-    }, 30000);
-    return () => clearInterval(interval);
+    const loadStats = async () => {
+      try {
+        const { data } = await supabase.rpc('get_public_photographers');
+        if (Array.isArray(data)) {
+          setLiveActivity({ bookings: 0, photographers: data.length });
+        }
+      } catch (e) {
+        // Leave the badge hidden if stats can't load
+      }
+    };
+    loadStats();
   }, []);
 
   // Intersection observer for animations
@@ -349,19 +346,19 @@ export default function Index() {
       role: 'Business Owner',
       avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face',
       rating: 5,
-      text: "I needed professional headshots for my team quickly. Found a great photographer on OraSnap, booked within minutes, and had the photos delivered the next week. Highly recommend!",
+      text: "I needed professional headshots for my team quickly. Found a great photographer on SnapZeit, booked within minutes, and had the photos delivered the next week. Highly recommend!",
     },
     {
       name: 'Emily Rodriguez',
       role: 'Event Planner',
       avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face',
       rating: 5,
-      text: "As an event planner, I use OraSnap for all my clients. The variety of photographers and the easy booking system saves me so much time. The quality is consistently excellent.",
+      text: "As an event planner, I use SnapZeit for all my clients. The variety of photographers and the easy booking system saves me so much time. The quality is consistently excellent.",
     },
   ];
 
   return (
-    <div className="min-h-screen bg-background" role="main" aria-label="OraSnap Photography Platform">
+    <div className="min-h-screen bg-background" role="main" aria-label="SnapZeit Photography Platform">
       <Header />
 
       {/* Hero Section - Simplified & More Engaging */}
@@ -372,20 +369,22 @@ export default function Index() {
         />
         <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/50 to-transparent" />
 
-        {/* Live Activity Badge - Enhanced */}
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 md:top-6 md:right-6 bg-white/15 backdrop-blur-md rounded-2xl px-4 py-2 border border-white/20 shadow-2xl animate-pulse">
-          <div className="flex items-center gap-2 text-sm text-white font-semibold">
-            <div className="w-2 h-2 bg-green-400 rounded-full animate-ping" />
-            <span>{liveActivity.bookings} booked in last hour</span>
+        {/* Live Activity Badge - real photographer count */}
+        {liveActivity.photographers > 0 && (
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 md:top-6 md:right-6 bg-white/15 backdrop-blur-md rounded-2xl px-4 py-2 border border-white/20 shadow-2xl">
+            <div className="flex items-center gap-2 text-sm text-white font-semibold">
+              <div className="w-2 h-2 bg-green-400 rounded-full animate-ping" />
+              <span>{liveActivity.photographers} photographers available</span>
+            </div>
           </div>
-        </div>
+        )}
 
         <div className="container relative z-10 py-20">
           <div className={`max-w-4xl transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
             {/* Trust Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/20 backdrop-blur-md border border-emerald-400/30 mb-8">
               <Shield className="w-4 h-4 text-emerald-400" />
-              <span className="text-sm font-bold text-white">Trusted by 10,000+ customers</span>
+              <span className="text-sm font-bold text-white">Verified photographers · Secure payments</span>
             </div>
 
             {/* Main Headline - SEO Optimized */}

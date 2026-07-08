@@ -20,7 +20,9 @@ interface MessageContextType {
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
   addMessage: (message: Omit<Message, 'id' | 'created_at' | 'read'>) => void;
+  sendMessage: (recipientId: string, subject: string, content: string) => Promise<{ error: { message: string } | null }>;
   removeMessage: (id: string) => void;
+  refreshMessages: () => Promise<void>;
 }
 
 const MessageContext = createContext<MessageContextType | undefined>(undefined);
@@ -112,6 +114,23 @@ export function MessageProvider({ children }: { children: ReactNode }) {
     setMessages(prev => [newMessage, ...prev]);
   };
 
+  // Persist a new message to the server and refresh the inbox.
+  const sendMessage = async (recipientId: string, subject: string, content: string) => {
+    if (!user) return { error: { message: 'Not signed in' } };
+
+    const { error } = await supabase.from('messages').insert({
+      sender_id: user.id,
+      recipient_id: recipientId,
+      subject,
+      content,
+      is_read: false,
+      created_at: new Date().toISOString(),
+    });
+
+    if (!error) await fetchMessages();
+    return { error };
+  };
+
   const removeMessage = (id: string) => {
     setMessages(prev => prev.filter(msg => msg.id !== id));
   };
@@ -125,7 +144,9 @@ export function MessageProvider({ children }: { children: ReactNode }) {
       markAsRead,
       markAllAsRead,
       addMessage,
-      removeMessage
+      sendMessage,
+      removeMessage,
+      refreshMessages: fetchMessages
     }}>
       {children}
     </MessageContext.Provider>

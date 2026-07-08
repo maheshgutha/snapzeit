@@ -217,7 +217,7 @@ export default function PhotographerProfile() {
           {/* Action Buttons */}
           <div className="absolute top-4 left-4 flex gap-2">
             <ShareButton
-              title={`Check out ${photographer.name} on OraSnap`}
+              title={`Check out ${photographer.name} on SnapZeit`}
               text={`I found this amazing ${photographer.specialty} photographer!`}
               variant="secondary"
             />

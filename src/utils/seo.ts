@@ -1,4 +1,4 @@
-// SEO utility functions for OraSnap
+// SEO utility functions for SnapZeit
 export interface SEOData {
   title: string;
   description: string;
@@ -107,86 +107,86 @@ const addStructuredData = (data: any) => {
 // SEO data for different pages
 export const seoData = {
   home: {
-    title: 'OraSnap - Find Professional Photographers Near You | Book Instantly',
+    title: 'SnapZeit - Find Professional Photographers Near You | Book Instantly',
     description: 'Book verified professional photographers for weddings, events, portraits and more. Browse 2,500+ photographers in 50+ countries. Instant booking, secure payments.',
     keywords: 'photography booking, professional photographers, wedding photographer, event photography, portrait photography, photographer near me',
-    canonical: 'https://orasnap.com/',
-    ogImage: 'https://orasnap.com/assets/orasnap-og-image.jpg',
+    canonical: 'https://snapzeit.com/',
+    ogImage: 'https://snapzeit.com/assets/snapzeit-og-image.jpg',
     structuredData: {
       "@context": "https://schema.org",
       "@type": "WebSite",
-      "name": "OraSnap",
+      "name": "SnapZeit",
       "description": "Professional photographer booking platform",
-      "url": "https://orasnap.com",
+      "url": "https://snapzeit.com",
       "potentialAction": {
         "@type": "SearchAction",
-        "target": "https://orasnap.com/photographers?search={search_term_string}",
+        "target": "https://snapzeit.com/photographers?search={search_term_string}",
         "query-input": "required name=search_term_string"
       },
       "sameAs": [
-        "https://facebook.com/orasnap",
-        "https://twitter.com/orasnap",
-        "https://instagram.com/orasnap"
+        "https://facebook.com/snapzeit",
+        "https://twitter.com/snapzeit",
+        "https://instagram.com/snapzeit"
       ]
     }
   },
   
   photographers: {
-    title: 'Professional Photographers Directory | Browse & Book | OraSnap',
+    title: 'Professional Photographers Directory | Browse & Book | SnapZeit',
     description: 'Browse 2,500+ verified professional photographers worldwide. Filter by location, specialty, price. View portfolios, read reviews, book instantly.',
     keywords: 'professional photographers, photographer directory, wedding photographers, portrait photographers, event photographers, photography services',
-    canonical: 'https://orasnap.com/photographers',
+    canonical: 'https://snapzeit.com/photographers',
     structuredData: {
       "@context": "https://schema.org",
       "@type": "CollectionPage",
       "name": "Professional Photographers Directory",
       "description": "Browse verified professional photographers worldwide",
-      "url": "https://orasnap.com/photographers"
+      "url": "https://snapzeit.com/photographers"
     }
   },
 
   categories: {
-    title: 'Photography Categories | Wedding, Portrait, Event & More | OraSnap',
+    title: 'Photography Categories | Wedding, Portrait, Event & More | SnapZeit',
     description: 'Explore photography categories: Wedding, Portrait, Event, Commercial, Fashion, Product photography and more. Find specialists for your specific needs.',
     keywords: 'photography categories, wedding photography, portrait photography, event photography, commercial photography, fashion photography',
-    canonical: 'https://orasnap.com/categories',
+    canonical: 'https://snapzeit.com/categories',
     structuredData: {
       "@context": "https://schema.org",
       "@type": "CollectionPage",
       "name": "Photography Categories",
       "description": "Browse photography services by category",
-      "url": "https://orasnap.com/categories"
+      "url": "https://snapzeit.com/categories"
     }
   },
 
   locations: {
-    title: 'Find Photographers by Location | 50+ Countries | OraSnap',
+    title: 'Find Photographers by Location | 50+ Countries | SnapZeit',
     description: 'Find professional photographers in your city. Available in 200+ cities across 50+ countries. New York, London, Paris, Tokyo, Mumbai and more.',
     keywords: 'photographers by location, photographers near me, local photographers, city photographers, international photographers',
-    canonical: 'https://orasnap.com/locations',
+    canonical: 'https://snapzeit.com/locations',
     structuredData: {
       "@context": "https://schema.org",
       "@type": "CollectionPage",
       "name": "Photographers by Location",
       "description": "Find photographers in your city or region",
-      "url": "https://orasnap.com/locations"
+      "url": "https://snapzeit.com/locations"
     }
   },
 
   pricing: {
-    title: 'Photography Pricing Guide | Transparent Rates | OraSnap',
+    title: 'Photography Pricing Guide | Transparent Rates | SnapZeit',
     description: 'Transparent photography pricing. Wedding photography from $2,500, Portrait sessions from $300, Event photography from $800. No hidden fees.',
     keywords: 'photography pricing, photographer rates, wedding photography cost, portrait photography price, event photography rates',
-    canonical: 'https://orasnap.com/pricing'
+    canonical: 'https://snapzeit.com/pricing'
   }
 };
 
 // Generate photographer-specific SEO data
 export const generatePhotographerSEO = (photographer: any) => ({
-  title: `${photographer.name} - ${photographer.specialty} in ${photographer.location} | OraSnap`,
+  title: `${photographer.name} - ${photographer.specialty} in ${photographer.location} | SnapZeit`,
   description: `Book ${photographer.name}, professional ${photographer.specialty.toLowerCase()} in ${photographer.location}. ${photographer.experience_years}+ years experience, ${photographer.rating}★ rating. View portfolio and book instantly.`,
   keywords: `${photographer.name}, ${photographer.specialty}, ${photographer.location} photographer, professional photography, book photographer`,
-  canonical: `https://orasnap.com/photographer/${photographer.id}`,
+  canonical: `https://snapzeit.com/photographer/${photographer.id}`,
   structuredData: {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
@@ -224,16 +224,16 @@ export const generatePhotographerSEO = (photographer: any) => ({
 
 // Generate location-specific SEO data
 export const generateLocationSEO = (location: string, country: string, photographerCount: number) => ({
-  title: `Professional Photographers in ${location}, ${country} | Book Now | OraSnap`,
+  title: `Professional Photographers in ${location}, ${country} | Book Now | SnapZeit`,
   description: `Find and book ${photographerCount}+ professional photographers in ${location}, ${country}. Wedding, portrait, event photography. Verified profiles, instant booking.`,
   keywords: `photographers in ${location}, ${location} photographers, ${country} photographers, professional photography ${location}`,
-  canonical: `https://orasnap.com/locations/${location.toLowerCase().replace(/\s+/g, '-')}`,
+  canonical: `https://snapzeit.com/locations/${location.toLowerCase().replace(/\s+/g, '-')}`,
   structuredData: {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
     "name": `Photographers in ${location}, ${country}`,
     "description": `Professional photographers available in ${location}`,
-    "url": `https://orasnap.com/locations/${location.toLowerCase().replace(/\s+/g, '-')}`,
+    "url": `https://snapzeit.com/locations/${location.toLowerCase().replace(/\s+/g, '-')}`,
     "about": {
       "@type": "Place",
       "name": location,

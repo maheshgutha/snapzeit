@@ -115,9 +115,9 @@ export default function Photographers() {
     const seoConfig = generateCountrySEO(userCountry, 'photographers');
 
     if (debouncedSearch) {
-      seoConfig.title = `${debouncedSearch} Photographers in ${userCountry.name} | OraSnap`;
+      seoConfig.title = `${debouncedSearch} Photographers in ${userCountry.name} | SnapZeit`;
     } else if (specialty) {
-      seoConfig.title = `${specialty} Photographers in ${userCountry.name} | OraSnap`;
+      seoConfig.title = `${specialty} Photographers in ${userCountry.name} | SnapZeit`;
     }
 
     updateInternationalSEO({
@@ -458,7 +458,7 @@ export default function Photographers() {
                 <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
                   <Camera className="h-5 w-5 text-white" />
                 </div>
-                <span className="font-bold text-xl">OraSnap</span>
+                <span className="font-bold text-xl">SnapZeit</span>
               </div>
               <p className="text-gray-600 dark:text-gray-300 mb-6 max-w-md leading-relaxed">
                 Connect with verified photographers, book instantly, and capture your perfect moments.
@@ -476,7 +476,7 @@ export default function Photographers() {
             <div>
               <h4 className="font-bold mb-4 text-gray-900 dark:text-white">For Photographers</h4>
               <ul className="space-y-3 text-sm text-gray-600 dark:text-gray-300">
-                <li><a href="/auth" className="hover:text-blue-600 transition-colors">Join OraSnap</a></li>
+                <li><a href="/auth" className="hover:text-blue-600 transition-colors">Join SnapZeit</a></li>
                 <li><a href="/photographers" className="hover:text-blue-600 transition-colors">Resources</a></li>
               </ul>
             </div>
@@ -491,7 +491,7 @@ export default function Photographers() {
           </div>
 
           <div className="border-t border-gray-200 dark:border-gray-700 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-gray-500">
-            <p>© 2026 OraSnap. All rights reserved.</p>
+            <p>© 2026 SnapZeit. All rights reserved.</p>
             <div className="flex gap-4 mt-4 md:mt-0">
               <Globe className="h-4 w-4" />
             </div>

@@ -6,7 +6,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const projectRoot = path.resolve(__dirname, '..');
 
-console.log("Starting OraSnap Dev Environment with MongoDB Backend...");
+console.log("Starting SnapZeit Dev Environment with MongoDB Backend...");
 
 // 1. Start Express Backend Server
 const serverProcess = spawn('node', ['--env-file=.env', 'server/index.js'], {

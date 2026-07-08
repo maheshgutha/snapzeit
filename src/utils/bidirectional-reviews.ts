@@ -169,30 +169,9 @@ export async function reviewCustomer(
  */
 async function updatePhotographerRating(photographerId: string): Promise<void> {
   try {
-    // Get all approved reviews for this photographer (customer reviews only)
-    const { data: reviews } = await supabase
-      .from('reviews')
-      .select('rating')
-      .eq('photographer_id', photographerId)
-      .eq('reviewer_type', 'customer')
-      .eq('moderation_status', 'approved');
-
-    if (!reviews || reviews.length === 0) {
-      return;
-    }
-
-    // Calculate average rating
-    const averageRating =
-      reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
-
-    // Update photographer
-    await supabase
-      .from('photographers')
-      .update({
-        rating: Math.round(averageRating * 100) / 100, // Round to 2 decimal places
-        review_count: reviews.length,
-      })
-      .eq('id', photographerId);
+    // Recalculated server-side: direct rating writes are blocked by the ACL
+    // so clients can't manipulate photographer ratings.
+    await supabase.rpc('recalc_photographer_rating', { photographer_id: photographerId });
   } catch (error) {
     console.error('Error updating photographer rating:', error);
   }

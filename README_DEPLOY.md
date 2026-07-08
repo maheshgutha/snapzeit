@@ -17,7 +17,7 @@ Render (backend)
 2. Use `render.yaml` or configure via the dashboard.
 3. Set environment variables in Render:
    - `MONGO_URI` (production connection string)
-   - `MONGO_DB_NAME` (e.g., orasnap)
+   - `MONGO_DB_NAME` (e.g., snapzeit)
    - `JWT_SECRET` (strong secret)
 4. Start command: `npm start`
 

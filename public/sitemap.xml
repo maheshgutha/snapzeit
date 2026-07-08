@@ -2,55 +2,55 @@
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <!-- Main sitemap -->
   <sitemap>
-    <loc>https://orasnap.com/sitemap-main.xml</loc>
+    <loc>https://snapzeit.com/sitemap-main.xml</loc>
     <lastmod>2024-01-15</lastmod>
   </sitemap>
   
   <!-- Country-specific sitemaps -->
   <sitemap>
-    <loc>https://orasnap.com/sitemap-us.xml</loc>
+    <loc>https://snapzeit.com/sitemap-us.xml</loc>
     <lastmod>2024-01-15</lastmod>
   </sitemap>
   <sitemap>
-    <loc>https://orasnap.com/sitemap-gb.xml</loc>
+    <loc>https://snapzeit.com/sitemap-gb.xml</loc>
     <lastmod>2024-01-15</lastmod>
   </sitemap>
   <sitemap>
-    <loc>https://orasnap.com/sitemap-ca.xml</loc>
+    <loc>https://snapzeit.com/sitemap-ca.xml</loc>
     <lastmod>2024-01-15</lastmod>
   </sitemap>
   <sitemap>
-    <loc>https://orasnap.com/sitemap-au.xml</loc>
+    <loc>https://snapzeit.com/sitemap-au.xml</loc>
     <lastmod>2024-01-15</lastmod>
   </sitemap>
   <sitemap>
-    <loc>https://orasnap.com/sitemap-de.xml</loc>
+    <loc>https://snapzeit.com/sitemap-de.xml</loc>
     <lastmod>2024-01-15</lastmod>
   </sitemap>
   <sitemap>
-    <loc>https://orasnap.com/sitemap-fr.xml</loc>
+    <loc>https://snapzeit.com/sitemap-fr.xml</loc>
     <lastmod>2024-01-15</lastmod>
   </sitemap>
   <sitemap>
-    <loc>https://orasnap.com/sitemap-in.xml</loc>
+    <loc>https://snapzeit.com/sitemap-in.xml</loc>
     <lastmod>2024-01-15</lastmod>
   </sitemap>
   <sitemap>
-    <loc>https://orasnap.com/sitemap-jp.xml</loc>
+    <loc>https://snapzeit.com/sitemap-jp.xml</loc>
     <lastmod>2024-01-15</lastmod>
   </sitemap>
   <sitemap>
-    <loc>https://orasnap.com/sitemap-br.xml</loc>
+    <loc>https://snapzeit.com/sitemap-br.xml</loc>
     <lastmod>2024-01-15</lastmod>
   </sitemap>
   <sitemap>
-    <loc>https://orasnap.com/sitemap-ae.xml</loc>
+    <loc>https://snapzeit.com/sitemap-ae.xml</loc>
     <lastmod>2024-01-15</lastmod>
   </sitemap>
   
   <!-- Photographer profiles -->
   <sitemap>
-    <loc>https://orasnap.com/sitemap-photographers.xml</loc>
+    <loc>https://snapzeit.com/sitemap-photographers.xml</loc>
     <lastmod>2024-01-15</lastmod>
   </sitemap>
 </sitemapindex>

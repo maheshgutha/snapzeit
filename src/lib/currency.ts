@@ -40,7 +40,8 @@ export function formatPrice(amount: number, currencyCode: string = 'USD'): strin
   return `${symbol}${amount.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
 }
 
-// Simple static exchange rates (relative to USD). Update as needed or replace with live rates.
+// Static exchange rates (relative to USD) used as the fallback until live
+// rates load. refreshExchangeRates() overwrites these at app startup.
 export const EXCHANGE_RATES: Record<string, number> = {
   USD: 1,
   EUR: 0.92,
@@ -63,6 +64,34 @@ export const EXCHANGE_RATES: Record<string, number> = {
   PHP: 56.0,
   IDR: 15600,
 };
+
+const RATES_CACHE_KEY = 'snapzeit_fx_rates';
+const RATES_MAX_AGE_MS = 24 * 60 * 60 * 1000; // refresh daily
+
+// Fetch live USD-based rates (open.er-api.com — free, no API key) and merge
+// them into EXCHANGE_RATES. Falls back silently to the static table offline.
+export async function refreshExchangeRates(): Promise<void> {
+  try {
+    const cached = localStorage.getItem(RATES_CACHE_KEY);
+    if (cached) {
+      const { at, rates } = JSON.parse(cached);
+      if (rates && Date.now() - at < RATES_MAX_AGE_MS) {
+        Object.assign(EXCHANGE_RATES, rates);
+        return;
+      }
+    }
+
+    const resp = await fetch('https://open.er-api.com/v6/latest/USD');
+    if (!resp.ok) return;
+    const json = await resp.json();
+    if (json?.result === 'success' && json.rates) {
+      Object.assign(EXCHANGE_RATES, json.rates);
+      localStorage.setItem(RATES_CACHE_KEY, JSON.stringify({ at: Date.now(), rates: json.rates }));
+    }
+  } catch (e) {
+    // Offline or blocked: static fallback rates remain in effect.
+  }
+}
 
 export function convertAmount(amount: number, from: string, to: string) {
   const fromRate = EXCHANGE_RATES[from] || 1;

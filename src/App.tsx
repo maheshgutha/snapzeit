@@ -16,6 +16,7 @@ import { Loader2 } from "lucide-react";
 // Lazy load pages for performance optimization
 const Index = lazy(() => import("./pages/Index"));
 const Auth = lazy(() => import("./pages/Auth"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const Photographers = lazy(() => import("./pages/Photographers"));
 const PhotographerProfile = lazy(() => import("./pages/PhotographerProfile"));
 const PhotographerRegister = lazy(() => import("./pages/PhotographerRegister"));
@@ -32,6 +33,7 @@ const Locations = lazy(() => import("./pages/Locations"));
 const Categories = lazy(() => import("./pages/Categories"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 const Rentals = lazy(() => import("./pages/Rentals"));
+const Favorites = lazy(() => import("./pages/Favorites"));
 const LocationLanding = lazy(() => import("./pages/LocationLanding"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const ApplicationTester = lazy(() => import("./components/ApplicationTester"));
@@ -50,7 +52,7 @@ const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center bg-background">
     <div className="flex flex-col items-center gap-4">
       <Loader2 className="h-10 w-10 animate-spin text-primary" />
-      <p className="text-muted-foreground animate-pulse">Loading OraSnap...</p>
+      <p className="text-muted-foreground animate-pulse">Loading SnapZeit...</p>
     </div>
   </div>
 );
@@ -70,8 +72,10 @@ const App = () => (
                     <Routes>
                       <Route path="/" element={<Index />} />
                       <Route path="/auth" element={<Auth />} />
+                      <Route path="/auth/reset" element={<ResetPassword />} />
                       <Route path="/photographers" element={<Photographers />} />
                       <Route path="/rentals" element={<Rentals />} />
+                      <Route path="/favorites" element={<Favorites />} />
                       <Route path="/location/:slug" element={<LocationLanding />} />
                       <Route path="/photographer/:id" element={<PhotographerProfile />} />
                       <Route path="/photographer/register" element={<PhotographerRegister />} />
@@ -87,7 +91,7 @@ const App = () => (
                       <Route path="/locations" element={<Locations />} />
                       <Route path="/categories" element={<Categories />} />
                       <Route path="/pricing" element={<Pricing />} />
-                      <Route path="/test" element={<ApplicationTester />} />
+                      {import.meta.env.DEV && <Route path="/test" element={<ApplicationTester />} />}
                       <Route path="*" element={<NotFound />} />
                     </Routes>
                   </Suspense>

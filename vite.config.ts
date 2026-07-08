@@ -17,8 +17,8 @@ export default defineConfig(({ mode }) => ({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'robots.txt'],
       manifest: {
-        name: 'OraSnap',
-        short_name: 'OraSnap',
+        name: 'SnapZeit',
+        short_name: 'SnapZeit',
         description: 'Find Local Photographers & Rent Gear',
         theme_color: '#ffffff',
         display: 'standalone',

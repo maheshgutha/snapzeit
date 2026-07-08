@@ -77,7 +77,7 @@ export function Breadcrumb({ items, className = '' }: BreadcrumbProps) {
         "@type": "ListItem",
         "position": index + 1,
         "name": item.label,
-        "item": `https://orasnap.com${item.href}`
+        "item": `https://snapzeit.com${item.href}`
       }))
     };
 

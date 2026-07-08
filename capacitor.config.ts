@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.orasnap.app',
-  appName: 'OraSnap',
+  appId: 'com.snapzeit.app',
+  appName: 'SnapZeit',
   webDir: 'dist'
 };
 

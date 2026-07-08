@@ -246,7 +246,7 @@ export function AIChatBot() {
               </Button>
             </div>
             <p className="text-[10px] text-center text-gray-400 mt-2 flex items-center justify-center gap-1">
-              <Sparkles className="h-2 w-2" /> Powered by OraSnap AI Intelligence
+              <Sparkles className="h-2 w-2" /> Powered by SnapZeit AI Intelligence
             </p>
           </div>
         </div>

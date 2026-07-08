@@ -11,12 +11,12 @@ interface FAQItem {
 
 const FAQ_DATA: FAQItem[] = [
   {
-    question: "How do I book a photographer on OraSnap?",
+    question: "How do I book a photographer on SnapZeit?",
     answer: "Booking is simple! Browse photographers, view their portfolios, check availability, and book instantly. You can filter by location, specialty, price, and style to find your perfect match.",
     category: "booking"
   },
   {
-    question: "Are all photographers on OraSnap verified?",
+    question: "Are all photographers on SnapZeit verified?",
     answer: "Yes, all photographers undergo a verification process including portfolio review, background checks, and identity verification. We ensure only professional, qualified photographers join our platform.",
     category: "safety"
   },
@@ -26,7 +26,7 @@ const FAQ_DATA: FAQItem[] = [
     category: "services"
   },
   {
-    question: "How much does photography cost on OraSnap?",
+    question: "How much does photography cost on SnapZeit?",
     answer: "Prices vary by photographer, location, and service type. Wedding photography starts from $2,500, portrait sessions from $300, and event photography from $800. All prices are transparent with no hidden fees.",
     category: "pricing"
   },
@@ -41,13 +41,13 @@ const FAQ_DATA: FAQItem[] = [
     category: "policies"
   },
   {
-    question: "How do payments work on OraSnap?",
+    question: "How do payments work on SnapZeit?",
     answer: "Payments are secure and protected. We hold funds safely until your session is completed to your satisfaction. We accept all major credit cards and digital payment methods.",
     category: "payments"
   },
   {
     question: "Can I hire photographers internationally?",
-    answer: "Yes! OraSnap operates in 50+ countries with photographers available worldwide. You can book local photographers or arrange for travel photography services.",
+    answer: "Yes! SnapZeit operates in 50+ countries with photographers available worldwide. You can book local photographers or arrange for travel photography services.",
     category: "international"
   },
   {

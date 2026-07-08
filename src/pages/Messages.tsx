@@ -27,11 +27,12 @@ export default function Messages() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
-  const { messages, markAsRead, unreadCount } = useMessages();
+  const { messages, markAsRead, unreadCount, sendMessage } = useMessages();
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const [replyContent, setReplyContent] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(false);
+  const [sending, setSending] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -47,9 +48,24 @@ export default function Messages() {
   };
 
   const sendReply = async () => {
-    if (!selectedMessage || !replyContent.trim()) return;
-    
-    // Mock reply functionality - replace with actual implementation
+    if (!selectedMessage || !replyContent.trim() || !user) return;
+
+    setSending(true);
+    // Reply goes to the other participant in the thread.
+    const recipientId = selectedMessage.sender_id === user.id
+      ? selectedMessage.recipient_id
+      : selectedMessage.sender_id;
+    const subject = selectedMessage.subject.startsWith('Re:')
+      ? selectedMessage.subject
+      : `Re: ${selectedMessage.subject}`;
+
+    const { error } = await sendMessage(recipientId, subject, replyContent.trim());
+    setSending(false);
+
+    if (error) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      return;
+    }
     toast({ title: 'Reply sent', description: 'Your reply has been sent successfully.' });
     setReplyContent('');
   };
@@ -201,9 +217,9 @@ export default function Messages() {
                       rows={4}
                     />
                     <div className="flex justify-end">
-                      <Button onClick={sendReply} disabled={!replyContent.trim()}>
+                      <Button onClick={sendReply} disabled={!replyContent.trim() || sending}>
                         <Send className="h-4 w-4 mr-2" />
-                        Send Reply
+                        {sending ? 'Sending...' : 'Send Reply'}
                       </Button>
                     </div>
                   </div>

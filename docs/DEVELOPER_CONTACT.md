@@ -6,7 +6,7 @@
 
 ---
 
-## Project: OraSnap
+## Project: SnapZeit
 **Status**: Admin Panel Complete ✅  
 **Features Implemented**:
 - Modern glass-morphism admin panel
@@ -17,4 +17,4 @@
 - Admin authentication system
 
 **Database**: MongoDB  
-**Admin User**: admin@orasnap.com
+**Admin User**: admin@snapzeit.com

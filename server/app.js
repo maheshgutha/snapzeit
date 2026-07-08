@@ -1,25 +1,40 @@
 import express from 'express';
 import cors from 'cors';
+import rateLimit from 'express-rate-limit';
 import { MongoClient } from 'mongodb';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
+import { authorizeRead, sanitizeReadDocs, authorizeInsert, authorizeMutation, isAdmin } from './acl.js';
 
 const app = express();
-const JWT_SECRET = process.env.JWT_SECRET || 'orasnap-super-secret-key-for-local-development-2026';
+const IS_PRODUCTION = process.env.NODE_ENV === 'production';
+
+if (IS_PRODUCTION && !process.env.JWT_SECRET) {
+  throw new Error('JWT_SECRET must be set in production — refusing to start with the built-in development secret.');
+}
+const JWT_SECRET = process.env.JWT_SECRET || 'snapzeit-super-secret-key-for-local-development-2026';
 const MONGO_URI = process.env.MONGO_URI;
+// Note: the database name stays 'orasnap' — existing data lives there.
+// Override with MONGO_DB_NAME if you migrate to a new database.
 const MONGO_DB_NAME = process.env.MONGO_DB_NAME || 'orasnap';
 
 if (!MONGO_URI) {
   console.error('MONGO_URI is not set. Create a .env file (see .env.example) with your MongoDB connection string.');
 }
 
+// In production set CORS_ORIGIN to your site origin(s), comma-separated.
+const corsOrigins = process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',').map(o => o.trim()) : '*';
 app.use(cors({
-  origin: '*', // Allow all origins for dev testing
+  origin: corsOrigins,
   methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'apikey', 'x-client-info']
 }));
-app.use(express.json());
+app.use(express.json({ limit: '4mb' }));
+
+// Rate limits: tight on auth (credential stuffing), generous elsewhere.
+app.use('/api/auth/', rateLimit({ windowMs: 15 * 60 * 1000, limit: 50, standardHeaders: true, legacyHeaders: false }));
+app.use('/api/', rateLimit({ windowMs: 15 * 60 * 1000, limit: 1000, standardHeaders: true, legacyHeaders: false }));
 
 // Logger middleware
 app.use((req, res, next) => {
@@ -29,12 +44,15 @@ app.use((req, res, next) => {
 
 let db;
 
-// Fix for TLS/SSL handshake errors on Windows with Node.js 18+ and OpenSSL 3.x
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+// Local-dev-only workaround for TLS/SSL handshake errors on Windows with
+// Node.js 18+ and OpenSSL 3.x. Never disable certificate validation in production.
+if (!IS_PRODUCTION) {
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+}
 
 const mongoClient = MONGO_URI ? new MongoClient(MONGO_URI, {
   tls: true,
-  tlsInsecure: true,
+  tlsInsecure: !IS_PRODUCTION,
   serverSelectionTimeoutMS: 10000,
   connectTimeoutMS: 10000,
 }) : null;
@@ -64,31 +82,54 @@ async function configureIndexes() {
 }
 
 function createMockDb() {
-  // Lightweight in-memory mock DB for development when Mongo is unavailable
+  // Lightweight in-memory mock DB for development when Mongo is unavailable.
+  // Supports the query shapes the app + ACL actually produce:
+  // equality, $regex, $in, $ne, $gt(e)/$lt(e), $all, and nested $and/$or.
+  const matchesCondition = (docValue, cond) => {
+    if (cond !== null && typeof cond === 'object' && !Array.isArray(cond)) {
+      if ('$regex' in cond) {
+        const re = new RegExp(cond.$regex, cond.$options || 'i');
+        return re.test(docValue || '');
+      }
+      if ('$in' in cond) return cond.$in.includes(docValue);
+      if ('$ne' in cond) return docValue !== cond.$ne;
+      if ('$gt' in cond) return docValue > cond.$gt;
+      if ('$gte' in cond) return docValue >= cond.$gte;
+      if ('$lt' in cond) return docValue < cond.$lt;
+      if ('$lte' in cond) return docValue <= cond.$lte;
+      if ('$all' in cond) return Array.isArray(docValue) && cond.$all.every(x => docValue.includes(x));
+      if ('$elemMatch' in cond) return Array.isArray(docValue) && docValue.some(x => matchesCondition(x, cond.$elemMatch));
+      return false;
+    }
+    return docValue === cond;
+  };
+
+  const matchesQuery = (doc, query) => {
+    for (const [k, val] of Object.entries(query || {})) {
+      if (k === '$and') {
+        if (!val.every(sub => matchesQuery(doc, sub))) return false;
+      } else if (k === '$or') {
+        if (!val.some(sub => matchesQuery(doc, sub))) return false;
+      } else if (!matchesCondition(doc[k], val)) {
+        return false;
+      }
+    }
+    return true;
+  };
+
   const createCollection = () => {
     const docs = new Map();
     return {
       async findOne(query) {
         for (const v of docs.values()) {
-          let match = true;
-          for (const [k, val] of Object.entries(query || {})) {
-            if (v[k] !== val) { match = false; break; }
-          }
-          if (match) return v;
+          if (matchesQuery(v, query)) return v;
         }
         return null;
       },
       find(query = {}) {
         const results = [];
         for (const v of docs.values()) {
-          let match = true;
-          for (const [k, val] of Object.entries(query || {})) {
-            if (typeof val === 'object' && val !== null && '$regex' in val) {
-              const re = new RegExp(val.$regex, val.$options || 'i');
-              if (!re.test(v[k] || '')) { match = false; break; }
-            } else if (v[k] !== val) { match = false; break; }
-          }
-          if (match) results.push({ ...v });
+          if (matchesQuery(v, query)) results.push({ ...v });
         }
         return {
           sort() { return this; },
@@ -165,9 +206,16 @@ async function connectToMongo() {
   return connectPromise;
 }
 
+// Client-side code queries by `id`, but Mongo documents are keyed on `_id`
+// (and not all documents carry a duplicate `id` field), so map the key.
+function mongoField(key) {
+  return key === 'id' ? '_id' : key;
+}
+
 // Parse a single "column.op.value" clause (PostgREST style) into a Mongo condition
 function parseOrClause(clause) {
-  const [column, op, ...rest] = clause.split('.');
+  const [rawColumn, op, ...rest] = clause.split('.');
+  const column = mongoField(rawColumn);
   const rawVal = rest.join('.');
   const cast = (v) => (v === 'true' ? true : v === 'false' ? false : v);
 
@@ -187,14 +235,16 @@ function parseOrClause(clause) {
 // Helper to parse query parameters (e.g. email=eq.test@gmail.com, is_blocked=eq.false)
 function buildMongoQuery(queryParams) {
   const query = {};
-  for (const [key, val] of Object.entries(queryParams)) {
+  for (const [rawKey, val] of Object.entries(queryParams)) {
     // Skip special parameters
-    if (['select', 'order', 'limit', 'single', 'offset'].includes(key)) continue;
+    if (['select', 'order', 'limit', 'single', 'offset'].includes(rawKey)) continue;
 
-    if (key === 'or' && typeof val === 'string') {
+    if (rawKey === 'or' && typeof val === 'string') {
       query.$or = val.split(',').map(parseOrClause);
       continue;
     }
+
+    const key = mongoField(rawKey);
 
     if (typeof val === 'string') {
       if (val.startsWith('eq.')) {
@@ -252,6 +302,15 @@ function authenticateToken(req) {
   } catch (err) {
     return null;
   }
+}
+
+// Express middleware: only admins may pass.
+function requireAdmin(req, res, next) {
+  const user = authenticateToken(req);
+  if (!user) return res.status(401).json({ data: null, error: { message: 'Authentication required' } });
+  if (!isAdmin(user)) return res.status(403).json({ data: null, error: { message: 'Admin access required' } });
+  req.user = user;
+  next();
 }
 
 // -------------------------------------------------------------------
@@ -348,12 +407,11 @@ app.post('/api/auth/signin', async (req, res) => {
       return res.status(400).json({ error: { message: "Invalid email or password" } });
     }
 
-    // Support a fallback bypass for seeded accounts in local environment: password123
     let passwordMatches = false;
     if (profile.hashed_password) {
       passwordMatches = await bcrypt.compare(password, profile.hashed_password);
-    } else {
-      // Seeded accounts without hashed password can log in with "password123"
+    } else if (!IS_PRODUCTION) {
+      // Local dev only: seeded accounts without a hashed password accept "password123".
       passwordMatches = (password === 'password123');
     }
 
@@ -440,6 +498,131 @@ app.get('/api/auth/session', async (req, res) => {
 
 app.post('/api/auth/signout', (req, res) => {
   res.json({ error: null });
+});
+
+// ---- Password reset -------------------------------------------------------
+
+// Send email via Resend or SendGrid REST APIs (whichever key is configured).
+// Returns false when no provider is configured.
+async function sendEmail({ to, subject, html }) {
+  const from = process.env.EMAIL_FROM || 'SnapZeit <onboarding@resend.dev>';
+
+  if (process.env.RESEND_API_KEY) {
+    const resp = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+      },
+      body: JSON.stringify({ from, to: [to], subject, html }),
+    });
+    if (!resp.ok) console.error('Resend email failed:', await resp.text());
+    return resp.ok;
+  }
+
+  if (process.env.SENDGRID_API_KEY) {
+    const resp = await fetch('https://api.sendgrid.com/v3/mail/send', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${process.env.SENDGRID_API_KEY}`,
+      },
+      body: JSON.stringify({
+        personalizations: [{ to: [{ email: to }] }],
+        from: { email: process.env.EMAIL_FROM || 'noreply@snapzeit.com' },
+        subject,
+        content: [{ type: 'text/html', value: html }],
+      }),
+    });
+    if (!resp.ok) console.error('SendGrid email failed:', await resp.text());
+    return resp.ok;
+  }
+
+  return false;
+}
+
+const hashToken = (token) => crypto.createHash('sha256').update(token).digest('hex');
+
+app.post('/api/auth/request-password-reset', async (req, res) => {
+  const { email } = req.body || {};
+  if (!email) {
+    return res.status(400).json({ data: null, error: { message: 'Email is required' } });
+  }
+
+  // Always answer the same way so the endpoint can't be used to probe which
+  // emails have accounts.
+  const genericResponse = { data: { message: 'If that email has an account, a reset link has been sent.' }, error: null };
+
+  try {
+    const profile = await db.collection('profiles').findOne({ email: email.toLowerCase() });
+    if (!profile) return res.json(genericResponse);
+
+    const token = crypto.randomBytes(32).toString('hex');
+    await db.collection('password_resets').insertOne({
+      _id: hashToken(token),
+      user_id: profile.user_id,
+      expires_at: new Date(Date.now() + 60 * 60 * 1000), // 1 hour
+      created_at: new Date(),
+    });
+
+    const appUrl = process.env.APP_URL || (Array.isArray(corsOrigins) ? corsOrigins[0] : 'http://localhost:8080');
+    const resetLink = `${appUrl}/auth/reset?token=${token}`;
+
+    const sent = await sendEmail({
+      to: profile.email,
+      subject: 'Reset your SnapZeit password',
+      html: `<p>Hi ${profile.full_name || ''},</p>
+             <p>Click the link below to reset your SnapZeit password. It expires in 1 hour.</p>
+             <p><a href="${resetLink}">${resetLink}</a></p>
+             <p>If you didn't request this, you can ignore this email.</p>`,
+    });
+
+    if (!sent) {
+      if (IS_PRODUCTION) {
+        console.error('Password reset requested but no email provider configured (set RESEND_API_KEY or SENDGRID_API_KEY).');
+      } else {
+        // Local dev without an email provider: print the link so the flow is testable.
+        console.log(`[dev] Password reset link for ${profile.email}: ${resetLink}`);
+        return res.json({ data: { message: 'Email not configured — reset link printed to the server console.', dev_reset_token: token }, error: null });
+      }
+    }
+
+    return res.json(genericResponse);
+  } catch (err) {
+    console.error('Password reset request error:', err);
+    return res.json(genericResponse);
+  }
+});
+
+app.post('/api/auth/reset-password', async (req, res) => {
+  const { token, password } = req.body || {};
+  if (!token || !password) {
+    return res.status(400).json({ data: null, error: { message: 'Token and new password are required' } });
+  }
+  if (String(password).length < 8) {
+    return res.status(400).json({ data: null, error: { message: 'Password must be at least 8 characters' } });
+  }
+
+  try {
+    const resetsColl = db.collection('password_resets');
+    const record = await resetsColl.findOne({ _id: hashToken(token) });
+
+    if (!record || new Date(record.expires_at) < new Date()) {
+      return res.status(400).json({ data: null, error: { message: 'This reset link is invalid or has expired. Please request a new one.' } });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    await db.collection('profiles').updateOne(
+      { user_id: record.user_id },
+      { $set: { hashed_password: hashedPassword, updated_at: new Date() } }
+    );
+    await resetsColl.deleteMany({ user_id: record.user_id });
+
+    return res.json({ data: { message: 'Password updated. You can now sign in.' }, error: null });
+  } catch (err) {
+    console.error('Password reset error:', err);
+    return res.status(500).json({ data: null, error: { message: err.message } });
+  }
 });
 
 // Update the current user's password and/or profile metadata
@@ -591,6 +774,42 @@ app.post('/api/rpc/get_photographers_paginated', async (req, res) => {
 });
 
 
+// Recalculate a photographer's rating/review_count from the reviews collection.
+// Clients call this after submitting a review instead of writing rating directly
+// (direct rating writes are blocked by the ACL to prevent rating manipulation).
+app.post('/api/rpc/recalc_photographer_rating', async (req, res) => {
+  const sessionUser = authenticateToken(req);
+  if (!sessionUser) {
+    return res.status(401).json({ data: null, error: { message: 'Authentication required' } });
+  }
+
+  const { photographer_id } = req.body || {};
+  if (!photographer_id) {
+    return res.status(400).json({ data: null, error: { message: 'photographer_id is required' } });
+  }
+
+  try {
+    const reviews = await db.collection('reviews')
+      .find({ photographer_id, moderation_status: { $ne: 'rejected' } })
+      .toArray();
+
+    const count = reviews.length;
+    const average = count > 0
+      ? Math.round((reviews.reduce((sum, r) => sum + (Number(r.rating) || 0), 0) / count) * 100) / 100
+      : 0;
+
+    await db.collection('photographers').updateOne(
+      { _id: photographer_id },
+      { $set: { rating: average, review_count: count, updated_at: new Date() } }
+    );
+
+    res.json({ data: { photographer_id, rating: average, review_count: count }, error: null });
+  } catch (err) {
+    console.error('RPC recalc_photographer_rating error:', err);
+    res.status(500).json({ data: null, error: { message: err.message } });
+  }
+});
+
 // -------------------------------------------------------------------
 // 9. PAYMENTS - Razorpay Order Creation (Server-side)
 // -------------------------------------------------------------------
@@ -674,6 +893,11 @@ app.post('/api/payments/verify-signature', async (req, res) => {
 // Create booking after verifying Razorpay signature (server-side booking creation)
 app.post('/api/payments/create-booking', async (req, res) => {
   try {
+    const sessionUser = authenticateToken(req);
+    if (!sessionUser) {
+      return res.status(401).json({ data: null, error: { message: 'Authentication required' } });
+    }
+
     const { booking, razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
     if (!booking || !razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
@@ -698,6 +922,7 @@ app.post('/api/payments/create-booking', async (req, res) => {
     const now = new Date();
     const bookingDoc = {
       ...booking,
+      user_id: sessionUser.userId, // booking always belongs to the paying user
       payment_status: 'paid',
       payment_intent_id: razorpay_payment_id,
       payment_order_id: razorpay_order_id,
@@ -728,7 +953,13 @@ app.post('/api/payments/webhook', express.raw({ type: '*/*' }), async (req, res)
     const raw = payload instanceof Buffer ? payload.toString('utf8') : JSON.stringify(payload);
 
     if (!webhookSecret) {
-      console.warn('Webhook received but no RAZORPAY_WEBHOOK_SECRET configured. Skipping verification.');
+      if (IS_PRODUCTION) {
+        // Never process unverified payment events in production — an attacker
+        // could mark bookings as paid.
+        console.error('Webhook received but RAZORPAY_WEBHOOK_SECRET is not configured. Rejecting.');
+        return res.status(503).send('webhook_secret_not_configured');
+      }
+      console.warn('Webhook received but no RAZORPAY_WEBHOOK_SECRET configured. Skipping verification (dev only).');
     } else {
       const expected = crypto.createHmac('sha256', webhookSecret).update(raw).digest('hex');
       if (signature !== expected) {
@@ -768,7 +999,7 @@ app.post('/api/payments/webhook', express.raw({ type: '*/*' }), async (req, res)
 // -------------------------------------------------------------------
 // Admin booking operations
 // -------------------------------------------------------------------
-app.post('/api/admin/bookings/:id/approve', async (req, res) => {
+app.post('/api/admin/bookings/:id/approve', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const bookingsColl = db.collection('bookings');
@@ -781,7 +1012,7 @@ app.post('/api/admin/bookings/:id/approve', async (req, res) => {
   }
 });
 
-app.post('/api/admin/bookings/:id/refund', async (req, res) => {
+app.post('/api/admin/bookings/:id/refund', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const { amount, reason } = req.body;
@@ -831,13 +1062,19 @@ app.post('/api/db/:collection', async (req, res) => {
   const body = req.body;
 
   try {
-    const collection = db.collection(collName);
+    const user = authenticateToken(req);
 
     // Accept array or single document
     const isArray = Array.isArray(body);
     const documents = isArray ? body : [body];
 
-    const prepared = documents.map(doc => {
+    const auth = await authorizeInsert(collName, user, documents, db);
+    if (!auth.ok) {
+      return res.status(auth.status).json({ data: null, error: { message: auth.message } });
+    }
+
+    const collection = db.collection(collName);
+    const prepared = auth.docs.map(doc => {
       const preparedDoc = { ...doc };
       if (!preparedDoc._id && preparedDoc.id) {
         preparedDoc._id = preparedDoc.id;
@@ -867,9 +1104,16 @@ app.post('/api/db/:collection', async (req, res) => {
 // READ (GET)
 app.get('/api/db/:collection', async (req, res) => {
   const { collection: collName } = req.params;
-  const query = buildMongoQuery(req.query);
+  const baseQuery = buildMongoQuery(req.query);
 
   try {
+    const user = authenticateToken(req);
+    const auth = await authorizeRead(collName, user, baseQuery, db);
+    if (!auth.ok) {
+      return res.status(auth.status).json({ data: null, error: { message: auth.message } });
+    }
+    const query = auth.query;
+
     const collection = db.collection(collName);
 
     // Build sort, limit, single
@@ -893,7 +1137,7 @@ app.get('/api/db/:collection', async (req, res) => {
     }
 
     const data = await cursor.toArray();
-    const mapped = data.map(item => ({
+    const mapped = sanitizeReadDocs(collName, data, user).map(item => ({
       ...item,
       id: item._id
     }));
@@ -918,13 +1162,20 @@ app.get('/api/db/:collection', async (req, res) => {
 app.patch('/api/db/:collection', async (req, res) => {
   const { collection: collName } = req.params;
   const updateBody = req.body;
-  const query = buildMongoQuery(req.query);
+  const baseQuery = buildMongoQuery(req.query);
 
   try {
+    const user = authenticateToken(req);
+    const auth = await authorizeMutation(collName, user, baseQuery, updateBody, db);
+    if (!auth.ok) {
+      return res.status(auth.status).json({ data: null, error: { message: auth.message } });
+    }
+    const query = auth.query;
+
     const collection = db.collection(collName);
 
     // Stripping illegal Mongo operators or keys
-    const updateData = { ...updateBody };
+    const updateData = { ...auth.body };
     delete updateData._id;
     delete updateData.id;
 
@@ -932,7 +1183,7 @@ app.patch('/api/db/:collection', async (req, res) => {
 
     // Fetch the updated items to return them
     const updatedItems = await collection.find(query).toArray();
-    const mapped = updatedItems.map(item => ({
+    const mapped = sanitizeReadDocs(collName, updatedItems, user).map(item => ({
       ...item,
       id: item._id
     }));
@@ -947,11 +1198,17 @@ app.patch('/api/db/:collection', async (req, res) => {
 // DELETE (DELETE)
 app.delete('/api/db/:collection', async (req, res) => {
   const { collection: collName } = req.params;
-  const query = buildMongoQuery(req.query);
+  const baseQuery = buildMongoQuery(req.query);
 
   try {
+    const user = authenticateToken(req);
+    const auth = await authorizeMutation(collName, user, baseQuery, null, db);
+    if (!auth.ok) {
+      return res.status(auth.status).json({ data: null, error: { message: auth.message } });
+    }
+
     const collection = db.collection(collName);
-    const result = await collection.deleteMany(query);
+    const result = await collection.deleteMany(auth.query);
 
     res.json({ data: { deletedCount: result.deletedCount }, error: null });
   } catch (err) {

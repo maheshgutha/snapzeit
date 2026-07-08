@@ -17,7 +17,7 @@ const newEnglishKeys = {
       "subtitle": "Have a question or need help? We are here for you"
     },
     "howItWorks": {
-      "title": "How OraSnap Works",
+      "title": "How SnapZeit Works",
       "subtitle": "Booking a professional photographer has never been easier"
     },
     "pricing": {
@@ -64,7 +64,7 @@ const newSpanishKeys = {
       "subtitle": "¿Tienes una pregunta o necesitas ayuda? Estamos aquí para ti"
     },
     "howItWorks": {
-      "title": "Cómo Funciona OraSnap",
+      "title": "Cómo Funciona SnapZeit",
       "subtitle": "Reservar un fotógrafo profesional nunca ha sido más fácil"
     },
     "pricing": {

@@ -62,7 +62,7 @@ export default function ApplicationTester() {
         {/* Header */}
         <div className="text-center">
           <h1 className="text-4xl font-black mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            OraSnap Application Tester
+            SnapZeit Application Tester
           </h1>
           <p className="text-gray-600 dark:text-gray-300 mb-6">
             Comprehensive testing suite with mock data to validate all application features
@@ -254,7 +254,7 @@ export default function ApplicationTester() {
           </CardHeader>
           <CardContent>
             <div className="font-mono text-sm space-y-1">
-              <div>🚀 OraSnap Application Test Suite Ready</div>
+              <div>🚀 SnapZeit Application Test Suite Ready</div>
               <div>📊 Mock Data: {mockPhotographers.length} photographers, {mockBookings.length} bookings loaded</div>
               <div>🧪 Test Scenarios: User flow, Photographer flow, Search functionality</div>
               <div>✨ Click "Run All Tests" to validate complete application</div>

@@ -3,7 +3,7 @@
 // service worker context (self, ExtendableEvent, clients) which isn't
 // type-compatible with the main app's DOM lib.
 /**
- * PWA Push Notification Service for OraSnap
+ * PWA Push Notification Service for SnapZeit
  * Handles subscription management and push notifications
  */
 
@@ -176,7 +176,7 @@ export function sendLocalPushNotification(payload: PushNotificationPayload): voi
     navigator.serviceWorker.ready.then(registration => {
       registration.showNotification(payload.title, {
         body: payload.body,
-        icon: payload.icon || '/icons/orasnap-192.png',
+        icon: payload.icon || '/icons/snapzeit-192.png',
         badge: payload.badge || '/icons/badge.png',
         tag: payload.tag,
         data: payload.data,

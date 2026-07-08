@@ -34,7 +34,7 @@ function makePhotographer(id, i, country = 'United States') {
 }
 
 app.get('/', (req, res) => {
-  res.send('OraSnap mock API running');
+  res.send('SnapZeit mock API running');
 });
 
 // RPC: get_public_photographers
@@ -83,5 +83,5 @@ app.get('/api/auth/session', (req, res) => {
 
 app.listen(PORT, () => {
   // eslint-disable-next-line no-console
-  console.log(`OraSnap mock API listening on http://localhost:${PORT}`);
+  console.log(`SnapZeit mock API listening on http://localhost:${PORT}`);
 });

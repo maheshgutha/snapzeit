@@ -110,7 +110,7 @@ export default function HowItWorks() {
             <h1 className="text-4xl md:text-6xl font-black mb-6 text-white leading-tight">
               How{' '}
               <span className="bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 bg-clip-text text-transparent">
-                OraSnap
+                SnapZeit
               </span>{' '}
               Works
             </h1>
@@ -191,7 +191,7 @@ export default function HowItWorks() {
       <section className="py-20 bg-white dark:bg-gray-900">
         <div className="container">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-black mb-4 text-gray-900 dark:text-white">Why Choose OraSnap?</h2>
+            <h2 className="text-3xl md:text-4xl font-black mb-4 text-gray-900 dark:text-white">Why Choose SnapZeit?</h2>
             <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
               We've built the most trusted platform for photography services
             </p>
@@ -249,7 +249,7 @@ export default function HowItWorks() {
               Ready to Capture Your Perfect Moments?
             </h2>
             <p className="mb-10 text-white/90 text-lg md:text-xl max-w-2xl mx-auto">
-              Join thousands who trust OraSnap for their photography needs. Start browsing now.
+              Join thousands who trust SnapZeit for their photography needs. Start browsing now.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
@@ -304,7 +304,7 @@ export default function HowItWorks() {
                 <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
                   <Camera className="h-5 w-5 text-white" />
                 </div>
-                <span className="font-bold text-xl">OraSnap</span>
+                <span className="font-bold text-xl">SnapZeit</span>
               </div>
               <p className="text-gray-600 dark:text-gray-300 mb-6 max-w-md leading-relaxed">
                 The world's largest marketplace for professional photography services. Connect with verified photographers, book instantly, and capture your perfect moments.
@@ -345,7 +345,7 @@ export default function HowItWorks() {
             <div>
               <h4 className="font-bold mb-4 text-gray-900 dark:text-white">For Photographers</h4>
               <ul className="space-y-3 text-sm text-gray-600 dark:text-gray-300">
-                <li><Link to="/auth" className="hover:text-blue-600 transition-colors flex items-center gap-2"><Camera className="h-3 w-3" />Join OraSnap</Link></li>
+                <li><Link to="/auth" className="hover:text-blue-600 transition-colors flex items-center gap-2"><Camera className="h-3 w-3" />Join SnapZeit</Link></li>
                 <li><Link to="/auth" className="hover:text-blue-600 transition-colors flex items-center gap-2">📊 Dashboard</Link></li>
                 <li><Link to="/photographers" className="hover:text-blue-600 transition-colors flex items-center gap-2">💵 View Earnings</Link></li>
                 <li><Link to="/photographers" className="hover:text-blue-600 transition-colors flex items-center gap-2">📚 Resources</Link></li>
@@ -397,7 +397,7 @@ export default function HowItWorks() {
           <div className="flex flex-col md:flex-row justify-between items-center pt-8 border-t border-gray-200 dark:border-gray-700">
             <div className="flex flex-col md:flex-row items-center gap-4 mb-4 md:mb-0">
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                © 2024 OraSnap. All rights reserved.
+                © 2024 SnapZeit. All rights reserved.
               </p>
               <div className="flex items-center gap-1 text-xs text-gray-400">
                 <span>Made with</span>

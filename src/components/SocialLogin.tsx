@@ -12,6 +12,13 @@ interface SocialLoginProps {
 export const SocialLogin = ({ onSuccess, className = '', isPhotographer = false }: SocialLoginProps) => {
   const [loading, setLoading] = useState(false);
 
+  // OAuth isn't configured on this backend yet — render nothing rather than
+  // showing a button that always errors. Set VITE_GOOGLE_CLIENT_ID once a
+  // Google OAuth flow is implemented server-side.
+  if (!import.meta.env.VITE_GOOGLE_CLIENT_ID) {
+    return null;
+  }
+
   const handleGoogleLogin = async () => {
     setLoading(true);
     try {

@@ -104,21 +104,21 @@ export const detectUserCountry = (): CountryData => {
 
 // Generate country-specific SEO data
 export const generateCountrySEO = (country: CountryData, page: string) => {
-  const baseTitle = 'OraSnap - Professional Photographers';
+  const baseTitle = 'SnapZeit - Professional Photographers';
   const baseDesc = 'Book verified professional photographers for weddings, events, portraits and more.';
   
   return {
     title: `${baseTitle} in ${country.name} | Local Photography Services`,
     description: `${baseDesc} Find photographers in ${country.name}. Prices in ${country.currency}. Instant booking available.`,
     keywords: `photographers ${country.name}, photography services ${country.name}, ${country.name} photographers, professional photography ${country.name}`,
-    canonical: `https://orasnap.com/${country.code.toLowerCase()}/${page}`,
+    canonical: `https://snapzeit.com/${country.code.toLowerCase()}/${page}`,
     hreflang: country.language,
     structuredData: {
       "@context": "https://schema.org",
       "@type": "LocalBusiness",
-      "name": `OraSnap ${country.name}`,
+      "name": `SnapZeit ${country.name}`,
       "description": `Professional photographer booking platform in ${country.name}`,
-      "url": `https://orasnap.com/${country.code.toLowerCase()}`,
+      "url": `https://snapzeit.com/${country.code.toLowerCase()}`,
       "areaServed": {
         "@type": "Country",
         "name": country.name
@@ -132,16 +132,16 @@ export const generateCountrySEO = (country: CountryData, page: string) => {
 // Generate city-specific SEO data
 export const generateCitySEO = (city: string, country: CountryData, photographerCount: number) => {
   return {
-    title: `Professional Photographers in ${city}, ${country.name} | Book Now | OraSnap`,
+    title: `Professional Photographers in ${city}, ${country.name} | Book Now | SnapZeit`,
     description: `Find ${photographerCount}+ verified photographers in ${city}. Wedding, portrait, event photography. Prices in ${country.currencySymbol}. Instant booking.`,
     keywords: `photographers ${city}, ${city} photographers, ${country.name} photographers, professional photography ${city}`,
-    canonical: `https://orasnap.com/${country.code.toLowerCase()}/${city.toLowerCase().replace(/\s+/g, '-')}`,
+    canonical: `https://snapzeit.com/${country.code.toLowerCase()}/${city.toLowerCase().replace(/\s+/g, '-')}`,
     structuredData: {
       "@context": "https://schema.org",
       "@type": "CollectionPage",
       "name": `Photographers in ${city}, ${country.name}`,
       "description": `Professional photographers available in ${city}`,
-      "url": `https://orasnap.com/${country.code.toLowerCase()}/${city.toLowerCase().replace(/\s+/g, '-')}`,
+      "url": `https://snapzeit.com/${country.code.toLowerCase()}/${city.toLowerCase().replace(/\s+/g, '-')}`,
       "about": {
         "@type": "Place",
         "name": city,
@@ -234,7 +234,7 @@ export const getPaymentMethods = (country: CountryData) => {
 export const getSupportContact = (country: CountryData) => {
   return {
     phone: country.supportPhone,
-    email: `support-${country.code.toLowerCase()}@orasnap.com`,
+    email: `support-${country.code.toLowerCase()}@snapzeit.com`,
     hours: getBusinessHours(country.timezone)
   };
 };
@@ -250,11 +250,11 @@ export const generateHreflangTags = (currentPath: string) => {
   
   // Add popular countries
   COUNTRIES.filter(c => c.popular).forEach(country => {
-    hreflangTags[country.language] = `https://orasnap.com/${country.code.toLowerCase()}${currentPath}`;
+    hreflangTags[country.language] = `https://snapzeit.com/${country.code.toLowerCase()}${currentPath}`;
   });
   
   // Add default
-  hreflangTags['x-default'] = `https://orasnap.com${currentPath}`;
+  hreflangTags['x-default'] = `https://snapzeit.com${currentPath}`;
   
   return hreflangTags;
 };

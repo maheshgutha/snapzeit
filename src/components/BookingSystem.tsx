@@ -9,7 +9,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Badge } from '@/components/ui/badge';
 import { X, Calendar as CalendarIcon, Clock, CreditCard, CheckCircle } from 'lucide-react';
 import { initiatePayment } from '@/utils/payment-service';
-import { apiClient } from '@/integrations/api/client';
+import { apiClient, getAuthHeaders } from '@/integrations/api/client';
 import { toast } from 'sonner';
 
 interface BookingSystemProps {
@@ -86,7 +86,7 @@ export function BookingSystem({ photographerName, photographerId, pricePerHour, 
             const apiBase = import.meta.env.VITE_API_BASE_URL || '';
             const verifyResp = await fetch(`${apiBase}/api/payments/verify-signature`, {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              headers: getAuthHeaders(),
               body: JSON.stringify({
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_payment_id: response.razorpay_payment_id,
@@ -114,6 +114,11 @@ export function BookingSystem({ photographerName, photographerId, pricePerHour, 
     } else {
       // Bypass Payment (Mock Mode)
       console.warn("Razorpay key not configured. Using Mock Payment.");
+      const { data: { user } } = await apiClient.auth.getUser();
+      if (!user) {
+        toast.error("Please login to book.");
+        return;
+      }
       // Simulate API delay
       toast.info("Test Mode: Simulating successful payment...");
       setTimeout(async () => {
@@ -121,7 +126,7 @@ export function BookingSystem({ photographerName, photographerId, pricePerHour, 
         const apiBase = import.meta.env.VITE_API_BASE_URL || '';
         const selectedPkg = packages.find(p => p.id === selectedPackage);
         const bookingData = {
-          user_id: 'anonymous',
+          user_id: user.id,
           photographer_id: photographerId,
           booking_date: selectedDate!.toISOString().split('T')[0],
           start_time: '10:00:00',
@@ -137,7 +142,7 @@ export function BookingSystem({ photographerName, photographerId, pricePerHour, 
 
         await fetch(`${apiBase}/api/db/bookings`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getAuthHeaders(),
           body: JSON.stringify(bookingData)
         });
         toast.success('Booking simulated (mock).');
@@ -182,7 +187,7 @@ export function BookingSystem({ photographerName, photographerId, pricePerHour, 
 
       const resp = await fetch(`${apiBase}/api/payments/create-booking`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify(body)
       });
 
@@ -199,7 +204,7 @@ export function BookingSystem({ photographerName, photographerId, pricePerHour, 
     // Fallback: if paymentRespOrId is a string id, insert via generic DB endpoint
     if (typeof paymentRespOrId === 'string') {
       const fallback = { ...bookingData, payment_status: paymentStatus, payment_intent_id: paymentRespOrId, created_at: new Date().toISOString() };
-      await fetch(`${apiBase}/api/db/bookings`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(fallback) });
+      await fetch(`${apiBase}/api/db/bookings`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify(fallback) });
       toast.success(`Booking Confirmed! Reference: ${paymentRespOrId}`);
       onClose();
       return;

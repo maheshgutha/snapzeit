@@ -1,4 +1,4 @@
-# OraSnap Photography Platform - Robots.txt
+# SnapZeit Photography Platform - Robots.txt
 # International SEO optimized for worldwide markets
 
 User-agent: Googlebot
@@ -65,18 +65,18 @@ Allow: /br/*
 Allow: /ae/*
 
 # International Sitemaps
-Sitemap: https://orasnap.com/sitemap.xml
-Sitemap: https://orasnap.com/sitemap-us.xml
-Sitemap: https://orasnap.com/sitemap-gb.xml
-Sitemap: https://orasnap.com/sitemap-ca.xml
-Sitemap: https://orasnap.com/sitemap-au.xml
-Sitemap: https://orasnap.com/sitemap-de.xml
-Sitemap: https://orasnap.com/sitemap-fr.xml
-Sitemap: https://orasnap.com/sitemap-in.xml
-Sitemap: https://orasnap.com/sitemap-jp.xml
-Sitemap: https://orasnap.com/sitemap-br.xml
-Sitemap: https://orasnap.com/sitemap-ae.xml
-Sitemap: https://orasnap.com/sitemap-photographers.xml
+Sitemap: https://snapzeit.com/sitemap.xml
+Sitemap: https://snapzeit.com/sitemap-us.xml
+Sitemap: https://snapzeit.com/sitemap-gb.xml
+Sitemap: https://snapzeit.com/sitemap-ca.xml
+Sitemap: https://snapzeit.com/sitemap-au.xml
+Sitemap: https://snapzeit.com/sitemap-de.xml
+Sitemap: https://snapzeit.com/sitemap-fr.xml
+Sitemap: https://snapzeit.com/sitemap-in.xml
+Sitemap: https://snapzeit.com/sitemap-jp.xml
+Sitemap: https://snapzeit.com/sitemap-br.xml
+Sitemap: https://snapzeit.com/sitemap-ae.xml
+Sitemap: https://snapzeit.com/sitemap-photographers.xml
 
 # Host directive
-Host: https://orasnap.com
+Host: https://snapzeit.com

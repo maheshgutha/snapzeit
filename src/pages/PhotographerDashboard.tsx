@@ -124,8 +124,8 @@ export default function PhotographerDashboard() {
         reviewCount: profile.review_count || 0,
         totalBookings,
         totalEarnings,
-        profileViews: 1240, // Mocked
-        responseRate: 98, // Mocked
+        profileViews: 0, // no view tracking yet — hidden in the UI
+        responseRate: 0,
         price_per_hour: profile.price_per_hour,
         bio: profile.bio || '',
         avatar: profile.avatar_url || ''
@@ -353,11 +353,11 @@ export default function PhotographerDashboard() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Views</p>
-                  <p className="text-2xl font-black text-gray-900 dark:text-white mt-1">{photographer.profileViews.toLocaleString()}</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Rating</p>
+                  <p className="text-2xl font-black text-gray-900 dark:text-white mt-1">{photographer.rating.toFixed(1)}</p>
                 </div>
                 <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-xl">
-                  <Eye className="h-6 w-6 text-purple-600" />
+                  <Star className="h-6 w-6 text-purple-600" />
                 </div>
               </div>
             </CardContent>
@@ -367,8 +367,8 @@ export default function PhotographerDashboard() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Res. Rate</p>
-                  <p className="text-2xl font-black text-gray-900 dark:text-white mt-1">{photographer.responseRate}%</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Reviews</p>
+                  <p className="text-2xl font-black text-gray-900 dark:text-white mt-1">{photographer.reviewCount}</p>
                 </div>
                 <div className="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-xl">
                   <TrendingUp className="h-6 w-6 text-orange-600" />

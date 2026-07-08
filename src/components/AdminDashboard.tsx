@@ -84,23 +84,32 @@ export function AdminDashboard() {
         activeDisputes: disputesCount.count || 0
       });
 
-      // Mock recent activity
-      setRecentActivity([
-        {
-          id: '1',
-          type: 'user_signup',
-          description: 'New user registered: john@example.com',
-          timestamp: new Date().toISOString(),
-          status: 'completed'
-        },
-        {
-          id: '2',
-          type: 'photographer_signup',
-          description: 'Photographer verification pending: Sarah Photography',
-          timestamp: new Date(Date.now() - 3600000).toISOString(),
-          status: 'pending'
-        }
+      // Real recent activity: latest bookings and signups
+      const [recentBookings, recentProfiles] = await Promise.all([
+        apiClient.from('bookings').select('*').order('created_at', { ascending: false }).limit(5),
+        apiClient.from('profiles').select('*').order('created_at', { ascending: false }).limit(5),
       ]);
+
+      const activity: RecentActivity[] = [
+        ...(recentBookings.data || []).map((b: any) => ({
+          id: `booking-${b.id}`,
+          type: 'booking_created' as const,
+          description: `Booking: ${b.event_type || 'session'} on ${b.booking_date || 'unknown date'}`,
+          timestamp: b.created_at || new Date().toISOString(),
+          status: b.status || 'pending',
+        })),
+        ...(recentProfiles.data || []).map((p: any) => ({
+          id: `signup-${p.id}`,
+          type: 'user_signup' as const,
+          description: `New user registered: ${p.email || p.full_name || 'unknown'}`,
+          timestamp: p.created_at || new Date().toISOString(),
+          status: 'completed',
+        })),
+      ]
+        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+        .slice(0, 8);
+
+      setRecentActivity(activity);
 
     } catch (error) {
       console.error('Error loading admin data:', error);

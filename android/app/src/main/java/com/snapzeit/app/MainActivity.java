@@ -1,4 +1,4 @@
-package com.orasnap.app;
+package com.snapzeit.app;
 
 import com.getcapacitor.BridgeActivity;
 

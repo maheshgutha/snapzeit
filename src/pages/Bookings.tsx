@@ -18,6 +18,7 @@ import {
   Download, Eye, Heart, Award, CreditCard, CheckCircle, X, Loader2, Package, Printer, Zap
 } from 'lucide-react';
 import { format } from 'date-fns';
+import { reviewPhotographer } from '@/utils/bidirectional-reviews';
 
 export default function Bookings() {
   const { user, loading: authLoading } = useAuth();
@@ -28,6 +29,36 @@ export default function Bookings() {
   const [rentalBookings, setRentalBookings] = useState<any[]>([]);
   const [leads, setLeads] = useState<any[]>([]);
   const [selectedRentalReceipt, setSelectedRentalReceipt] = useState<any | null>(null);
+  const [reviewBooking, setReviewBooking] = useState<any | null>(null);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState('');
+  const [submittingReview, setSubmittingReview] = useState(false);
+
+  const submitReview = async () => {
+    if (!reviewBooking || !user) return;
+    setSubmittingReview(true);
+    const review = await reviewPhotographer(
+      reviewBooking.id,
+      reviewBooking.photographerId,
+      user.id,
+      reviewRating,
+      reviewComment.trim()
+    );
+    setSubmittingReview(false);
+
+    if (review) {
+      toast({ title: 'Review submitted', description: 'Thanks for sharing your experience!' });
+      setReviewBooking(null);
+      setReviewRating(5);
+      setReviewComment('');
+    } else {
+      toast({
+        title: 'Could not submit review',
+        description: 'You may have already reviewed this booking, or it is not completed yet.',
+        variant: 'destructive',
+      });
+    }
+  };
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -47,23 +78,25 @@ export default function Bookings() {
       setLoading(true);
       const { data, error } = await supabase
         .from('bookings')
-        .select(`
-          *,
-          photographers (
-            id,
-            name,
-            avatar_url,
-            specialty,
-            rating,
-            location
-          )
-        `)
+        .select('*')
         .eq('user_id', user!.id)
         .order('booking_date', { ascending: false });
 
       if (error) throw error;
 
-      const mappedBookings = data.map((b: any) => {
+      // Enrich with photographer details (embedded joins aren't supported by the API)
+      const photographerIds = Array.from(new Set((data || []).map((b: any) => b.photographer_id).filter(Boolean)));
+      const photographerMap = new Map<string, any>();
+      if (photographerIds.length > 0) {
+        const { data: photographers } = await supabase
+          .from('photographers')
+          .select('*')
+          .in('id', photographerIds);
+        (photographers || []).forEach((p: any) => photographerMap.set(p.id, p));
+      }
+
+      const mappedBookings = (data || []).map((b: any) => {
+        b.photographers = photographerMap.get(b.photographer_id);
         // Calculate duration
         const start = new Date(`2000-01-01T${b.start_time}`);
         const end = new Date(`2000-01-01T${b.end_time}`);
@@ -71,6 +104,7 @@ export default function Bookings() {
 
         return {
           id: b.id,
+          photographerId: b.photographer_id,
           photographer: {
             name: b.photographers?.name || 'Unknown Photographer',
             avatar: b.photographers?.avatar_url,
@@ -108,22 +142,24 @@ export default function Bookings() {
     try {
       const { data, error } = await supabase
         .from('rental_bookings')
-        .select(`
-          *,
-          equipment (
-            name,
-            image_url,
-            daily_rate,
-            location,
-            brand,
-            model
-          )
-        `)
+        .select('*')
         .eq('renter_id', user!.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setRentalBookings(data || []);
+
+      // Enrich with equipment details (embedded joins aren't supported by the API)
+      const equipmentIds = Array.from(new Set((data || []).map((r: any) => r.equipment_id).filter(Boolean)));
+      const equipmentMap = new Map<string, any>();
+      if (equipmentIds.length > 0) {
+        const { data: equipment } = await supabase
+          .from('equipment')
+          .select('*')
+          .in('id', equipmentIds);
+        (equipment || []).forEach((e: any) => equipmentMap.set(e.id, e));
+      }
+
+      setRentalBookings((data || []).map((r: any) => ({ ...r, equipment: equipmentMap.get(r.equipment_id) })));
     } catch (error) {
       console.error('Error fetching rentals:', error);
     }
@@ -455,10 +491,109 @@ export default function Bookings() {
 
           {/* Past Bookings Tab */}
           <TabsContent value="past">
-            {/* ... (Same as before) ... */}
+            <div className="space-y-6">
+              {pastBookings.length === 0 ? (
+                <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg">
+                  <Award className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium">No completed sessions yet</h3>
+                  <p className="text-gray-500 mt-2">Your finished bookings will appear here.</p>
+                </div>
+              ) : (
+                pastBookings.map(booking => (
+                  <Card key={booking.id} className="glass-card border-l-4 border-l-emerald-500 overflow-hidden">
+                    <CardContent className="p-6">
+                      <div className="flex flex-col md:flex-row items-start justify-between gap-6">
+                        <div className="flex items-start gap-4 flex-1">
+                          <Avatar className="h-16 w-16 ring-4 ring-white dark:ring-gray-800 shadow-xl">
+                            <AvatarImage src={booking.photographer.avatar} alt={booking.photographer.name} />
+                            <AvatarFallback className="bg-gradient-to-r from-blue-600 to-purple-600 text-white text-lg font-bold">
+                              {booking.photographer.name.split(' ').map((n: string) => n[0]).join('')}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 space-y-2">
+                            <div className="flex flex-wrap items-center gap-3">
+                              <h3 className="text-xl font-bold text-gray-900 dark:text-white">{booking.type} Session</h3>
+                              <Badge className={`${getStatusColor(booking.status)} px-3 py-1 rounded-full shadow-sm`}>
+                                {getStatusIcon(booking.status)}
+                                <span className="ml-1 capitalize">{booking.status}</span>
+                              </Badge>
+                            </div>
+                            <p className="font-medium text-gray-800 dark:text-gray-200">{booking.photographer.name}</p>
+                            <div className="flex flex-wrap gap-4 text-sm text-gray-500 dark:text-gray-400">
+                              <span className="flex items-center gap-1"><Calendar className="h-4 w-4" /> {booking.date}</span>
+                              <span className="flex items-center gap-1"><MapPin className="h-4 w-4" /> {booking.location}</span>
+                              <span className="flex items-center gap-1 font-bold text-green-600"><CreditCard className="h-4 w-4" /> ${booking.amount}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex flex-col gap-2 w-full md:w-auto min-w-[140px]">
+                          <Button
+                            className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white shadow-md"
+                            onClick={() => setReviewBooking(booking)}
+                          >
+                            <Star className="h-4 w-4 mr-2" />
+                            Leave a Review
+                          </Button>
+                          <Link to={`/photographer/${booking.photographerId}`}>
+                            <Button variant="outline" className="w-full">
+                              Book Again
+                            </Button>
+                          </Link>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </div>
           </TabsContent>
         </Tabs>
       </section>
+
+      {/* REVIEW DIALOG */}
+      <Dialog open={!!reviewBooking} onOpenChange={(open) => !open && setReviewBooking(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Review {reviewBooking?.photographer?.name}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div>
+              <Label className="mb-2 block">Your rating</Label>
+              <div className="flex gap-1">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    type="button"
+                    onClick={() => setReviewRating(star)}
+                    className="p-1 hover:scale-110 transition-transform"
+                    aria-label={`${star} star${star > 1 ? 's' : ''}`}
+                  >
+                    <Star
+                      className={`h-8 w-8 ${star <= reviewRating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
+                    />
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="review-comment" className="mb-2 block">Your review</Label>
+              <Textarea
+                id="review-comment"
+                placeholder="How was your session?"
+                value={reviewComment}
+                onChange={(e) => setReviewComment(e.target.value)}
+                rows={4}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setReviewBooking(null)}>Cancel</Button>
+            <Button onClick={submitReview} disabled={submittingReview || !reviewComment.trim()}>
+              {submittingReview ? 'Submitting…' : 'Submit Review'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* RECEIPT DIALOG */}
       <Dialog open={!!selectedRentalReceipt} onOpenChange={(open) => !open && setSelectedRentalReceipt(null)}>
@@ -467,7 +602,7 @@ export default function Bookings() {
             <DialogTitle className="text-center border-b pb-4">
               <div className="flex items-center justify-center gap-2 mb-2">
                 <Package className="h-6 w-6 text-blue-600" />
-                <span className="font-black text-xl">OraSnap Rentals</span>
+                <span className="font-black text-xl">SnapZeit Rentals</span>
               </div>
               Rental Receipt
             </DialogTitle>

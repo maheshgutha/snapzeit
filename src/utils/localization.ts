@@ -1,4 +1,4 @@
-// Comprehensive localization system for OraSnap
+// Comprehensive localization system for SnapZeit
 export interface LocalizedContent {
   [key: string]: {
     [key: string]: string;

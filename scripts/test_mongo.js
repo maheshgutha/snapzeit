@@ -1,7 +1,7 @@
 import { MongoClient } from 'mongodb';
 
 const uri = process.env.MONGO_URI;
-const dbName = process.env.MONGO_DB_NAME || "orasnap";
+const dbName = process.env.MONGO_DB_NAME || "orasnap"; // existing data lives in the 'orasnap' db
 
 if (!uri) {
   console.error("MONGO_URI is not set. Create a .env file (see .env.example) with your MongoDB connection string.");

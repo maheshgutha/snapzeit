@@ -4,17 +4,17 @@
   
   <!-- India Main Pages -->
   <url>
-    <loc>https://orasnap.com/in/</loc>
+    <loc>https://snapzeit.com/in/</loc>
     <lastmod>2024-01-15</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
-    <xhtml:link rel="alternate" hreflang="en-in" href="https://orasnap.com/in/" />
-    <xhtml:link rel="alternate" hreflang="hi-in" href="https://orasnap.com/in/hi/" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://orasnap.com/" />
+    <xhtml:link rel="alternate" hreflang="en-in" href="https://snapzeit.com/in/" />
+    <xhtml:link rel="alternate" hreflang="hi-in" href="https://snapzeit.com/in/hi/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://snapzeit.com/" />
   </url>
   
   <url>
-    <loc>https://orasnap.com/in/photographers</loc>
+    <loc>https://snapzeit.com/in/photographers</loc>
     <lastmod>2024-01-15</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
@@ -22,37 +22,37 @@
   
   <!-- India Major Cities -->
   <url>
-    <loc>https://orasnap.com/in/mumbai</loc>
+    <loc>https://snapzeit.com/in/mumbai</loc>
     <lastmod>2024-01-15</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://orasnap.com/in/delhi</loc>
+    <loc>https://snapzeit.com/in/delhi</loc>
     <lastmod>2024-01-15</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://orasnap.com/in/bangalore</loc>
+    <loc>https://snapzeit.com/in/bangalore</loc>
     <lastmod>2024-01-15</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://orasnap.com/in/chennai</loc>
+    <loc>https://snapzeit.com/in/chennai</loc>
     <lastmod>2024-01-15</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://orasnap.com/in/kolkata</loc>
+    <loc>https://snapzeit.com/in/kolkata</loc>
     <lastmod>2024-01-15</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://orasnap.com/in/hyderabad</loc>
+    <loc>https://snapzeit.com/in/hyderabad</loc>
     <lastmod>2024-01-15</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
@@ -60,19 +60,19 @@
   
   <!-- India Photography Categories -->
   <url>
-    <loc>https://orasnap.com/in/wedding-photography</loc>
+    <loc>https://snapzeit.com/in/wedding-photography</loc>
     <lastmod>2024-01-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://orasnap.com/in/pre-wedding-photography</loc>
+    <loc>https://snapzeit.com/in/pre-wedding-photography</loc>
     <lastmod>2024-01-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://orasnap.com/in/mehendi-photography</loc>
+    <loc>https://snapzeit.com/in/mehendi-photography</loc>
     <lastmod>2024-01-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -80,13 +80,13 @@
   
   <!-- India City + Category Combinations -->
   <url>
-    <loc>https://orasnap.com/in/wedding-photography/mumbai</loc>
+    <loc>https://snapzeit.com/in/wedding-photography/mumbai</loc>
     <lastmod>2024-01-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://orasnap.com/in/wedding-photography/delhi</loc>
+    <loc>https://snapzeit.com/in/wedding-photography/delhi</loc>
     <lastmod>2024-01-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>

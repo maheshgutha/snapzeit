@@ -1,11 +1,12 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Star, MapPin, Clock, Camera, Award, Heart, MessageCircle, Eye } from 'lucide-react';
+import { Star, MapPin, Camera, Award, Heart, MessageCircle } from 'lucide-react';
 import { formatPriceLocal } from '@/lib/currency';
+import { useFavorites } from '@/hooks/useFavorites';
 
 interface Photographer {
   id: string;
@@ -30,26 +31,25 @@ interface PhotographerCardProps {
 
 export default function PhotographerCard({ photographer }: PhotographerCardProps) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { isFavorite, toggleFavorite } = useFavorites();
   const portfolioImages = [
     'https://images.unsplash.com/photo-1519741497674-611481863552?w=400&h=300&fit=crop',
     'https://images.unsplash.com/photo-1465495976277-4387d4b0e4a6?w=400&h=300&fit=crop',
     'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=400&h=300&fit=crop',
     'https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=400&h=300&fit=crop'
   ];
-  
+
   const avatarImages = [
     'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
     'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face',
     'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face'
   ];
-  
+
   const portfolioImage = photographer.portfolio?.[0] || portfolioImages[0];
   const avatarImage = photographer.avatar_url || avatarImages[0];
-  const viewCount = Math.floor(Math.random() * 2000) + 500;
-  const isOnline = Math.random() > 0.2;
-  const responseTime = Math.random() > 0.5 ? '< 1 hour' : '< 2 hours';
-  const bookingsThisWeek = Math.floor(Math.random() * 8) + 2;
-  
+  const saved = isFavorite(photographer.id);
+
   // Use the photographer's actual currency and price
   const displayCurrency = photographer.currency || 'USD';
   const displayPrice = photographer.price_per_hour;
@@ -77,12 +77,6 @@ export default function PhotographerCard({ photographer }: PhotographerCardProps
             <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
             <span className="text-sm font-bold text-gray-900">{photographer.rating.toFixed(1)}</span>
           </div>
-          {isOnline && (
-            <div className="flex items-center gap-1 bg-green-500 rounded-full px-3 py-1 shadow-lg">
-              <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
-              <span className="text-xs font-bold text-white">{t('common.online')}</span>
-            </div>
-          )}
         </div>
         
         <div className="absolute bottom-0 left-0 right-0 p-6">
@@ -95,19 +89,12 @@ export default function PhotographerCard({ photographer }: PhotographerCardProps
                     {photographer.name.split(' ').map(n => n[0]).join('')}
                   </AvatarFallback>
                 </Avatar>
-                {isOnline && (
-                  <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 border-2 border-white rounded-full" />
-                )}
               </div>
               <div className="text-white">
                 <h3 className="font-black text-xl mb-1 drop-shadow-lg">{photographer.name}</h3>
                 <div className="flex items-center gap-2 text-sm opacity-95">
                   <MapPin className="h-4 w-4" />
                   <span className="font-semibold">{photographer.location}</span>
-                </div>
-                <div className="flex items-center gap-2 text-xs opacity-90 mt-1">
-                  <Clock className="h-3 w-3" />
-                  <span>{t('common.responds')} {responseTime}</span>
                 </div>
               </div>
             </div>
@@ -128,10 +115,6 @@ export default function PhotographerCard({ photographer }: PhotographerCardProps
               <Camera className="h-5 w-5 text-blue-600" />
               <span className="text-blue-600 font-bold text-lg">{photographer.specialty}</span>
             </div>
-            <div className="flex items-center gap-1 text-sm text-gray-500">
-              <Eye className="h-4 w-4" />
-              <span className="font-semibold">{viewCount.toLocaleString()}</span>
-            </div>
           </div>
 
           <div className="grid grid-cols-3 gap-4 text-center mb-4">
@@ -144,8 +127,11 @@ export default function PhotographerCard({ photographer }: PhotographerCardProps
               <div className="text-xs text-gray-600 dark:text-gray-400">{t('photographers.reviews')}</div>
             </div>
             <div className="bg-purple-50 dark:bg-purple-900/20 rounded-xl p-3">
-              <div className="text-lg font-bold text-purple-600">{bookingsThisWeek}</div>
-              <div className="text-xs text-gray-600 dark:text-gray-400">{t('common.thisWeek')}</div>
+              <div className="text-lg font-bold text-purple-600 flex items-center justify-center gap-1">
+                <Star className="h-4 w-4 fill-purple-500 text-purple-500" />
+                {photographer.rating?.toFixed(1) ?? '—'}
+              </div>
+              <div className="text-xs text-gray-600 dark:text-gray-400">{t('photographers.rating', 'Rating')}</div>
             </div>
           </div>
         </div>
@@ -165,11 +151,19 @@ export default function PhotographerCard({ photographer }: PhotographerCardProps
             </Button>
           </Link>
           <div className="flex gap-2">
-            <Button variant="outline" className="flex-1 rounded-xl hover:scale-105 transition-all border-2 hover:border-blue-500 hover:text-blue-600">
-              <Heart className="h-4 w-4 mr-2" />
-              {t('common.save')}
+            <Button
+              variant="outline"
+              onClick={() => toggleFavorite(photographer.id)}
+              className={`flex-1 rounded-xl hover:scale-105 transition-all border-2 hover:border-blue-500 hover:text-blue-600 ${saved ? 'border-pink-500 text-pink-600' : ''}`}
+            >
+              <Heart className={`h-4 w-4 mr-2 ${saved ? 'fill-pink-500 text-pink-500' : ''}`} />
+              {saved ? t('common.saved', 'Saved') : t('common.save')}
             </Button>
-            <Button variant="outline" className="flex-1 rounded-xl hover:scale-105 transition-all border-2 hover:border-purple-500 hover:text-purple-600">
+            <Button
+              variant="outline"
+              onClick={() => navigate(`/messages?to=${photographer.id}`)}
+              className="flex-1 rounded-xl hover:scale-105 transition-all border-2 hover:border-purple-500 hover:text-purple-600"
+            >
               <MessageCircle className="h-4 w-4 mr-2" />
               {t('common.message')}
             </Button>

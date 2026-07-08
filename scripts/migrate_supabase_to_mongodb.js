@@ -1,7 +1,7 @@
 import { MongoClient } from 'mongodb';
 
 const mongoUri = process.env.MONGO_URI;
-const mongoDbName = process.env.MONGO_DB_NAME || 'orasnap';
+const mongoDbName = process.env.MONGO_DB_NAME || 'orasnap'; // existing data lives in the 'orasnap' db
 
 if (!mongoUri) {
   console.error("MONGO_URI is not set. Create a .env file (see .env.example) with your MongoDB connection string.");
@@ -14,7 +14,7 @@ const profiles = [
     _id: "a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
     user_id: "a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
     full_name: "Super Admin",
-    email: "admin@orasnap.com",
+    email: "admin@snapzeit.com",
     avatar_url: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80",
     phone: "+15550100",
     city: "New York",
@@ -29,7 +29,7 @@ const profiles = [
     _id: "u1u1u1u1-u1u1-u1u1-u1u1-u1u1u1u1u1u1",
     user_id: "u1u1u1u1-u1u1-u1u1-u1u1-u1u1u1u1u1u1",
     full_name: "John Doe",
-    email: "john.doe@orasnap.test",
+    email: "john.doe@snapzeit.test",
     avatar_url: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&q=80",
     phone: "+15550200",
     city: "London",
@@ -62,7 +62,7 @@ const photographers = [
     _id: "p1-elena",
     user_id: "u-elena-id",
     name: 'Elena Fisher', 
-    email: 'elena.fisher@orasnap.test', 
+    email: 'elena.fisher@snapzeit.test', 
     specialty: 'Wedding', 
     location: 'New York, NY', 
     country: 'United States', 
@@ -88,7 +88,7 @@ const photographers = [
     _id: "p2-arthur",
     user_id: "u-arthur-id",
     name: 'Arthur Pendelton', 
-    email: 'arthur.p@orasnap.test', 
+    email: 'arthur.p@snapzeit.test', 
     specialty: 'Portrait', 
     location: 'London', 
     country: 'United Kingdom', 
@@ -113,7 +113,7 @@ const photographers = [
     _id: "p3-sophie",
     user_id: "u-sophie-id",
     name: 'Sophie Dubois', 
-    email: 'sophie.d@orasnap.test', 
+    email: 'sophie.d@snapzeit.test', 
     specialty: 'Fashion', 
     location: 'Paris', 
     country: 'France', 
@@ -138,7 +138,7 @@ const photographers = [
     _id: "p4-kenji",
     user_id: "u-kenji-id",
     name: 'Kenji Tanaka', 
-    email: 'kenji.t@orasnap.test', 
+    email: 'kenji.t@snapzeit.test', 
     specialty: 'Event', 
     location: 'Tokyo', 
     country: 'Japan', 
@@ -163,7 +163,7 @@ const photographers = [
     _id: "p5-priya",
     user_id: "u-priya-id",
     name: 'Priya Patel', 
-    email: 'priya.p@orasnap.test', 
+    email: 'priya.p@snapzeit.test', 
     specialty: 'Wedding', 
     location: 'Mumbai', 
     country: 'India', 
@@ -188,7 +188,7 @@ const photographers = [
     _id: "p6-sarah",
     user_id: "u-sarah-id",
     name: 'Sarah Jenkins', 
-    email: 'sarah.j@orasnap.test', 
+    email: 'sarah.j@snapzeit.test', 
     specialty: 'Maternity', 
     location: 'Los Angeles, CA', 
     country: 'United States', 
@@ -359,7 +359,7 @@ const platformSettings = [
   {
     _id: "set-site-name",
     setting_key: "site_name",
-    setting_value: "OraSnap",
+    setting_value: "SnapZeit",
     description: "Platform name",
     is_public: true,
     created_at: new Date(),
@@ -377,7 +377,7 @@ const platformSettings = [
   {
     _id: "set-contact-email",
     setting_key: "contact_email",
-    setting_value: "support@orasnap.com",
+    setting_value: "support@snapzeit.com",
     description: "Contact email",
     is_public: true,
     created_at: new Date(),
@@ -415,7 +415,7 @@ const reviews = [
 const announcements = [
   {
     _id: "ann1",
-    title: "Welcome to the New OraSnap!",
+    title: "Welcome to the New SnapZeit!",
     content: "We have fully migrated our backend to MongoDB for blistering speed, higher uptime, and richer search filters. Enjoy booking professional creatives worldwide!",
     type: "success",
     target_audience: "all",

@@ -319,7 +319,7 @@ export default function Locations() {
         {/* Footer */}
         <footer className="bg-gray-900 text-white py-12 rounded-2xl">
           {/* Same as previous */}
-          <div className="text-center text-sm text-gray-500">© 2024 OraSnap</div>
+          <div className="text-center text-sm text-gray-500">© 2024 SnapZeit</div>
         </footer>
       </div>
     </div>

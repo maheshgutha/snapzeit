@@ -1,3 +1,4 @@
+import { getAuthHeaders } from '@/integrations/api/client';
 
 export const loadRazorpayScript = () => {
   return new Promise((resolve) => {
@@ -35,7 +36,7 @@ export const initiatePayment = async (options: {
     const apiBase = import.meta.env.VITE_API_BASE_URL || '';
     const createOrderResp = await fetch(`${apiBase}/api/payments/create-order`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify({ amount: options.amount, currency: options.currency })
     });
 
@@ -57,7 +58,7 @@ export const initiatePayment = async (options: {
       key: keyId,
       amount: order.amount, // already in smallest currency unit (paise)
       currency: order.currency,
-      name: 'OraSnap',
+      name: 'SnapZeit',
       description: options.description,
       order_id: order.id,
       handler: function (response: any) {
@@ -69,7 +70,7 @@ export const initiatePayment = async (options: {
         contact: options.contact,
       },
       notes: {
-        address: 'OraSnap Corporate Office',
+        address: 'SnapZeit Corporate Office',
       },
       theme: { color: '#3B82F6' },
     };

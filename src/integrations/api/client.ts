@@ -9,13 +9,24 @@ const getBaseUrl = () => {
 const authListeners = new Set<(event: string, session: any) => void>();
 
 const getStoredSession = () => {
-  const sessionStr = localStorage.getItem('orasnap_session');
+  const sessionStr = localStorage.getItem('snapzeit_session');
   if (!sessionStr) return null;
   try {
     return JSON.parse(sessionStr);
   } catch (e) {
     return null;
   }
+};
+
+// Headers (including the bearer token when signed in) for direct fetch calls
+// to the API outside this adapter, e.g. payment endpoints.
+export const getAuthHeaders = (): Record<string, string> => {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  const session = getStoredSession();
+  if (session?.access_token) {
+    headers['Authorization'] = `Bearer ${session.access_token}`;
+  }
+  return headers;
 };
 
 class ApiQueryBuilder {
@@ -64,6 +75,11 @@ class ApiQueryBuilder {
 
   or(filterString: string) {
     this.filters['or'] = filterString;
+    return this;
+  }
+
+  in(column: string, values: any[]) {
+    this.filters[column] = `in.(${values.join(',')})`;
     return this;
   }
 
@@ -260,7 +276,7 @@ export const supabase = {
 
         const result = await response.json();
         if (!result.error && result.data?.session) {
-          localStorage.setItem('orasnap_session', JSON.stringify(result.data.session));
+          localStorage.setItem('snapzeit_session', JSON.stringify(result.data.session));
           authListeners.forEach(listener => listener('SIGNED_IN', result.data.session));
         }
         return result;
@@ -283,7 +299,7 @@ export const supabase = {
 
         const result = await response.json();
         if (!result.error && result.data?.session) {
-          localStorage.setItem('orasnap_session', JSON.stringify(result.data.session));
+          localStorage.setItem('snapzeit_session', JSON.stringify(result.data.session));
           authListeners.forEach(listener => listener('SIGNED_IN', result.data.session));
         }
         return result;
@@ -307,7 +323,7 @@ export const supabase = {
       } catch (e) {
         console.warn('Signout API error', e);
       } finally {
-        localStorage.removeItem('orasnap_session');
+        localStorage.removeItem('snapzeit_session');
         authListeners.forEach(listener => listener('SIGNED_OUT', null));
       }
       return { error: null };
@@ -332,7 +348,7 @@ export const supabase = {
             ...session,
             user: { ...session.user, user_metadata: { ...session.user.user_metadata, ...(result.data?.user?.user_metadata || {}) } },
           };
-          localStorage.setItem('orasnap_session', JSON.stringify(updatedSession));
+          localStorage.setItem('snapzeit_session', JSON.stringify(updatedSession));
         }
 
         return result;
@@ -358,7 +374,7 @@ export const supabase = {
         });
         const result = await response.json();
         if (result.error || !result.data?.session) {
-          localStorage.removeItem('orasnap_session');
+          localStorage.removeItem('snapzeit_session');
           return { data: { session: null }, error: null };
         }
         return { data: { session: result.data.session }, error: null };
@@ -415,11 +431,70 @@ export const supabase = {
     }
   },
 
+  // Storage shim: images are compressed client-side and stored as data URLs
+  // inside the owning document (profile.avatar_url, photographer.portfolio),
+  // so no external storage service is required. Mirrors the Supabase storage
+  // API shape used by the app: upload() then getPublicUrl().
+  storage: {
+    from(bucket: string) {
+      return {
+        async upload(path: string, file: File | Blob, _options?: { upsert?: boolean }) {
+          try {
+            // Avatars stay small; portfolio/cover images keep more detail.
+            const maxDim = bucket === 'avatars' ? 512 : 1280;
+            const dataUrl = await compressToDataUrl(file, maxDim, 0.8);
+            uploadedDataUrls.set(`${bucket}/${path}`, dataUrl);
+            return { data: { path }, error: null };
+          } catch (err: any) {
+            return { data: null, error: { message: err.message || 'Image processing failed' } };
+          }
+        },
+        getPublicUrl(path: string) {
+          return { data: { publicUrl: uploadedDataUrls.get(`${bucket}/${path}`) || '' } };
+        },
+        async remove(paths: string[]) {
+          paths.forEach((p) => uploadedDataUrls.delete(`${bucket}/${p}`));
+          return { data: paths, error: null };
+        },
+      };
+    },
+  },
+
   // No-op for realtime channel removal (was Supabase-specific)
   removeChannel() {
     return;
   },
 };
+
+// Holds data URLs between upload() and getPublicUrl() calls.
+const uploadedDataUrls = new Map<string, string>();
+
+function compressToDataUrl(file: File | Blob, maxDim: number, quality: number): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      let { width, height } = img;
+      const scale = Math.min(1, maxDim / Math.max(width, height));
+      width = Math.round(width * scale);
+      height = Math.round(height * scale);
+
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return reject(new Error('Canvas not supported'));
+      ctx.drawImage(img, 0, 0, width, height);
+      resolve(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error('Could not read image file'));
+    };
+    img.src = objectUrl;
+  });
+}
 
 // Backwards-compatible exports
 export const apiClient = supabase;

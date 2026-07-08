@@ -51,21 +51,21 @@
   },
   "testimonials": {
     "title": "What Our Clients Say",
-    "subtitle": "Thousands of happy clients have found their perfect photographer through OraSnap"
+    "subtitle": "Thousands of happy clients have found their perfect photographer through SnapZeit"
   },
   "cta": {
     "title": "Are You a Photographer?",
     "subtitle": "Join our growing network of professionals. Reach more clients, manage bookings effortlessly, and grow your business.",
     "button": "Join as Photographer",
     "readyToCapture": "Ready to Capture Your Perfect Moments?",
-    "joinThousands": "Join thousands who trust OraSnap for their photography needs. Book now and get amazing results."
+    "joinThousands": "Join thousands who trust SnapZeit for their photography needs. Book now and get amazing results."
   },
   "footer": {
     "photographers": "Photographers",
     "howItWorks": "How It Works",
     "contact": "Contact",
     "signIn": "Sign In",
-    "copyright": "© 2024 OraSnap. All rights reserved."
+    "copyright": "© 2024 SnapZeit. All rights reserved."
   },
   "photographers": {
     "title": "Find Your Perfect Photographer",
@@ -129,7 +129,7 @@
     "createAccount": "Create Account",
     "areYouPhotographer": "Are you a photographer?",
     "joinAsPhotographer": "Join as Photographer",
-    "joinOraSnap": "Join OraSnap Today",
+    "joinSnapZeit": "Join SnapZeit Today",
     "connectPhotographers": "Connect with amazing photographers or showcase your work to thousands of potential clients",
     "resetPassword": "Reset your password",
     "resetDescription": "Enter your email address and we will send you a link to reset your password.",
@@ -405,7 +405,7 @@
       "subtitle": "Have a question or need help? We are here for you"
     },
     "howItWorks": {
-      "title": "How OraSnap Works",
+      "title": "How SnapZeit Works",
       "subtitle": "Booking a professional photographer has never been easier"
     },
     "pricing": {

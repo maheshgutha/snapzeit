@@ -1,15 +1,15 @@
 /**
- * Service Worker for OraSnap PWA
+ * Service Worker for SnapZeit PWA
  * Handles offline functionality, push notifications, and background sync
  */
 
-const CACHE_NAME = 'orasnap-v1';
+const CACHE_NAME = 'snapzeit-v1';
 const URLS_TO_CACHE = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/icons/orasnap-192.png',
-  '/icons/orasnap-512.png',
+  '/icons/snapzeit-192.png',
+  '/icons/snapzeit-512.png',
 ];
 
 // Install event - cache critical assets
@@ -113,9 +113,9 @@ self.addEventListener('push', (event) => {
   console.log('[Service Worker] Push notification received');
 
   let notificationData = {
-    title: 'OraSnap',
+    title: 'SnapZeit',
     body: 'You have a new notification',
-    icon: '/icons/orasnap-192.png',
+    icon: '/icons/snapzeit-192.png',
     badge: '/icons/badge.png',
   };
 
@@ -132,7 +132,7 @@ self.addEventListener('push', (event) => {
       body: notificationData.body,
       icon: notificationData.icon,
       badge: notificationData.badge,
-      tag: notificationData.tag || 'orasnap-notification',
+      tag: notificationData.tag || 'snapzeit-notification',
       data: notificationData.data || {},
       actions: notificationData.actions || [],
       vibrate: [200, 100, 200],

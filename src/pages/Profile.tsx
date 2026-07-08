@@ -153,28 +153,26 @@ export default function Profile() {
 
       if (uploadError) throw uploadError;
 
-      // Get public URL
+      // Get public URL (a data URL from the storage shim — no cache buster,
+      // appending query params would corrupt it)
       const { data: { publicUrl } } = supabase.storage
         .from('avatars')
         .getPublicUrl(fileName);
 
-      // Add cache buster to URL
-      const avatarUrlWithCacheBuster = `${publicUrl}?t=${Date.now()}`;
-
       // Update profile
       const { error: updateError } = await supabase
         .from('profiles')
-        .update({ avatar_url: avatarUrlWithCacheBuster, updated_at: new Date().toISOString() })
+        .update({ avatar_url: publicUrl, updated_at: new Date().toISOString() })
         .eq('user_id', user.id);
 
       if (updateError) throw updateError;
 
       // Update auth user metadata
       await supabase.auth.updateUser({
-        data: { avatar_url: avatarUrlWithCacheBuster }
+        data: { avatar_url: publicUrl }
       });
 
-      setAvatarUrl(avatarUrlWithCacheBuster);
+      setAvatarUrl(publicUrl);
 
       toast({
         title: t('profileSettings.avatarUpdated'),
