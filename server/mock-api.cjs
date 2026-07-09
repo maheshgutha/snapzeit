@@ -60,15 +60,18 @@ app.post('/api/rpc/get_photographers_paginated', (req, res) => {
   res.json({ data: items, error: null });
 });
 
-// Simple auth stubs
-app.post('/api/auth/signup', (req, res) => {
+let mockCurrentUserEmail = '';
+
+app.post('/api/auth/signin', (req, res) => {
   const { email } = req.body || {};
+  mockCurrentUserEmail = email;
   const session = { access_token: 'mock-token', user: { id: 'user-1', email } };
   res.json({ data: { session }, error: null });
 });
 
-app.post('/api/auth/signin', (req, res) => {
+app.post('/api/auth/signup', (req, res) => {
   const { email } = req.body || {};
+  mockCurrentUserEmail = email;
   const session = { access_token: 'mock-token', user: { id: 'user-1', email } };
   res.json({ data: { session }, error: null });
 });
@@ -79,6 +82,17 @@ app.post('/api/auth/signout', (req, res) => {
 
 app.get('/api/auth/session', (req, res) => {
   res.json({ data: { session: null }, error: null });
+});
+
+// Mock Roles endpoint for local dev
+app.get('/api/rest/v1/user_roles', (req, res) => {
+  if (mockCurrentUserEmail.includes('admin')) {
+    res.json({ data: [{ role: 'admin' }], error: null });
+  } else if (mockCurrentUserEmail.includes('photo') || mockCurrentUserEmail.includes('elena') || mockCurrentUserEmail.includes('arthur')) {
+    res.json({ data: [{ role: 'photographer' }], error: null });
+  } else {
+    res.json({ data: [{ role: 'user' }], error: null });
+  }
 });
 
 // Generic REST mock to allow forms to succeed

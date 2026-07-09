@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Camera, User, Mail, Lock, MapPin, Star, Award, Users, Heart, AlertCircle } from 'lucide-react';
+import { Camera, User, Mail, Lock, MapPin, Star, Award, Users, Heart, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '@/integrations/api/client';
 import { toast } from 'sonner';
 import { ErrorHandler } from '@/utils/errorHandler';
@@ -34,6 +34,10 @@ export default function Auth() {
   const [registerErrors, setRegisterErrors] = useState({
     name: '', email: '', password: '', confirmPassword: ''
   });
+
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [showRegisterPassword, setShowRegisterPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Validation functions
   const validateLoginForm = () => {
@@ -87,7 +91,22 @@ export default function Auth() {
 
       if (data.user) {
         toast.success(`Welcome back, ${data.user.email}!`);
-        navigate('/photographers');
+        
+        // Fetch role to determine where to redirect
+        const { data: rolesData } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', data.user.id);
+          
+        const roles = rolesData?.map(r => r.role) || [];
+        
+        if (roles.includes('admin')) {
+          navigate('/admin');
+        } else if (roles.includes('photographer')) {
+          navigate('/photographer/dashboard');
+        } else {
+          navigate('/photographers');
+        }
       }
     } catch (error) {
       ErrorHandler.handleGenericError(error, 'Login failed');
@@ -150,7 +169,12 @@ export default function Auth() {
         }
 
         toast.success('Account created successfully! You are now signed in.');
-        navigate('/photographers');
+        
+        if (registerForm.userType === 'photographer') {
+          navigate('/photographer/dashboard');
+        } else {
+          navigate('/photographers');
+        }
       }
     } catch (error) {
       ErrorHandler.handleGenericError(error, 'Registration failed');
@@ -299,18 +323,25 @@ export default function Auth() {
                         <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                         <Input
                           id="password"
-                          type="password"
+                          type={showLoginPassword ? "text" : "password"}
                           placeholder="••••••••"
                           value={loginForm.password}
                           onChange={(e) => {
                             setLoginForm({...loginForm, password: e.target.value});
                             if (loginErrors.password) setLoginErrors({...loginErrors, password: ''});
                           }}
-                          className={`pl-11 h-12 bg-gray-50 dark:bg-gray-700 border-0 rounded-xl focus:ring-2 transition-all ${
+                          className={`pl-11 pr-11 h-12 bg-gray-50 dark:bg-gray-700 border-0 rounded-xl focus:ring-2 transition-all ${
                             loginErrors.password ? 'focus:ring-red-500 bg-red-50 dark:bg-red-900/20' : 'focus:ring-blue-500'
                           }`}
                           required
                         />
+                        <button
+                          type="button"
+                          onClick={() => setShowLoginPassword(!showLoginPassword)}
+                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+                        >
+                          {showLoginPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                        </button>
                       </div>
                       {loginErrors.password && (
                         <div className="flex items-center gap-2 text-red-600 text-sm">
@@ -417,20 +448,29 @@ export default function Auth() {
                         <Label htmlFor="reg-password" className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                           Password
                         </Label>
-                        <Input
-                          id="reg-password"
-                          type="password"
-                          placeholder="••••••••"
-                          value={registerForm.password}
-                          onChange={(e) => {
-                            setRegisterForm({...registerForm, password: e.target.value});
-                            if (registerErrors.password) setRegisterErrors({...registerErrors, password: ''});
-                          }}
-                          className={`h-12 bg-gray-50 dark:bg-gray-700 border-0 rounded-xl focus:ring-2 transition-all ${
-                            registerErrors.password ? 'focus:ring-red-500 bg-red-50 dark:bg-red-900/20' : 'focus:ring-emerald-500'
-                          }`}
-                          required
-                        />
+                        <div className="relative">
+                          <Input
+                            id="reg-password"
+                            type={showRegisterPassword ? "text" : "password"}
+                            placeholder="••••••••"
+                            value={registerForm.password}
+                            onChange={(e) => {
+                              setRegisterForm({...registerForm, password: e.target.value});
+                              if (registerErrors.password) setRegisterErrors({...registerErrors, password: ''});
+                            }}
+                            className={`pr-11 h-12 bg-gray-50 dark:bg-gray-700 border-0 rounded-xl focus:ring-2 transition-all ${
+                              registerErrors.password ? 'focus:ring-red-500 bg-red-50 dark:bg-red-900/20' : 'focus:ring-emerald-500'
+                            }`}
+                            required
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowRegisterPassword(!showRegisterPassword)}
+                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+                          >
+                            {showRegisterPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          </button>
+                        </div>
                         {registerErrors.password && (
                           <div className="flex items-center gap-2 text-red-600 text-sm">
                             <AlertCircle className="h-4 w-4" />
@@ -442,20 +482,29 @@ export default function Auth() {
                         <Label htmlFor="confirm-password" className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                           Confirm
                         </Label>
-                        <Input
-                          id="confirm-password"
-                          type="password"
-                          placeholder="••••••••"
-                          value={registerForm.confirmPassword}
-                          onChange={(e) => {
-                            setRegisterForm({...registerForm, confirmPassword: e.target.value});
-                            if (registerErrors.confirmPassword) setRegisterErrors({...registerErrors, confirmPassword: ''});
-                          }}
-                          className={`h-12 bg-gray-50 dark:bg-gray-700 border-0 rounded-xl focus:ring-2 transition-all ${
-                            registerErrors.confirmPassword ? 'focus:ring-red-500 bg-red-50 dark:bg-red-900/20' : 'focus:ring-emerald-500'
-                          }`}
-                          required
-                        />
+                        <div className="relative">
+                          <Input
+                            id="confirm-password"
+                            type={showConfirmPassword ? "text" : "password"}
+                            placeholder="••••••••"
+                            value={registerForm.confirmPassword}
+                            onChange={(e) => {
+                              setRegisterForm({...registerForm, confirmPassword: e.target.value});
+                              if (registerErrors.confirmPassword) setRegisterErrors({...registerErrors, confirmPassword: ''});
+                            }}
+                            className={`pr-11 h-12 bg-gray-50 dark:bg-gray-700 border-0 rounded-xl focus:ring-2 transition-all ${
+                              registerErrors.confirmPassword ? 'focus:ring-red-500 bg-red-50 dark:bg-red-900/20' : 'focus:ring-emerald-500'
+                            }`}
+                            required
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+                          >
+                            {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          </button>
+                        </div>
                         {registerErrors.confirmPassword && (
                           <div className="flex items-center gap-2 text-red-600 text-sm">
                             <AlertCircle className="h-4 w-4" />
