@@ -186,7 +186,15 @@ export default function PhotographerProfile() {
         {/* Cover Photo */}
         <div className="relative h-80 bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 overflow-hidden">
           {coverPhoto ? (
-            <img src={coverPhoto} alt="Cover" className="w-full h-full object-cover" />
+            <img 
+              src={coverPhoto} 
+              alt="Cover" 
+              className="w-full h-full object-cover" 
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = 'https://images.unsplash.com/photo-1519741497674-611481863552?w=1200&q=80';
+              }}
+            />
           ) : (
             <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600" />
           )}
@@ -366,7 +374,15 @@ export default function PhotographerProfile() {
               {portfolioImages.length > 0 ? (
                 portfolioImages.map((image, index) => (
                   <div key={index} className="group relative aspect-square bg-gray-200 rounded-3xl overflow-hidden hover:scale-105 transition-transform duration-300 cursor-pointer shadow-lg">
-                    <img src={image} alt={`Portfolio ${index + 1}`} className="w-full h-full object-cover" />
+                    <img 
+                      src={image} 
+                      alt={`Portfolio ${index + 1}`} 
+                      className="w-full h-full object-cover" 
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800&q=80';
+                      }}
+                    />
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300" />
                     <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                       <Badge variant="secondary" className="text-xs">

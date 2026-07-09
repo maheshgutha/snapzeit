@@ -69,6 +69,10 @@ export default function PhotographerCard({ photographer }: PhotographerCardProps
           src={portfolioImage}
           alt={`${photographer.name}'s work`}
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.src = portfolioImages[0];
+          }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
         

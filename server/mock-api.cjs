@@ -10,9 +10,9 @@ const PORT = process.env.PORT || 3001;
 
 function makePhotographer(id, i, country = 'United States') {
   const samplePhotos = [
-    'https://images.unsplash.com/photo-1504198453319-5ce911bafcde?w=1200&q=80&auto=format&fit=crop',
-    'https://images.unsplash.com/photo-1519340333755-59a4a9f0c6b2?w=1200&q=80&auto=format&fit=crop',
-    'https://images.unsplash.com/photo-1495567720989-cebdbdd97913?w=1200&q=80&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80',
+    'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800&q=80',
+    'https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=800&q=80',
   ];
 
   return {
@@ -79,6 +79,15 @@ app.post('/api/auth/signout', (req, res) => {
 
 app.get('/api/auth/session', (req, res) => {
   res.json({ data: { session: null }, error: null });
+});
+
+// Generic REST mock to allow forms to succeed
+app.post('/api/rest/v1/:table', (req, res) => {
+  res.json({ data: [req.body], error: null });
+});
+
+app.patch('/api/rest/v1/:table', (req, res) => {
+  res.json({ data: [req.body], error: null });
 });
 
 app.listen(PORT, () => {
