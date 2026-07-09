@@ -13,6 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Search, Camera, Calendar, Shield, ArrowRight, Star, Users, CheckCircle, Quote, MapPin, Clock, Award, Zap, Heart, MessageCircle, TrendingUp, Eye, User } from 'lucide-react';
 import { updatePageSEO, seoData } from '@/utils/seo';
 import { detectUserCountry, updateInternationalSEO, generateCountrySEO, formatPrice, getLocalizedContent } from '@/utils/international-seo';
+import { formatPriceLocal } from '@/lib/currency';
 import { toast } from 'sonner';
 import { translatePhotographerProfile } from '@/utils/translation';
 import { getCampaignForCountry } from '@/utils/marketing';
@@ -123,6 +124,12 @@ export default function Index() {
   const [searchSuggestions, setSearchSuggestions] = useState<string[]>([]);
   const [showSearchSuggestions, setShowSearchSuggestions] = useState(false);
   const [liveActivity, setLiveActivity] = useState({ bookings: 0, photographers: 0 });
+  const [heroStats, setHeroStats] = useState<{ avgRating: number | null; minPrice: number | null; minCurrency: string }>({
+    avgRating: null,
+    minPrice: null,
+    minCurrency: 'USD',
+  });
+  const [realReviews, setRealReviews] = useState<any[]>([]);
   const [isVisible, setIsVisible] = useState(false);
 
   // Country to currency mapping
@@ -182,20 +189,7 @@ export default function Index() {
     initializeLocation();
   }, []);
 
-  // Real platform stats (photographer count from the public API)
-  useEffect(() => {
-    const loadStats = async () => {
-      try {
-        const { data } = await supabase.rpc('get_public_photographers');
-        if (Array.isArray(data)) {
-          setLiveActivity({ bookings: 0, photographers: data.length });
-        }
-      } catch (e) {
-        // Leave the badge hidden if stats can't load
-      }
-    };
-    loadStats();
-  }, []);
+  // Real platform stats are derived from the single photographers fetch below.
 
   // Intersection observer for animations
   useEffect(() => {
@@ -302,29 +296,60 @@ export default function Index() {
   };
 
   useEffect(() => {
+    // One fetch powers the featured grid, the availability badge, the hero
+    // rating pill, and the pricing banner — all real numbers.
     const fetchPhotographers = async () => {
       try {
         const { data, error } = await supabase.rpc('get_public_photographers');
         if (error) {
-          console.error('Error fetching photographers:', error);
-          toast.error('Failed to load photographers');
+          console.warn('Could not load photographers:', error?.message || error);
           return;
         }
-        if (data) {
-          const sorted = (data as Photographer[])
-            .sort((a, b) => b.rating - a.rating)
-            .slice(0, 6);
-          setPhotographers(sorted);
+        if (Array.isArray(data) && data.length > 0) {
+          const list = data as Photographer[];
+          const sorted = [...list].sort((a, b) => b.rating - a.rating);
+          setPhotographers(sorted.slice(0, 6));
+          setLiveActivity({ bookings: 0, photographers: list.length });
+
+          const rated = list.filter((p) => (p.review_count || 0) > 0 && p.rating > 0);
+          const avgRating = rated.length > 0
+            ? rated.reduce((sum, p) => sum + p.rating, 0) / rated.length
+            : null;
+          const cheapest = list.reduce((min, p) =>
+            (p.price_per_hour || Infinity) < (min.price_per_hour || Infinity) ? p : min, list[0]);
+          setHeroStats({
+            avgRating,
+            minPrice: cheapest?.price_per_hour ?? null,
+            minCurrency: cheapest?.currency || 'USD',
+          });
         }
       } catch (error) {
-        console.error('Error fetching photographers:', error);
-        toast.error('Failed to load photographers');
+        console.warn('Could not load photographers:', error);
       } finally {
         setLoading(false);
       }
     };
 
+    // Real client reviews for the testimonials section (hidden when none exist)
+    const fetchReviews = async () => {
+      try {
+        const { data } = await supabase
+          .from('reviews')
+          .select('*')
+          .eq('moderation_status', 'approved')
+          .gte('rating', 4)
+          .order('created_at', { ascending: false })
+          .limit(3);
+        if (Array.isArray(data)) {
+          setRealReviews(data.filter((r: any) => r.comment && r.comment.trim().length > 0));
+        }
+      } catch (e) {
+        // Section simply stays hidden
+      }
+    };
+
     fetchPhotographers();
+    fetchReviews();
   }, []);
 
   const features = [
@@ -333,29 +358,8 @@ export default function Index() {
     { icon: Shield, titleKey: 'features.pay.title', descKey: 'features.pay.desc' },
   ];
 
-  const testimonials = [
-    {
-      name: 'Sarah Mitchell',
-      role: 'Bride',
-      avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=face',
-      rating: 5,
-      text: "Our wedding photographer was absolutely amazing! They captured every special moment perfectly. The booking process was so easy and the quality exceeded our expectations.",
-    },
-    {
-      name: 'Michael Chen',
-      role: 'Business Owner',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face',
-      rating: 5,
-      text: "I needed professional headshots for my team quickly. Found a great photographer on SnapZeiT, booked within minutes, and had the photos delivered the next week. Highly recommend!",
-    },
-    {
-      name: 'Emily Rodriguez',
-      role: 'Event Planner',
-      avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face',
-      rating: 5,
-      text: "As an event planner, I use SnapZeiT for all my clients. The variety of photographers and the easy booking system saves me so much time. The quality is consistently excellent.",
-    },
-  ];
+  // Testimonials come from real approved reviews (realReviews state);
+  // the section is hidden until genuine reviews exist.
 
   return (
     <div className="min-h-screen bg-background" role="main" aria-label="SnapZeiT Photography Platform">
@@ -365,7 +369,7 @@ export default function Index() {
       <section id="hero-section" className="relative min-h-screen flex items-center overflow-hidden" aria-labelledby="hero-title">
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=1920&h=1080&fit=crop')" }}
+          style={{ backgroundImage: "url('/assets/hero-bg.jpg')" }}
         />
         <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/50 to-transparent" />
 
@@ -384,7 +388,7 @@ export default function Index() {
             {/* Trust Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/20 backdrop-blur-md border border-emerald-400/30 mb-8">
               <Shield className="w-4 h-4 text-emerald-400" />
-              <span className="text-sm font-bold text-white">Verified photographers · Secure payments</span>
+              <span className="text-sm font-bold text-white">{t('hero.trustBadge')}</span>
             </div>
 
             {/* Main Headline - SEO Optimized */}
@@ -400,16 +404,20 @@ export default function Index() {
               {t('hero.subtitle')}
             </h2>
 
-            {/* Quick Stats */}
+            {/* Quick Stats — real numbers only */}
             <div className="flex flex-wrap gap-6 mb-10">
-              <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-full px-4 py-2">
-                <Users className="h-5 w-5 text-blue-400" />
-                <span className="text-white font-semibold">{t('hero.photographersCount')}</span>
-              </div>
-              <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-full px-4 py-2">
-                <Star className="h-5 w-5 text-yellow-400" />
-                <span className="text-white font-semibold">{t('hero.averageRating')}</span>
-              </div>
+              {liveActivity.photographers > 0 && (
+                <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-full px-4 py-2">
+                  <Users className="h-5 w-5 text-blue-400" />
+                  <span className="text-white font-semibold">{liveActivity.photographers} {t('hero.photographersLabel', 'Photographers')}</span>
+                </div>
+              )}
+              {heroStats.avgRating !== null && (
+                <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-full px-4 py-2">
+                  <Star className="h-5 w-5 text-yellow-400" />
+                  <span className="text-white font-semibold">{heroStats.avgRating.toFixed(1)}★ {t('hero.ratingLabel', 'Average Rating')}</span>
+                </div>
+              )}
               <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-full px-4 py-2">
                 <Clock className="h-5 w-5 text-emerald-400" />
                 <span className="text-white font-semibold">{t('hero.verified')}</span>
@@ -483,30 +491,30 @@ export default function Index() {
         </div>
       </section>
 
-      {/* Social Proof Section - Simplified */}
+      {/* Trust Strip — verifiable claims only */}
       <section className="py-12 bg-white dark:bg-gray-900 border-b">
         <div className="container">
           <div className="text-center mb-8">
-            <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">Trusted by leading brands</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">Book with confidence</p>
           </div>
-          <div className="flex flex-wrap justify-center items-center gap-8 opacity-60">
+          <div className="flex flex-wrap justify-center items-center gap-8 opacity-70">
             <div className="flex items-center gap-2 hover:opacity-100 transition-opacity">
               <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <TrendingUp className="h-4 w-4 text-white" />
+                <CheckCircle className="h-4 w-4 text-white" />
               </div>
-              <span className="font-semibold">TechCrunch</span>
+              <span className="font-semibold">Admin-Verified Photographers</span>
             </div>
             <div className="flex items-center gap-2 hover:opacity-100 transition-opacity">
               <div className="w-8 h-8 bg-gradient-to-r from-yellow-500 to-orange-600 rounded-lg flex items-center justify-center">
                 <Award className="h-4 w-4 text-white" />
               </div>
-              <span className="font-semibold">Best Platform 2024</span>
+              <span className="font-semibold">Razorpay Secured Payments</span>
             </div>
             <div className="flex items-center gap-2 hover:opacity-100 transition-opacity">
               <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-teal-600 rounded-lg flex items-center justify-center">
                 <Shield className="h-4 w-4 text-white" />
               </div>
-              <span className="font-semibold">SSL Secured</span>
+              <span className="font-semibold">SSL Encrypted</span>
             </div>
           </div>
         </div>
@@ -906,12 +914,12 @@ export default function Index() {
               <p className="text-xs font-semibold">Secure Payments</p>
             </div>
             <div className="text-center p-3">
-              <Clock className="h-6 w-6 text-purple-600 mx-auto mb-2" />
-              <p className="text-xs font-semibold">24/7 Support</p>
+              <MessageCircle className="h-6 w-6 text-purple-600 mx-auto mb-2" />
+              <p className="text-xs font-semibold">Direct Messaging</p>
             </div>
             <div className="text-center p-3">
               <Award className="h-6 w-6 text-orange-600 mx-auto mb-2" />
-              <p className="text-xs font-semibold">Quality Guarantee</p>
+              <p className="text-xs font-semibold">Fair Refund Policy</p>
             </div>
           </div>
         </div>
@@ -931,16 +939,25 @@ export default function Index() {
           </Link>
         </div>
 
-        {/* Pricing info */}
-        <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 mb-8 flex items-center justify-between">
-          <div>
-            <p className="font-semibold text-blue-900 dark:text-blue-100">Transparent Pricing</p>
-            <p className="text-sm text-blue-700 dark:text-blue-300">Starting from $150/hour • No hidden fees</p>
+        {/* Pricing info — real minimum from live listings */}
+        {heroStats.minPrice !== null && (
+          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 mb-8 flex items-center justify-between">
+            <div>
+              <p className="font-semibold text-blue-900 dark:text-blue-100">Transparent Pricing</p>
+              <p className="text-sm text-blue-700 dark:text-blue-300">
+                Starting from {formatPriceLocal(heroStats.minPrice, heroStats.minCurrency)}/hour • No hidden fees
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-blue-600 border-blue-300"
+              onClick={() => navigate('/pricing')}
+            >
+              View Pricing
+            </Button>
           </div>
-          <Button variant="outline" size="sm" className="text-blue-600 border-blue-300">
-            View Pricing
-          </Button>
-        </div>
+        )}
 
         {loading ? (
           <div className="grid md:grid-cols-3 gap-6">
@@ -948,14 +965,25 @@ export default function Index() {
               <PhotographerCardSkeleton key={i} />
             ))}
           </div>
+        ) : photographers.length === 0 ? (
+          <div className="text-center py-16 bg-gray-50 dark:bg-gray-800/50 rounded-2xl">
+            <Camera className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">New photographers joining soon</h3>
+            <p className="text-gray-500 mb-6">Are you a photographer? Be one of the first on SnapZeiT.</p>
+            <Link to="/photographer/register">
+              <Button className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+                Join as a Photographer
+              </Button>
+            </Link>
+          </div>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {photographers.map((p, index) => (
               <div key={p.id} className="relative group hover:scale-105 transition-transform">
                 <PhotographerCard photographer={p} />
-                {index === 0 && (
+                {index === 0 && p.review_count > 0 && (
                   <div className="absolute -top-2 -right-2 bg-yellow-500 text-yellow-900 px-2 py-1 rounded-full text-xs font-bold">
-                    ⭐ Most Popular
+                    ⭐ Top Rated
                   </div>
                 )}
               </div>
@@ -965,46 +993,49 @@ export default function Index() {
 
       </section>
 
-      {/* Testimonials - Simplified */}
-      <section className="py-16 bg-white dark:bg-gray-900">
-        <div className="container">
-          <div className="text-center mb-12">
-            <h2 className="text-2xl md:text-3xl font-bold mb-4">{t('testimonials.title')}</h2>
-            <p className="text-gray-600 dark:text-gray-300 max-w-xl mx-auto">
-              {t('testimonials.subtitle')}
-            </p>
-          </div>
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            {testimonials.map((testimonial, index) => (
-              <div
-                key={index}
-                className="p-6 rounded-2xl bg-gray-50 dark:bg-gray-800 border hover:shadow-lg transition-all hover:scale-105"
-              >
-                <div className="flex items-center gap-1 mb-4">
-                  {Array.from({ length: testimonial.rating }).map((_, i) => (
-                    <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                  ))}
-                </div>
-                <p className="text-gray-700 dark:text-gray-300 mb-6 leading-relaxed text-sm">
-                  "{testimonial.text}"
-                </p>
-                <div className="flex items-center gap-3">
-                  <Avatar className="h-10 w-10">
-                    <AvatarImage src={testimonial.avatar} alt={testimonial.name} />
-                    <AvatarFallback className="bg-gradient-to-r from-blue-600 to-purple-600 text-white text-sm">
-                      {testimonial.name.split(' ').map(n => n[0]).join('')}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <p className="font-semibold text-sm">{testimonial.name}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">{testimonial.role}</p>
+      {/* Testimonials — real approved reviews only; hidden until they exist */}
+      {realReviews.length > 0 && (
+        <section className="py-16 bg-white dark:bg-gray-900">
+          <div className="container">
+            <div className="text-center mb-12">
+              <h2 className="text-2xl md:text-3xl font-bold mb-4">{t('testimonials.title')}</h2>
+              <p className="text-gray-600 dark:text-gray-300 max-w-xl mx-auto">
+                {t('testimonials.subtitle')}
+              </p>
+            </div>
+            <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+              {realReviews.map((review) => (
+                <div
+                  key={review.id}
+                  className="p-6 rounded-2xl bg-gray-50 dark:bg-gray-800 border hover:shadow-lg transition-all hover:scale-105"
+                >
+                  <div className="flex items-center gap-1 mb-4">
+                    {Array.from({ length: Math.round(review.rating) }).map((_, i) => (
+                      <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                    ))}
+                  </div>
+                  <p className="text-gray-700 dark:text-gray-300 mb-6 leading-relaxed text-sm">
+                    "{review.comment}"
+                  </p>
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-10 w-10">
+                      <AvatarFallback className="bg-gradient-to-r from-blue-600 to-purple-600 text-white text-sm">
+                        <User className="h-5 w-5" />
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="font-semibold text-sm">SnapZeiT Client</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                        <CheckCircle className="h-3 w-3 text-green-500" /> Verified booking
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* FAQ Section */}
       <FAQ limit={6} />
@@ -1059,7 +1090,7 @@ export default function Index() {
               </div>
               <div className="flex items-center gap-2">
                 <CheckCircle className="h-4 w-4 text-emerald-300" />
-                <span>{t('common.support247')}</span>
+                <span>{t('common.verifiedPro')}</span>
               </div>
             </div>
           </div>

@@ -17,16 +17,14 @@
     "findPhotographers": "フォトグラファーを探す"
   },
   "hero": {
-    "trustBadge": "世界中の10,000人以上のお客様に信頼されています",
+    "trustBadge": "認証済みフォトグラファー · 安全な決済",
     "title": "あなたの瞬間に",
     "titleHighlight": "最適なフォトグラファー",
     "titleEnd": "を見つけよう",
-    "subtitle": "結婚式、イベント、ポートレートなど、才能あるフォトグラファーを予約。シンプルな予約、認定プロフェッショナル、素晴らしい成果。",
+    "subtitle": "お近くの認証済みプロを見つけましょう。即時予約、安全な決済。",
     "searchPlaceholder": "場所、専門、または名前で検索...",
     "search": "検索",
-    "photographersCount": "2,500+ フォトグラファー",
-    "averageRating": "4.9 平均評価",
-    "verified": "100% 認証済み"
+    "verified": "認証済みプロ"
   },
   "features": {
     "title": "使い方",

@@ -17,16 +17,14 @@
     "findPhotographers": "Trouver des Photographes"
   },
   "hero": {
-    "trustBadge": "Approuvé par plus de 10 000 clients dans le monde",
+    "trustBadge": "Photographes vérifiés · Paiements sécurisés",
     "title": "Trouvez le",
     "titleHighlight": "photographe",
     "titleEnd": "parfait pour votre moment",
-    "subtitle": "Réservez des photographes talentueux pour mariages, événements, portraits et plus. Réservation simple, professionnels vérifiés, résultats époustouflants.",
+    "subtitle": "Trouvez des professionnels vérifiés près de chez vous. Réservation instantanée, paiements sécurisés.",
     "searchPlaceholder": "Rechercher par lieu, spécialité ou nom...",
     "search": "Rechercher",
-    "photographersCount": "2 500+ Photographes",
-    "averageRating": "4.9 Note Moyenne",
-    "verified": "100% Vérifiés"
+    "verified": "Professionnels vérifiés"
   },
   "features": {
     "title": "Comment ça marche",

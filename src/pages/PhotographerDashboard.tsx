@@ -513,17 +513,44 @@ export default function PhotographerDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="grid md:grid-cols-4 gap-4">
-                  {portfolioImages.map((image, index) => (
-                    <div key={index} className="relative group aspect-square bg-gray-200 rounded-lg overflow-hidden">
-                      <img src={image} alt={`Portfolio ${index + 1}`} className="w-full h-full object-cover" />
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-all flex items-center justify-center">
-                        <Button variant="secondary" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Edit className="h-4 w-4 mr-2" />
-                          Edit
-                        </Button>
+                  {portfolioImages.length > 0 ? (
+                    portfolioImages.map((image, index) => (
+                      <div key={index} className="relative group aspect-square bg-gray-200 rounded-lg overflow-hidden">
+                        <img src={image} alt={`Portfolio ${index + 1}`} className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-all flex items-center justify-center">
+                          <Button variant="secondary" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Edit className="h-4 w-4 mr-2" />
+                            Edit
+                          </Button>
+                        </div>
                       </div>
+                    ))
+                  ) : (
+                    <div className="col-span-full text-center py-16 bg-gray-50 dark:bg-gray-800/50 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700">
+                      <Camera className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                      <h3 className="text-xl font-semibold mb-2">No photos in your portfolio</h3>
+                      <p className="text-gray-500 mb-6">Upload some of your best work to start attracting clients.</p>
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">
+                            <Plus className="h-4 w-4 mr-2" />
+                            Upload First Photos
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-4xl">
+                          <DialogHeader>
+                            <DialogTitle>Upload Portfolio Images</DialogTitle>
+                          </DialogHeader>
+                          <ImageUpload
+                            onUpload={handlePortfolioUpload}
+                            maxFiles={20}
+                            title="Upload Your Best Work"
+                            description="Showcase your photography skills with high-quality images"
+                          />
+                        </DialogContent>
+                      </Dialog>
                     </div>
-                  ))}
+                  )}
                 </div>
               </CardContent>
             </Card>

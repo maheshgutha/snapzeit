@@ -55,7 +55,10 @@ export default function PhotographerCard({ photographer }: PhotographerCardProps
   const displayPrice = photographer.price_per_hour;
 
   return (
-    <Card className="group relative overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-500 bg-white dark:bg-gray-800 rounded-3xl hover:scale-[1.03] hover:-translate-y-1">
+    <Card 
+      tabIndex={0}
+      className="group relative overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-500 bg-white dark:bg-gray-800 rounded-3xl hover:scale-[1.03] hover:-translate-y-1 focus:outline-none focus:ring-4 focus:ring-blue-500/50"
+    >
       {photographer.rating >= 4.8 && (
         <div className="absolute top-4 left-4 z-20">
           <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-bold px-3 py-1 shadow-lg">

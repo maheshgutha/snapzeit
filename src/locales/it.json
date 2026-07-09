@@ -17,16 +17,14 @@
     "findPhotographers": "Trova Fotografi"
   },
   "hero": {
-    "trustBadge": "Fidato da oltre 10.000 clienti in tutto il mondo",
+    "trustBadge": "Fotografi verificati · Pagamenti sicuri",
     "title": "Trova il",
     "titleHighlight": "fotografo",
     "titleEnd": "perfetto per il tuo momento",
-    "subtitle": "Prenota fotografi di talento per matrimoni, eventi, ritratti e altro. Prenotazione semplice, professionisti verificati, risultati straordinari.",
+    "subtitle": "Trova professionisti verificati vicino a te. Prenotazione istantanea, pagamenti sicuri.",
     "searchPlaceholder": "Cerca per luogo, specialità o nome...",
     "search": "Cerca",
-    "photographersCount": "2.500+ Fotografi",
-    "averageRating": "4.9 Valutazione Media",
-    "verified": "100% Verificati"
+    "verified": "Professionisti verificati"
   },
   "features": {
     "title": "Come Funziona",

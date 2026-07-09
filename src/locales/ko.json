@@ -17,16 +17,14 @@
     "findPhotographers": "사진작가 찾기"
   },
   "hero": {
-    "trustBadge": "전 세계 10,000명 이상의 고객이 신뢰합니다",
+    "trustBadge": "인증된 사진작가 · 안전한 결제",
     "title": "당신의 순간을 위한",
     "titleHighlight": "완벽한 사진작가를",
     "titleEnd": "찾아보세요",
-    "subtitle": "결혼식, 이벤트, 인물 사진 등을 위한 재능있는 사진작가를 예약하세요. 간편한 예약, 검증된 전문가, 놀라운 결과.",
+    "subtitle": "가까운 곳의 인증된 전문가를 찾아보세요. 즉시 예약, 안전한 결제.",
     "searchPlaceholder": "위치, 전문 분야 또는 이름으로 검색...",
     "search": "검색",
-    "photographersCount": "2,500+ 사진작가",
-    "averageRating": "4.9 평균 평점",
-    "verified": "100% 검증됨"
+    "verified": "인증된 전문가"
   },
   "features": {
     "title": "이용 방법",

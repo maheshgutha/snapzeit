@@ -392,10 +392,18 @@ export default function PhotographerProfile() {
                   </div>
                 ))
               ) : (
-                <div className="col-span-full text-center py-20">
-                  <Camera className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold mb-2">No portfolio images yet</h3>
-                  <p className="text-gray-600 mb-6">Upload your best work to showcase your photography skills</p>
+                <div className="col-span-full text-center py-24 bg-gray-50 dark:bg-gray-800/50 rounded-3xl border-2 border-dashed border-gray-200 dark:border-gray-700">
+                  <div className="w-24 h-24 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm">
+                    <Camera className="h-12 w-12 text-gray-300 dark:text-gray-600" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-3">
+                    {isOwner ? "Your Portfolio is Empty" : "No Portfolio Images Yet"}
+                  </h3>
+                  <p className="text-gray-500 max-w-md mx-auto mb-8 text-lg">
+                    {isOwner 
+                      ? "Upload your best work to showcase your photography skills and attract more clients."
+                      : `${photographer.name} hasn't uploaded any photos to their portfolio yet. Check back soon!`}
+                  </p>
                   {isOwner && (
                     <Dialog>
                       <DialogTrigger asChild>

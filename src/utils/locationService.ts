@@ -164,7 +164,8 @@ class LocationService {
         };
       }
     } catch (error) {
-      console.error('Failed to get current location:', error);
+      // Expected when offline or the geo API is blocked — the default below covers it.
+      console.warn('Geolocation unavailable, using default location');
     }
 
     // Fallback to default

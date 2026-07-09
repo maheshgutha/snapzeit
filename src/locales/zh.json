@@ -17,16 +17,14 @@
     "findPhotographers": "查找摄影师"
   },
   "hero": {
-    "trustBadge": "全球超过10,000+客户的信赖",
+    "trustBadge": "认证摄影师 · 安全支付",
     "title": "为您的时刻找到",
     "titleHighlight": "完美的摄影师",
     "titleEnd": "",
-    "subtitle": "为婚礼、活动、人像等预订才华横溢的摄影师。简单预订，专业认证，惊艳成果。",
+    "subtitle": "在您附近寻找经过认证的专业摄影师。即时预订，安全支付。",
     "searchPlaceholder": "按地点、专业或姓名搜索...",
     "search": "搜索",
-    "photographersCount": "2,500+ 摄影师",
-    "averageRating": "4.9 平均评分",
-    "verified": "100% 认证"
+    "verified": "认证专业人士"
   },
   "features": {
     "title": "如何运作",

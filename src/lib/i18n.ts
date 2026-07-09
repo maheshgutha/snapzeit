@@ -53,7 +53,7 @@ i18n
       te: { translation: te },
     },
     fallbackLng: 'en',
-    debug: true,
+    debug: import.meta.env.DEV,
     interpolation: {
       escapeValue: false,
     },

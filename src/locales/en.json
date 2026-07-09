@@ -17,16 +17,14 @@
     "findPhotographers": "Find Photographers"
   },
   "hero": {
-    "trustBadge": "Trusted by 10,000+ clients worldwide",
+    "trustBadge": "Verified photographers · Secure payments",
     "title": "Book Amazing",
     "titleHighlight": "Photographers",
     "titleEnd": "in 2 Minutes",
-    "subtitle": "Find verified professionals. Instant booking. 2,500+ photographers in 50+ countries.",
+    "subtitle": "Find verified professionals near you. Instant booking, secure payments.",
     "searchPlaceholder": "Wedding, Portrait, Event photography...",
     "search": "Find Now",
-    "photographersCount": "2,500+ Photographers",
-    "averageRating": "4.9★ Average Rating",
-    "verified": "100% Verified"
+    "verified": "Verified Professionals"
   },
   "features": {
     "title": "How It Works",

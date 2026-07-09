@@ -17,16 +17,14 @@
     "findPhotographers": "Buscar Fotógrafos"
   },
   "hero": {
-    "trustBadge": "Confiado por más de 10,000 clientes en todo el mundo",
+    "trustBadge": "Fotógrafos verificados · Pagos seguros",
     "title": "Reserva Increíbles",
     "titleHighlight": "Fotógrafos",
     "titleEnd": "en 2 Minutos",
-    "subtitle": "Encuentra profesionales verificados. Reserva instantánea. 2,500+ fotógrafos en 50+ países.",
+    "subtitle": "Encuentra profesionales verificados cerca de ti. Reserva instantánea, pagos seguros.",
     "searchPlaceholder": "Fotografía de bodas, retratos, eventos...",
     "search": "Buscar Ahora",
-    "photographersCount": "2,500+ Fotógrafos",
-    "averageRating": "4.9★ Calificación Promedio",
-    "verified": "100% Verificados"
+    "verified": "Profesionales verificados"
   },
   "features": {
     "title": "Cómo Funciona",

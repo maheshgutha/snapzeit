@@ -17,16 +17,14 @@
     "findPhotographers": "Fotografen finden"
   },
   "hero": {
-    "trustBadge": "Vertraut von über 10.000 Kunden weltweit",
+    "trustBadge": "Verifizierte Fotografen · Sichere Zahlungen",
     "title": "Finden Sie den perfekten",
     "titleHighlight": "Fotografen",
     "titleEnd": "für Ihren Moment",
-    "subtitle": "Buchen Sie talentierte Fotografen für Hochzeiten, Events, Porträts und mehr. Einfache Buchung, verifizierte Profis, atemberaubende Ergebnisse.",
+    "subtitle": "Finden Sie verifizierte Profis in Ihrer Nähe. Sofortige Buchung, sichere Zahlung.",
     "searchPlaceholder": "Nach Ort, Spezialisierung oder Name suchen...",
     "search": "Suchen",
-    "photographersCount": "2.500+ Fotografen",
-    "averageRating": "4.9 Durchschnittsbewertung",
-    "verified": "100% Verifiziert"
+    "verified": "Verifizierte Profis"
   },
   "features": {
     "title": "So funktioniert's",
