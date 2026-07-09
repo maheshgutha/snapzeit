@@ -9,7 +9,7 @@ export default function Footer() {
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center gap-3 mb-4">
               <img src="/assets/snapzeit-logo.png" alt="SnapZeiT Logo" className="h-8 w-auto rounded-lg" />
-              <h3 className="text-2xl font-bold">Snap<span className="text-purple-400">Zeit</span></h3>
+              <h3 className="text-2xl font-bold">Snap<span className="text-purple-400">ZeiT</span></h3>
             </div>
             <p className="text-slate-300 mb-4">
               Professional photography booking platform connecting clients with talented photographers worldwide.
