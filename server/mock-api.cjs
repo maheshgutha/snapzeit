@@ -96,6 +96,11 @@ app.get('/api/rest/v1/user_roles', (req, res) => {
 });
 
 // Generic REST mock to allow forms to succeed
+app.get('/api/rest/v1/:table', (req, res) => {
+  // if looking up a specific user profile or record, just return an empty array to simulate 'no record found' gracefully
+  res.json({ data: [], error: null });
+});
+
 app.post('/api/rest/v1/:table', (req, res) => {
   res.json({ data: [req.body], error: null });
 });
