@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -11,7 +11,7 @@ import { X, Calendar as CalendarIcon, Clock, CreditCard, CheckCircle } from 'luc
 import { initiatePayment } from '@/utils/payment-service';
 import { apiClient, getAuthHeaders } from '@/integrations/api/client';
 import { toast } from 'sonner';
-import { formatPrice } from '@/lib/currency';
+import { formatPrice, getUserCurrency, convertAmount, refreshExchangeRates } from '@/lib/currency';
 
 interface BookingSystemProps {
   photographerName: string;
@@ -32,26 +32,36 @@ export function BookingSystem({ photographerName, photographerId, pricePerHour, 
     eventType: 'portrait'
   });
 
+  const [userCurrency, setUserCurrency] = useState(getUserCurrency());
+  
+  useEffect(() => {
+    refreshExchangeRates().then(() => {
+      setUserCurrency(getUserCurrency());
+    });
+  }, []);
+
+  const convertedPricePerHour = convertAmount(pricePerHour, currency, userCurrency);
+
   const packages = [
     {
       id: 'basic',
       name: 'Basic Package',
       hours: 2,
-      price: pricePerHour * 2,
+      price: Math.round(convertedPricePerHour * 2),
       features: ['2 hours shooting', '20 edited photos', 'Online gallery', 'Basic retouching']
     },
     {
       id: 'standard',
       name: 'Standard Package',
       hours: 4,
-      price: pricePerHour * 4,
+      price: Math.round(convertedPricePerHour * 4),
       features: ['4 hours shooting', '50 edited photos', 'Online gallery', 'Advanced retouching', 'Print release']
     },
     {
       id: 'premium',
       name: 'Premium Package',
       hours: 8,
-      price: pricePerHour * 8,
+      price: Math.round(convertedPricePerHour * 8),
       features: ['8 hours shooting', '100+ edited photos', 'Online gallery', 'Premium retouching', 'Print release', 'USB delivery']
     }
   ];
@@ -78,7 +88,7 @@ export function BookingSystem({ photographerName, photographerId, pricePerHour, 
       // Initiate Razorpay Payment
       initiatePayment({
         amount: selectedPkg.price,
-        currency: currency,
+        currency: userCurrency,
         name: bookingForm.name,
         description: `Booking for ${photographerName} - ${selectedPkg.name}`,
         email: bookingForm.email,
@@ -259,7 +269,7 @@ export function BookingSystem({ photographerName, photographerId, pricePerHour, 
                           <Badge className="bg-blue-600">Selected</Badge>
                         )}
                       </div>
-                      <div className="text-2xl font-bold text-blue-600 mb-3">{formatPrice(pkg.price, currency)}</div>
+                      <div className="text-2xl font-bold text-blue-600 mb-3">{formatPrice(pkg.price, userCurrency)}</div>
                       <ul className="space-y-1 text-sm">
                         {pkg.features.map(feature => (
                           <li key={feature} className="flex items-center gap-2">
@@ -370,7 +380,7 @@ export function BookingSystem({ photographerName, photographerId, pricePerHour, 
                   <p><strong>Date:</strong> {selectedDate ? selectedDate.toDateString() : 'Not selected'}</p>
                   <p><strong>Event Type:</strong> {bookingForm.eventType}</p>
                   <p className="text-lg font-bold text-blue-600 mt-2">
-                    <strong>Total: {formatPrice(selectedPkg?.price || 0, currency)}</strong>
+                    <strong>Total: {formatPrice(selectedPkg?.price || 0, userCurrency)}</strong>
                   </p>
                 </div>
               </div>
