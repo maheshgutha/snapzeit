@@ -85,8 +85,8 @@ export default function PhotographerCard({ photographer }: PhotographerCardProps
         
         <div className="absolute bottom-0 left-0 right-0 p-6">
           <div className="flex items-end justify-between">
-            <div className="flex items-center gap-4">
-              <div className="relative">
+            <div className="flex items-center gap-3 flex-1 min-w-0 pr-4">
+              <div className="relative shrink-0">
                 <Avatar className="h-16 w-16 border-3 border-white shadow-2xl">
                   <AvatarImage src={avatarImage} alt={photographer.name} />
                   <AvatarFallback className="bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold text-lg">
@@ -94,11 +94,11 @@ export default function PhotographerCard({ photographer }: PhotographerCardProps
                   </AvatarFallback>
                 </Avatar>
               </div>
-              <div className="text-white">
-                <h3 className="font-black text-xl mb-1 drop-shadow-lg">{photographer.name}</h3>
+              <div className="text-white flex-1 min-w-0">
+                <h3 className="font-black text-xl mb-1 drop-shadow-lg line-clamp-2 leading-tight">{photographer.name}</h3>
                 <div className="flex items-center gap-2 text-sm opacity-95">
-                  <MapPin className="h-4 w-4" />
-                  <span className="font-semibold">{photographer.location}</span>
+                  <MapPin className="h-4 w-4 shrink-0" />
+                  <span className="font-semibold truncate">{photographer.location}</span>
                 </div>
               </div>
             </div>
@@ -116,9 +116,13 @@ export default function PhotographerCard({ photographer }: PhotographerCardProps
         <div className="mb-5">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <Camera className="h-5 w-5 text-blue-600" />
-              <span className="text-blue-600 font-bold text-lg">{photographer.specialty}</span>
+              <Camera className="h-5 w-5 text-blue-600 shrink-0" />
+              <span className="text-blue-600 font-bold text-lg truncate">{photographer.specialty}</span>
             </div>
+            <Badge className="bg-emerald-500 hover:bg-emerald-600 text-white border-0 shadow-sm shrink-0">
+              <Award className="h-3 w-3 mr-1" />
+              {t('common.verifiedPro', 'Verified Pro')}
+            </Badge>
           </div>
 
           <div className="grid grid-cols-3 gap-4 text-center mb-4">
@@ -175,12 +179,6 @@ export default function PhotographerCard({ photographer }: PhotographerCardProps
         </div>
       </CardContent>
       
-      <div className="absolute bottom-4 right-4">
-        <Badge className="bg-emerald-500 hover:bg-emerald-600 text-white border-0 shadow-lg">
-          <Award className="h-3 w-3 mr-1" />
-          {t('common.verifiedPro')}
-        </Badge>
-      </div>
     </Card>
   );
 }
