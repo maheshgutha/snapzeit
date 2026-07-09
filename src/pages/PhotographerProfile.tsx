@@ -516,6 +516,7 @@ export default function PhotographerProfile() {
           photographerName={photographer.name}
           photographerId={photographer.id}
           pricePerHour={photographer.price_per_hour}
+          currency={photographer.currency || 'USD'}
           onClose={() => setShowBooking(false)}
         />
       )}

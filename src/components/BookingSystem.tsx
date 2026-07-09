@@ -11,15 +11,17 @@ import { X, Calendar as CalendarIcon, Clock, CreditCard, CheckCircle } from 'luc
 import { initiatePayment } from '@/utils/payment-service';
 import { apiClient, getAuthHeaders } from '@/integrations/api/client';
 import { toast } from 'sonner';
+import { formatPrice } from '@/lib/currency';
 
 interface BookingSystemProps {
   photographerName: string;
   photographerId: string;
   pricePerHour: number;
+  currency?: string;
   onClose: () => void;
 }
 
-export function BookingSystem({ photographerName, photographerId, pricePerHour, onClose }: BookingSystemProps) {
+export function BookingSystem({ photographerName, photographerId, pricePerHour, currency = 'USD', onClose }: BookingSystemProps) {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedPackage, setSelectedPackage] = useState('basic');
   const [bookingForm, setBookingForm] = useState({
@@ -76,7 +78,7 @@ export function BookingSystem({ photographerName, photographerId, pricePerHour, 
       // Initiate Razorpay Payment
       initiatePayment({
         amount: selectedPkg.price,
-        currency: "INR",
+        currency: currency,
         name: bookingForm.name,
         description: `Booking for ${photographerName} - ${selectedPkg.name}`,
         email: bookingForm.email,
@@ -257,7 +259,7 @@ export function BookingSystem({ photographerName, photographerId, pricePerHour, 
                           <Badge className="bg-blue-600">Selected</Badge>
                         )}
                       </div>
-                      <div className="text-2xl font-bold text-blue-600 mb-3">${pkg.price}</div>
+                      <div className="text-2xl font-bold text-blue-600 mb-3">{formatPrice(pkg.price, currency)}</div>
                       <ul className="space-y-1 text-sm">
                         {pkg.features.map(feature => (
                           <li key={feature} className="flex items-center gap-2">
@@ -368,7 +370,7 @@ export function BookingSystem({ photographerName, photographerId, pricePerHour, 
                   <p><strong>Date:</strong> {selectedDate ? selectedDate.toDateString() : 'Not selected'}</p>
                   <p><strong>Event Type:</strong> {bookingForm.eventType}</p>
                   <p className="text-lg font-bold text-blue-600 mt-2">
-                    <strong>Total: ${selectedPkg?.price}</strong>
+                    <strong>Total: {formatPrice(selectedPkg?.price || 0, currency)}</strong>
                   </p>
                 </div>
               </div>
