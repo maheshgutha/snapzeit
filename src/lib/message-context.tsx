@@ -32,11 +32,16 @@ export function MessageProvider({ children }: { children: ReactNode }) {
   const [messages, setMessages] = useState<Message[]>([]);
 
   useEffect(() => {
+    let interval: NodeJS.Timeout;
     if (user) {
       fetchMessages();
+      interval = setInterval(fetchMessages, 3000);
     } else {
       setMessages([]);
     }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 

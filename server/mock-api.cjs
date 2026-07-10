@@ -95,21 +95,106 @@ app.get('/api/rest/v1/user_roles', (req, res) => {
   }
 });
 
-// Generic REST mock to allow forms to succeed
-app.get('/api/rest/v1/:table', (req, res) => {
-  // if looking up a specific user profile or record, just return an empty array to simulate 'no record found' gracefully
-  res.json({ data: [], error: null });
+// Generic DB mock for both /api/db/:table and /api/rest/v1/:table
+const tables = {
+  messages: [
+    {
+      id: '1',
+      sender_id: 'photographer-1',
+      receiver_id: 'user-1',
+      subject: "Welcome",
+      content: "Hi! Thanks for your interest in my photography services.",
+      created_at: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
+      is_read: true
+    },
+    {
+      id: '2',
+      sender_id: 'user-1',
+      receiver_id: 'photographer-1',
+      subject: "Wedding Inquiry",
+      content: "Hello! I'm looking for a wedding photographer for next month.",
+      created_at: new Date(Date.now() - 1000 * 60 * 25).toISOString(),
+      is_read: true
+    }
+  ],
+  favorites: [],
+  reviews: [
+    {
+      id: '1',
+      photographer_id: '1',
+      user_id: 'user-2',
+      user_name: 'Customer 1',
+      rating: 5,
+      comment: 'Amazing photographer! Very professional and delivered exactly what we wanted.',
+      created_at: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString()
+    }
+  ]
+};
+
+app.get(['/api/rest/v1/:table', '/api/db/:table'], (req, res) => {
+  const table = req.params.table;
+  let data = tables[table] || [];
+
+  // Simple filtering based on query params (like Supabase eq)
+  for (const [key, value] of Object.entries(req.query)) {
+    if (key === 'select' || key === 'order' || key === 'limit' || key === 'offset' || key === 'single') continue;
+    
+    if (typeof value === 'string' && value.startsWith('eq.')) {
+      const val = value.substring(3);
+      data = data.filter(item => String(item[key]) === val);
+    }
+  }
+
+  // Handle order
+  if (req.query.order) {
+    const [col, dir] = String(req.query.order).split('.');
+    data = [...data].sort((a, b) => {
+      if (a[col] < b[col]) return dir === 'asc' ? -1 : 1;
+      if (a[col] > b[col]) return dir === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }
+
+  if (req.query.single === 'true') {
+    return res.json({ data: data.length > 0 ? data[0] : null, error: null });
+  }
+  
+  res.json({ data, error: null });
 });
 
-app.post('/api/rest/v1/:table', (req, res) => {
-  res.json({ data: [req.body], error: null });
+app.post(['/api/rest/v1/:table', '/api/db/:table'], (req, res) => {
+  const table = req.params.table;
+  if (!tables[table]) tables[table] = [];
+  
+  const newItem = { id: Date.now().toString(), created_at: new Date().toISOString(), ...req.body };
+  tables[table].push(newItem);
+  
+  res.json({ data: newItem, error: null });
 });
 
-app.patch('/api/rest/v1/:table', (req, res) => {
+app.delete(['/api/rest/v1/:table', '/api/db/:table'], (req, res) => {
+  const table = req.params.table;
+  if (tables[table]) {
+    // If there is an ID eq filter
+    let idToDelete = null;
+    for (const [key, value] of Object.entries(req.query)) {
+      if (key === 'id' && typeof value === 'string' && value.startsWith('eq.')) {
+        idToDelete = value.substring(3);
+        break;
+      }
+    }
+    
+    if (idToDelete) {
+      tables[table] = tables[table].filter(item => String(item.id) !== idToDelete);
+    }
+  }
+  res.json({ data: null, error: null });
+});
+
+app.patch(['/api/rest/v1/:table', '/api/db/:table'], (req, res) => {
   res.json({ data: [req.body], error: null });
 });
 
 app.listen(PORT, () => {
-   
   console.log(`SnapZeiT mock API listening on http://localhost:${PORT}`);
 });

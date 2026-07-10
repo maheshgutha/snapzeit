@@ -13,6 +13,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calendar } from '@/components/ui/calendar';
 import { Input } from '@/components/ui/input';
+import { formatPriceLocal } from '@/lib/currency';
+import { useFavorites } from '@/hooks/useFavorites';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -50,12 +52,57 @@ export default function PhotographerProfile() {
     duration: 2
   });
   const [showMessaging, setShowMessaging] = useState(false);
+  const { isFavorite, toggleFavorite } = useFavorites();
   const [showBooking, setShowBooking] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [reviewsLoading, setReviewsLoading] = useState(true);
   const [portfolioImages, setPortfolioImages] = useState<string[]>([]);
   const [coverPhoto, setCoverPhoto] = useState<string>('');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
+
+  useEffect(() => {
+    const fetchPhotographerAndUser = async () => {
+      // Fetch photographer details
+      if (id) {
+        const { data: pData } = await supabase
+          .from('photographers')
+          .select('*')
+          .eq('id', id)
+          .single();
+        
+        if (pData) {
+          setPhotographer(pData);
+        }
+      }
+
+      const { data: { user } } = await supabase.auth.getUser();
+      setCurrentUser(user);
+      if (user && id && user.id === id) {
+        setIsOwner(true);
+      }
+      setLoading(false);
+    };
+
+    const fetchReviews = async () => {
+      if (!id) return;
+      const { data } = await supabase
+        .from('reviews')
+        .select('*')
+        .eq('photographer_id', id)
+        .order('created_at', { ascending: false });
+      
+      if (data) {
+        setReviews(data);
+      }
+      setReviewsLoading(false);
+    };
+
+    fetchPhotographerAndUser();
+    fetchReviews();
+  }, [id]);
 
   const packages = [
     { id: 'basic', name: 'Basic Package', hours: 2, price: photographer?.price_per_hour ? photographer.price_per_hour * 2 : 300, features: ['2 hours shooting', '20 edited photos', 'Online gallery', 'Basic retouching'] },
@@ -452,20 +499,52 @@ export default function PhotographerProfile() {
 
                   <TabsContent value="reviews" className="mt-8">
                     <h3 className="text-2xl font-bold mb-6">Client Reviews</h3>
-                    <Card className="bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm border-0">
-                      <CardContent className="p-12 text-center">
-                        <div className="w-20 h-20 bg-yellow-100 dark:bg-yellow-900/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                          <Star className="h-10 w-10 text-yellow-500" />
-                        </div>
-                        <h4 className="text-xl font-bold mb-2">No Reviews Yet</h4>
-                        <p className="text-gray-500">
-                          {isOwner 
-                            ? "Complete your first booking to start collecting reviews!"
-                            : "Be the first to book and review this photographer!"
-                          }
-                        </p>
-                      </CardContent>
-                    </Card>
+                    {reviewsLoading ? (
+                      <div className="flex justify-center py-12">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                      </div>
+                    ) : reviews.length > 0 ? (
+                      <div className="space-y-6">
+                        {reviews.map((review) => (
+                          <Card key={review.id} className="bg-white dark:bg-gray-800 shadow-sm border-0">
+                            <CardContent className="p-6">
+                              <div className="flex items-center justify-between mb-4">
+                                <div>
+                                  <div className="font-bold">{review.user_name || 'Anonymous User'}</div>
+                                  <div className="text-xs text-gray-500">
+                                    {new Date(review.created_at).toLocaleDateString()}
+                                  </div>
+                                </div>
+                                <div className="flex text-yellow-400">
+                                  {[...Array(5)].map((_, i) => (
+                                    <Star
+                                      key={i}
+                                      className={`h-4 w-4 ${i < review.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300 dark:text-gray-600'}`}
+                                    />
+                                  ))}
+                                </div>
+                              </div>
+                              <p className="text-gray-700 dark:text-gray-300">{review.comment}</p>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    ) : (
+                      <Card className="bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm border-0">
+                        <CardContent className="p-12 text-center">
+                          <div className="w-20 h-20 bg-yellow-100 dark:bg-yellow-900/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <Star className="h-10 w-10 text-yellow-500" />
+                          </div>
+                          <h4 className="text-xl font-bold mb-2">No Reviews Yet</h4>
+                          <p className="text-gray-500">
+                            {isOwner 
+                              ? "Complete your first booking to start collecting reviews!"
+                              : "Be the first to book and review this photographer!"
+                            }
+                          </p>
+                        </CardContent>
+                      </Card>
+                    )}
                   </TabsContent>
 
                   <TabsContent value="booking" className="mt-8">
@@ -529,8 +608,13 @@ export default function PhotographerProfile() {
                         <MessageCircle className="h-4 w-4 mr-2" />
                         Message
                       </Button>
-                      <Button variant="outline" size="icon">
-                        <Heart className="h-4 w-4" />
+                      <Button 
+                        variant="outline" 
+                        size="icon"
+                        onClick={() => photographer && toggleFavorite(photographer.id)}
+                        className={`transition-all hover:scale-105 border-2 ${photographer && isFavorite(photographer.id) ? 'border-pink-500 hover:border-pink-600 bg-pink-50' : 'hover:border-pink-500'}`}
+                      >
+                        <Heart className={`h-4 w-4 ${photographer && isFavorite(photographer.id) ? 'fill-pink-500 text-pink-500' : 'text-gray-500 hover:text-pink-500'}`} />
                       </Button>
                     </div>
                   </div>
@@ -541,12 +625,10 @@ export default function PhotographerProfile() {
         </div>
       </section>
 
-
-      </section>
-
       {/* Messaging System */}
       {showMessaging && (
         <MessagingSystem
+          photographerId={photographer.id}
           photographerName={photographer.name}
           photographerAvatar={photographer.avatar_url || undefined}
           onClose={() => setShowMessaging(false)}
