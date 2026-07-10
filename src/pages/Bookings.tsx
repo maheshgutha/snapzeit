@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { reviewPhotographer } from '@/utils/bidirectional-reviews';
+import { formatPriceLocal } from '@/lib/currency';
 
 export default function Bookings() {
   const { user, loading: authLoading } = useAuth();
@@ -163,6 +164,24 @@ export default function Bookings() {
       setRentalBookings((data || []).map((r: any) => ({ ...r, equipment: equipmentMap.get(r.equipment_id) })));
     } catch (error) {
       console.error('Error fetching rentals:', error);
+    }
+  };
+
+  const cancelRental = async (rentalId: string) => {
+    try {
+      const { error } = await supabase
+        .from('rental_bookings')
+        .eq('id', rentalId)
+        .update({ status: 'cancelled', updated_at: new Date().toISOString() });
+
+      if (error) {
+        toast({ title: 'Error', description: error.message, variant: 'destructive' });
+        return;
+      }
+      toast({ title: 'Rental cancelled', description: 'Your rental request has been cancelled.' });
+      fetchRentalBookings();
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message, variant: 'destructive' });
     }
   };
 
@@ -464,7 +483,7 @@ export default function Bookings() {
                           </div>
                           <div className="flex items-center gap-2">
                             <CreditCard className="h-4 w-4 text-green-600" />
-                            <span className="font-bold text-green-600">Total: ${rental.total_price}</span>
+                            <span className="font-bold text-green-600">Total: {formatPriceLocal(rental.total_price, rental.currency || 'USD')}</span>
                           </div>
                         </div>
                       </div>
@@ -478,7 +497,12 @@ export default function Bookings() {
                           View Receipt
                         </Button>
                         {rental.status === 'pending' && (
-                          <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-600 hover:bg-red-50">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                            onClick={() => cancelRental(rental.id)}
+                          >
                             Cancel Order
                           </Button>
                         )}
@@ -623,15 +647,15 @@ export default function Bookings() {
                     <p className="font-bold">{selectedRentalReceipt.equipment?.name}</p>
                     <p className="text-xs text-gray-500">{selectedRentalReceipt.equipment?.brand} {selectedRentalReceipt.equipment?.model}</p>
                   </div>
-                  <p className="font-semibold">${selectedRentalReceipt.equipment?.daily_rate}/day</p>
+                  <p className="font-semibold">{formatPriceLocal(selectedRentalReceipt.equipment?.daily_rate || 0, selectedRentalReceipt.currency || 'USD')}/day</p>
                 </div>
                 <div className="text-xs text-gray-500 mb-4">
                   Rental Period: {format(new Date(selectedRentalReceipt.start_date), 'MMM d')} - {format(new Date(selectedRentalReceipt.end_date), 'MMM d')}
                 </div>
 
                 <div className="border-t pt-2 flex justify-between font-bold text-lg">
-                  <span>Total Paid</span>
-                  <span>${selectedRentalReceipt.total_price.toFixed(2)}</span>
+                  <span>{selectedRentalReceipt.payment_status === 'paid' ? 'Total Paid' : 'Total Due'}</span>
+                  <span>{formatPriceLocal(selectedRentalReceipt.total_price, selectedRentalReceipt.currency || 'USD')}</span>
                 </div>
               </div>
 

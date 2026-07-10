@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Camera, Search, MapPin } from 'lucide-react';
 import { supabase } from '@/integrations/api/client';
 import { RentalBookingModal } from '@/components/RentalBookingModal';
+import { formatPriceLocal } from '@/lib/currency';
 
 interface Equipment {
     id: string;
@@ -17,6 +18,7 @@ interface Equipment {
     model: string;
     description: string;
     daily_rate: number;
+    currency?: string;
     image_url: string;
     location: string;
     is_available: boolean;
@@ -105,12 +107,17 @@ export default function Rentals() {
             const { data } = await supabase.from('equipment').select('*');
             if (data && data.length > 0) {
                 setEquipment(data);
-            } else {
+            } else if (import.meta.env.DEV) {
+                // Dev-only preview data. In production an empty inventory shows
+                // the honest empty state instead — mock gear can't be booked
+                // anyway (the server rejects unknown equipment ids).
                 setEquipment(MOCK_EQUIPMENT);
+            } else {
+                setEquipment([]);
             }
         } catch (err) {
-            console.error("Error fetching equipment:", err);
-            setEquipment(MOCK_EQUIPMENT);
+            console.warn("Error fetching equipment:", err);
+            setEquipment(import.meta.env.DEV ? MOCK_EQUIPMENT : []);
         } finally {
             setLoading(false);
         }
@@ -194,7 +201,7 @@ export default function Rentals() {
                                     />
                                     <div className="absolute top-2 right-2">
                                         <Badge variant="secondary" className="backdrop-blur-md bg-black/50 text-white border-0">
-                                            ${item.daily_rate}/day
+                                            {formatPriceLocal(item.daily_rate, item.currency || 'USD')}/day
                                         </Badge>
                                     </div>
                                     <div className="absolute top-2 left-2">
@@ -238,8 +245,17 @@ export default function Rentals() {
                 {!loading && filteredEquipment.length === 0 && (
                     <div className="text-center py-20">
                         <Camera className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                        <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">No equipment found</h3>
-                        <p className="text-gray-500">Try adjusting your search or filters.</p>
+                        {equipment.length === 0 ? (
+                            <>
+                                <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">Rental inventory coming soon</h3>
+                                <p className="text-gray-500">We're adding professional gear to rent. Check back shortly!</p>
+                            </>
+                        ) : (
+                            <>
+                                <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">No equipment found</h3>
+                                <p className="text-gray-500">Try adjusting your search or filters.</p>
+                            </>
+                        )}
                     </div>
                 )}
             </div>

@@ -38,6 +38,7 @@ import {
   Download, AlertTriangle, Zap, Globe, Star, Clock, ArrowUp, ArrowDown, Package
 } from 'lucide-react';
 import { getSettings, updateSettings, defaultSettings, AdminSettings } from '@/utils/adminSettings';
+import { EquipmentManager } from '@/components/admin/EquipmentManager';
 import { formatPriceLocal } from '@/lib/currency';
 
 interface User {
@@ -371,6 +372,7 @@ export default function AdminPanel() {
             <TabButton id="bookings" label="Bookings" icon={Calendar} active={activeTab === 'bookings'} onClick={setActiveTab} />
             <TabButton id="leads" label="Leads" icon={Zap} active={activeTab === 'leads'} onClick={setActiveTab} badge={leads.length} />
             <TabButton id="rentals" label="Rentals" icon={Package} active={activeTab === 'rentals'} onClick={setActiveTab} badge={rentals.length} />
+            <TabButton id="equipment" label="Equipment" icon={Package} active={activeTab === 'equipment'} onClick={setActiveTab} />
             <TabButton id="payments" label="Payments" icon={DollarSign} active={activeTab === 'payments'} onClick={setActiveTab} />
             <TabButton id="analytics" label="Analytics" icon={TrendingUp} active={activeTab === 'analytics'} onClick={setActiveTab} />
             <TabButton id="settings" label="Settings" icon={Settings} active={activeTab === 'settings'} onClick={setActiveTab} />
@@ -725,6 +727,8 @@ export default function AdminPanel() {
               </CardContent>
             </Card>
           )}
+
+          {activeTab === 'equipment' && <EquipmentManager />}
 
           {activeTab === 'rentals' && (
             <Card className="border-0 shadow-xl glass-card animate-fade-in-up">

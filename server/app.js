@@ -353,8 +353,8 @@ app.post('/api/auth/signup', async (req, res) => {
 
     await profilesColl.insertOne(newProfile);
 
-    // Default role is 'user', but can be passed in sign up data
-    const role = data?.role || 'user';
+    // Only non-privileged roles may be chosen at signup — never 'admin'.
+    const role = ['user', 'photographer'].includes(data?.role) ? data.role : 'user';
     const newRole = {
       _id: crypto.randomUUID(),
       user_id: userId,
@@ -975,16 +975,21 @@ app.post('/api/payments/webhook', express.raw({ type: '*/*' }), async (req, res)
     if (eventType === 'payment.captured') {
       const payment = eventPayload?.payment?.entity;
       if (payment && payment.order_id) {
-        const bookingsColl = db.collection('bookings');
-        await bookingsColl.updateMany({ payment_order_id: payment.order_id }, { $set: { payment_status: 'paid', payment_intent_id: payment.id, updated_at: new Date() } });
+        const update = { $set: { payment_status: 'paid', payment_intent_id: payment.id, updated_at: new Date() } };
+        await db.collection('bookings').updateMany({ payment_order_id: payment.order_id }, update);
+        await db.collection('rental_bookings').updateMany(
+          { payment_order_id: payment.order_id },
+          { $set: { status: 'confirmed', payment_status: 'paid', payment_intent_id: payment.id, updated_at: new Date() } }
+        );
       }
     }
 
     if (eventType === 'payment.failed') {
       const payment = eventPayload?.payment?.entity;
       if (payment && payment.order_id) {
-        const bookingsColl = db.collection('bookings');
-        await bookingsColl.updateMany({ payment_order_id: payment.order_id }, { $set: { payment_status: 'failed', updated_at: new Date() } });
+        const update = { $set: { payment_status: 'failed', updated_at: new Date() } };
+        await db.collection('bookings').updateMany({ payment_order_id: payment.order_id }, update);
+        await db.collection('rental_bookings').updateMany({ payment_order_id: payment.order_id }, update);
       }
     }
 
@@ -1031,6 +1036,197 @@ app.post('/api/admin/bookings/:id/refund', requireAdmin, async (req, res) => {
   } catch (err) {
     console.error('Refund booking error:', err);
     return res.status(500).json({ data: null, error: { message: err.message || String(err) } });
+  }
+});
+
+// -------------------------------------------------------------------
+// Rentals: server-priced requests, availability, and payment
+// -------------------------------------------------------------------
+
+// Two date ranges [start, end) overlap if each starts before the other ends.
+// Dates are ISO 'YYYY-MM-DD' strings, so plain string comparison is correct.
+async function findRentalConflict(equipmentId, startDate, endDate, excludeId = null) {
+  const active = await db.collection('rental_bookings')
+    .find({ equipment_id: equipmentId, status: { $in: ['pending', 'confirmed', 'active'] } })
+    .toArray();
+  return active.find((r) =>
+    r._id !== excludeId && r.start_date < endDate && startDate < r.end_date
+  ) || null;
+}
+
+app.post('/api/rentals/check-availability', async (req, res) => {
+  try {
+    const { equipment_id, start_date, end_date } = req.body || {};
+    if (!equipment_id || !start_date || !end_date) {
+      return res.status(400).json({ data: null, error: { message: 'equipment_id, start_date and end_date are required' } });
+    }
+    const conflict = await findRentalConflict(equipment_id, start_date, end_date);
+    res.json({ data: { available: !conflict }, error: null });
+  } catch (err) {
+    res.status(500).json({ data: null, error: { message: err.message } });
+  }
+});
+
+app.post('/api/rentals/request', async (req, res) => {
+  const sessionUser = authenticateToken(req);
+  if (!sessionUser) {
+    return res.status(401).json({ data: null, error: { message: 'Authentication required' } });
+  }
+
+  try {
+    const { equipment_id, start_date, duration_days, contact } = req.body || {};
+    if (!equipment_id || !start_date || !duration_days) {
+      return res.status(400).json({ data: null, error: { message: 'equipment_id, start_date and duration_days are required' } });
+    }
+
+    const days = Number(duration_days);
+    if (!Number.isInteger(days) || days < 1 || days > 30) {
+      return res.status(400).json({ data: null, error: { message: 'Duration must be between 1 and 30 days' } });
+    }
+
+    // The equipment must actually exist — no bookings against mock/phantom gear.
+    const equipment = await db.collection('equipment').findOne({ _id: equipment_id });
+    if (!equipment) {
+      return res.status(404).json({ data: null, error: { message: 'This equipment is not available for rental' } });
+    }
+    if (equipment.is_available === false) {
+      return res.status(409).json({ data: null, error: { message: 'This equipment is currently unavailable' } });
+    }
+
+    const start = new Date(`${start_date}T00:00:00Z`);
+    if (Number.isNaN(start.getTime())) {
+      return res.status(400).json({ data: null, error: { message: 'Invalid start date' } });
+    }
+    const end = new Date(start);
+    end.setUTCDate(end.getUTCDate() + days);
+    const endDateStr = end.toISOString().split('T')[0];
+
+    const conflict = await findRentalConflict(equipment_id, start_date, endDateStr);
+    if (conflict) {
+      return res.status(409).json({ data: null, error: { message: 'This equipment is already booked for those dates. Try a different period.' } });
+    }
+
+    // Price is computed here from the stored rate — never trusted from the client.
+    const totalPrice = Math.round(Number(equipment.daily_rate) * days * 100) / 100;
+    const now = new Date();
+    const rental = {
+      _id: crypto.randomUUID(),
+      equipment_id,
+      equipment_name: equipment.name,
+      renter_id: sessionUser.userId,
+      user_id: sessionUser.userId,
+      start_date,
+      end_date: endDateStr,
+      duration_days: days,
+      total_price: totalPrice,
+      currency: equipment.currency || 'USD',
+      contact_name: contact?.name || '',
+      contact_email: contact?.email || sessionUser.email || '',
+      contact_phone: contact?.phone || '',
+      notes: contact?.notes || '',
+      status: 'pending',
+      payment_status: 'unpaid',
+      created_at: now,
+      updated_at: now,
+    };
+
+    await db.collection('rental_bookings').insertOne(rental);
+    res.json({ data: { ...rental, id: rental._id }, error: null });
+  } catch (err) {
+    console.error('Rental request error:', err);
+    res.status(500).json({ data: null, error: { message: err.message } });
+  }
+});
+
+// Create a Razorpay order for an existing rental. Amount comes from the
+// stored rental (server-priced), and the order id is pinned to the rental so
+// confirm-payment can verify the paid order is the one we created.
+app.post('/api/rentals/:id/pay-order', async (req, res) => {
+  const sessionUser = authenticateToken(req);
+  if (!sessionUser) {
+    return res.status(401).json({ data: null, error: { message: 'Authentication required' } });
+  }
+
+  try {
+    const rental = await db.collection('rental_bookings').findOne({ _id: req.params.id, renter_id: sessionUser.userId });
+    if (!rental) return res.status(404).json({ data: null, error: { message: 'Rental not found' } });
+    if (rental.payment_status === 'paid') {
+      return res.status(409).json({ data: null, error: { message: 'This rental is already paid' } });
+    }
+
+    const keyId = process.env.RAZORPAY_KEY_ID;
+    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+    if (!keyId || !keySecret) {
+      return res.status(500).json({ data: null, error: { message: 'Razorpay keys not configured on server' } });
+    }
+
+    const basicAuth = Buffer.from(`${keyId}:${keySecret}`).toString('base64');
+    const response = await fetch('https://api.razorpay.com/v1/orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Basic ${basicAuth}` },
+      body: JSON.stringify({
+        amount: Math.round(rental.total_price * 100),
+        currency: rental.currency || 'USD',
+        receipt: `rental_${rental._id}`.slice(0, 40),
+        payment_capture: 1,
+      }),
+    });
+    const order = await response.json();
+    if (!response.ok) {
+      console.error('Razorpay rental order failed:', order);
+      return res.status(response.status).json({ data: null, error: order });
+    }
+
+    await db.collection('rental_bookings').updateOne(
+      { _id: rental._id },
+      { $set: { payment_order_id: order.id, updated_at: new Date() } }
+    );
+    res.json({ data: order, error: null });
+  } catch (err) {
+    console.error('Rental pay-order error:', err);
+    res.status(500).json({ data: null, error: { message: err.message } });
+  }
+});
+
+app.post('/api/rentals/:id/confirm-payment', async (req, res) => {
+  const sessionUser = authenticateToken(req);
+  if (!sessionUser) {
+    return res.status(401).json({ data: null, error: { message: 'Authentication required' } });
+  }
+
+  try {
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body || {};
+    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+      return res.status(400).json({ data: null, error: { message: 'Missing payment parameters' } });
+    }
+
+    const rental = await db.collection('rental_bookings').findOne({ _id: req.params.id, renter_id: sessionUser.userId });
+    if (!rental) return res.status(404).json({ data: null, error: { message: 'Rental not found' } });
+
+    // The paid order must be the one this server created for this rental.
+    if (rental.payment_order_id !== razorpay_order_id) {
+      return res.status(400).json({ data: null, error: { message: 'Payment does not match this rental' } });
+    }
+
+    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+    if (!keySecret) {
+      return res.status(500).json({ data: null, error: { message: 'Server missing Razorpay secret key' } });
+    }
+    const expected = crypto.createHmac('sha256', keySecret)
+      .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+      .digest('hex');
+    if (expected !== razorpay_signature) {
+      return res.status(400).json({ data: null, error: { message: 'Signature mismatch' } });
+    }
+
+    await db.collection('rental_bookings').updateOne(
+      { _id: rental._id },
+      { $set: { status: 'confirmed', payment_status: 'paid', payment_intent_id: razorpay_payment_id, updated_at: new Date() } }
+    );
+    res.json({ data: { id: rental._id, status: 'confirmed', payment_status: 'paid' }, error: null });
+  } catch (err) {
+    console.error('Rental confirm-payment error:', err);
+    res.status(500).json({ data: null, error: { message: err.message } });
   }
 });
 

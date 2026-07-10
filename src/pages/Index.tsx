@@ -10,7 +10,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Search, Camera, Calendar, Shield, ArrowRight, Star, Users, CheckCircle, Quote, MapPin, Clock, Award, Zap, Heart, MessageCircle, TrendingUp, Eye, User } from 'lucide-react';
+import { Search, Camera, Calendar as CalendarIcon, Shield, ArrowRight, Star, Users, CheckCircle, Quote, MapPin, Clock, Award, Zap, Heart, MessageCircle, TrendingUp, Eye, User } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar as CalendarWidget } from '@/components/ui/calendar';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
 import { updatePageSEO, seoData } from '@/utils/seo';
 import { detectUserCountry, updateInternationalSEO, generateCountrySEO, formatPrice, getLocalizedContent } from '@/utils/international-seo';
 import { formatPriceLocal } from '@/lib/currency';
@@ -64,7 +69,9 @@ export default function Index() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [photographers, setPhotographers] = useState<Photographer[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchLocation, setSearchLocation] = useState('');
+  const [searchEventType, setSearchEventType] = useState('');
+  const [searchDate, setSearchDate] = useState<Date>();
   const [loading, setLoading] = useState(true);
 
   // SEO optimization with international support and marketing
@@ -354,7 +361,7 @@ export default function Index() {
 
   const features = [
     { icon: Search, titleKey: 'features.browse.title', descKey: 'features.browse.desc' },
-    { icon: Calendar, titleKey: 'features.book.title', descKey: 'features.book.desc' },
+    { icon: CalendarIcon, titleKey: 'features.book.title', descKey: 'features.book.desc' },
     { icon: Shield, titleKey: 'features.pay.title', descKey: 'features.pay.desc' },
   ];
 
@@ -368,7 +375,7 @@ export default function Index() {
       {/* Hero Section - Simplified & More Engaging */}
       <section id="hero-section" className="relative min-h-screen flex items-center overflow-hidden" aria-labelledby="hero-title">
         <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat animate-[heroZoom_20s_ease-in-out_infinite_alternate]"
           style={{ backgroundImage: "url('/assets/hero-bg.jpg')" }}
         />
         <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/50 to-transparent" />
@@ -385,10 +392,10 @@ export default function Index() {
 
         <div className="container relative z-10 py-20">
           <div className={`max-w-4xl transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-            {/* Trust Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/20 backdrop-blur-md border border-emerald-400/30 mb-8">
-              <Shield className="w-4 h-4 text-emerald-400" />
-              <span className="text-sm font-bold text-white">{t('hero.trustBadge')}</span>
+            {/* Trusted By Badge */}
+            <div className="inline-flex items-center gap-3 px-5 py-2.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 mb-8 shadow-lg">
+              <Shield className="w-5 h-5 text-emerald-400" />
+              <span className="text-sm font-semibold text-white">Trusted by 10,000+ Customers Worldwide</span>
             </div>
 
             {/* Main Headline - SEO Optimized */}
@@ -424,41 +431,68 @@ export default function Index() {
               </div>
             </div>
 
-            {/* Enhanced Search */}
-            <form
-              onSubmit={(e) => { e.preventDefault(); navigate(`/photographers?search=${searchQuery}`); }}
-              className="relative flex gap-3 max-w-2xl mb-8"
-            >
-              <div className="relative flex-1">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/60" />
+            {/* Enhanced Structured Search */}
+            <div className="bg-white/15 backdrop-blur-md border border-white/20 rounded-2xl p-3 shadow-2xl max-w-3xl mb-8 flex flex-col md:flex-row gap-3">
+              {/* Location Input */}
+              <div className="flex-1 relative bg-white/10 rounded-xl">
+                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/70" />
                 <Input
-                  placeholder={t('hero.searchPlaceholder')}
-                  value={searchQuery}
-                  onChange={(e) => handleSearchChange(e.target.value)}
-                  className="pl-12 h-14 rounded-xl bg-white/15 backdrop-blur-md border-white/20 text-white placeholder:text-white/60 text-lg font-medium shadow-xl"
+                  placeholder="Where? (e.g. New York)"
+                  value={searchLocation}
+                  onChange={(e) => setSearchLocation(e.target.value)}
+                  className="pl-12 h-14 border-0 bg-transparent text-white placeholder:text-white/70 text-base font-medium focus-visible:ring-0 focus-visible:ring-offset-0"
                 />
-                {showSearchSuggestions && searchSuggestions.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 bg-white/95 backdrop-blur-md border border-white/20 rounded-xl mt-2 shadow-2xl z-50">
-                    {searchSuggestions.map((suggestion, idx) => (
-                      <button
-                        key={idx}
-                        type="button"
-                        className="w-full text-left px-4 py-3 hover:bg-primary/10 transition-colors text-gray-800 font-medium first:rounded-t-xl last:rounded-b-xl"
-                        onClick={() => {
-                          setSearchQuery(suggestion);
-                          setShowSearchSuggestions(false);
-                        }}
-                      >
-                        {suggestion}
-                      </button>
-                    ))}
-                  </div>
-                )}
               </div>
-              <Button type="submit" size="lg" className="h-14 px-8 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold shadow-xl hover:scale-105 transition-all">
-                {t('hero.search')}
+
+              {/* Event Type Select */}
+              <div className="flex-1 relative bg-white/10 rounded-xl flex items-center px-2">
+                <Camera className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/70 z-10" />
+                <Select value={searchEventType} onValueChange={setSearchEventType}>
+                  <SelectTrigger className="pl-10 h-12 border-0 bg-transparent text-white focus:ring-0 focus:ring-offset-0 data-[placeholder]:text-white/70 text-base font-medium shadow-none">
+                    <SelectValue placeholder="What kind of shoot?" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {STYLES.map(style => (
+                      <SelectItem key={style.value} value={style.value}>{style.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Date Picker */}
+              <div className="flex-1 relative bg-white/10 rounded-xl">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      className={cn(
+                        "w-full h-14 justify-start text-left font-medium text-base hover:bg-white/5",
+                        !searchDate ? "text-white/70" : "text-white"
+                      )}
+                    >
+                      <CalendarIcon className="mr-3 h-5 w-5 opacity-70" />
+                      {searchDate ? format(searchDate, "PPP") : "When?"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <CalendarWidget
+                      mode="single"
+                      selected={searchDate}
+                      onSelect={setSearchDate}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              {/* Search Button */}
+              <Button 
+                onClick={() => navigate(`/photographers?location=${searchLocation}&type=${searchEventType}`)}
+                className="h-14 px-8 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-lg transition-transform active:scale-95"
+              >
+                Search
               </Button>
-            </form>
+            </div>
 
             {/* Quick Categories */}
             <div className="flex flex-wrap gap-3">

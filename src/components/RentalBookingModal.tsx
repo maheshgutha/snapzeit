@@ -2,22 +2,30 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
-import { X, CreditCard, Calendar as CalendarIcon, Info } from 'lucide-react';
-import { supabase } from '@/integrations/api/client';
+import { X, CreditCard, Info } from 'lucide-react';
+import { supabase, getAuthHeaders } from '@/integrations/api/client';
+import { openRazorpayCheckout } from '@/utils/payment-service';
+import { formatPriceLocal } from '@/lib/currency';
 import { toast } from 'sonner';
-import { differenceInDays, addDays, format } from 'date-fns';
+import { addDays, format, startOfToday } from 'date-fns';
+
+const getBaseUrl = () => import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
 
 interface RentalBookingModalProps {
     equipment: {
         id: string;
         name: string;
         daily_rate: number;
+        currency?: string;
         image_url: string;
     };
     onClose: () => void;
 }
+
+const clampDuration = (value: number) => Math.min(30, Math.max(1, value));
 
 export function RentalBookingModal({ equipment, onClose }: RentalBookingModalProps) {
     const [startDate, setStartDate] = useState<Date | undefined>(new Date());
@@ -45,6 +53,7 @@ export function RentalBookingModal({ equipment, onClose }: RentalBookingModalPro
         fetchUser();
     }, []);
 
+    const currency = equipment.currency || 'USD';
     const endDate = startDate ? addDays(startDate, duration) : undefined;
     const totalPrice = equipment.daily_rate * duration;
 
@@ -58,33 +67,84 @@ export function RentalBookingModal({ equipment, onClose }: RentalBookingModalPro
         setIsSubmitting(true);
         try {
             const { data: { user } } = await supabase.auth.getUser();
-
             if (!user) {
                 toast.error("Please login to book a rental.");
-                setIsSubmitting(false);
                 return;
             }
 
-            // Check for available stock (Optional - skipping for now as we assume 1 stock)
-
-            const bookingData = {
-                equipment_id: equipment.id,
-                renter_id: user.id,
-                start_date: startDate.toISOString().split('T')[0],
-                end_date: endDate?.toISOString().split('T')[0],
-                total_price: totalPrice,
-                status: 'pending' // Or 'confirmed' if we had payment
-            };
-
-            const { error } = await supabase.from('rental_bookings').insert(bookingData);
-
-            if (error) throw error;
-
-            toast.success(`Rental Request Sent for ${equipment.name}!`, {
-                description: `Total: $${totalPrice}. Check your bookings/email for confirmation.`
+            // Server validates the equipment, computes the price, and rejects
+            // overlapping bookings — nothing money-related is trusted from here.
+            const resp = await fetch(`${getBaseUrl()}/api/rentals/request`, {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify({
+                    equipment_id: equipment.id,
+                    start_date: startDate.toISOString().split('T')[0],
+                    duration_days: duration,
+                    contact: formData,
+                }),
             });
-            onClose();
+            const json = await resp.json();
+            if (!resp.ok || json.error) {
+                toast.error(json.error?.message || 'Rental request failed');
+                return;
+            }
 
+            const rental = json.data;
+            const razorpayKey = import.meta.env.VITE_RAZORPAY_KEY_ID;
+            const isRazorpayConfigured = razorpayKey && razorpayKey !== 'rzp_test_YOUR_KEY_ID';
+
+            if (!isRazorpayConfigured) {
+                toast.success(`Rental request submitted for ${equipment.name}!`, {
+                    description: `Total: ${formatPriceLocal(rental.total_price, rental.currency)}. We'll confirm availability and arrange payment.`,
+                });
+                onClose();
+                return;
+            }
+
+            // Payment: server creates the order pinned to this rental
+            const orderResp = await fetch(`${getBaseUrl()}/api/rentals/${rental.id}/pay-order`, {
+                method: 'POST',
+                headers: getAuthHeaders(),
+            });
+            const orderJson = await orderResp.json();
+            if (!orderResp.ok || orderJson.error) {
+                toast.info('Request saved as pending — payment could not be started.', {
+                    description: orderJson.error?.message || orderJson.error?.description,
+                });
+                onClose();
+                return;
+            }
+
+            await openRazorpayCheckout({
+                order: orderJson.data,
+                description: `Rental: ${equipment.name} (${duration} days)`,
+                name: formData.name,
+                email: formData.email,
+                contact: formData.phone,
+                onSuccess: async (response) => {
+                    const confirmResp = await fetch(`${getBaseUrl()}/api/rentals/${rental.id}/confirm-payment`, {
+                        method: 'POST',
+                        headers: getAuthHeaders(),
+                        body: JSON.stringify(response),
+                    });
+                    const confirmJson = await confirmResp.json();
+                    if (confirmResp.ok && !confirmJson.error) {
+                        toast.success(`Rental confirmed for ${equipment.name}!`, {
+                            description: `Paid ${formatPriceLocal(rental.total_price, rental.currency)}. See My Bookings for details.`,
+                        });
+                    } else {
+                        toast.error(confirmJson.error?.message || 'Payment confirmation failed. Contact support.');
+                    }
+                    onClose();
+                },
+                onFailure: (error) => {
+                    toast.info('Payment not completed — your request is saved as pending.', {
+                        description: error?.description || error?.message,
+                    });
+                    onClose();
+                },
+            });
         } catch (err: any) {
             console.error("Rental booking failed:", err);
             toast.error("Booking failed: " + err.message);
@@ -119,7 +179,7 @@ export function RentalBookingModal({ equipment, onClose }: RentalBookingModalPro
                                             mode="single"
                                             selected={startDate}
                                             onSelect={setStartDate}
-                                            disabled={(date) => date < new Date()}
+                                            disabled={(date) => date < startOfToday()}
                                             initialFocus
                                             className="rounded-md border-0"
                                         />
@@ -133,10 +193,10 @@ export function RentalBookingModal({ equipment, onClose }: RentalBookingModalPro
                                         min={1}
                                         max={30}
                                         value={duration}
-                                        onChange={(e) => setDuration(parseInt(e.target.value) || 1)}
+                                        onChange={(e) => setDuration(clampDuration(parseInt(e.target.value) || 1))}
                                     />
                                     <p className="text-xs text-muted-foreground flex items-center gap-1">
-                                        <Info className="h-3 w-3" /> Minimum 1 day rental
+                                        <Info className="h-3 w-3" /> 1–30 day rentals
                                     </p>
                                 </div>
                             </div>
@@ -163,6 +223,12 @@ export function RentalBookingModal({ equipment, onClose }: RentalBookingModalPro
                                         value={formData.phone}
                                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                                     />
+                                    <Textarea
+                                        placeholder="Notes for the owner (pickup time, usage, etc.)"
+                                        value={formData.notes}
+                                        onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                                        rows={2}
+                                    />
                                 </div>
 
                                 <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 border border-blue-100 dark:border-blue-800">
@@ -170,7 +236,7 @@ export function RentalBookingModal({ equipment, onClose }: RentalBookingModalPro
                                     <div className="space-y-1 text-sm text-blue-800 dark:text-blue-200">
                                         <div className="flex justify-between">
                                             <span>Daily Rate:</span>
-                                            <span>${equipment.daily_rate}/day</span>
+                                            <span>{formatPriceLocal(equipment.daily_rate, currency)}/day</span>
                                         </div>
                                         <div className="flex justify-between">
                                             <span>Duration:</span>
@@ -184,7 +250,7 @@ export function RentalBookingModal({ equipment, onClose }: RentalBookingModalPro
                                         )}
                                         <div className="border-t border-blue-200 dark:border-blue-700 my-2 pt-2 flex justify-between font-bold text-lg">
                                             <span>Total:</span>
-                                            <span>${totalPrice.toFixed(2)}</span>
+                                            <span>{formatPriceLocal(totalPrice, currency)}</span>
                                         </div>
                                     </div>
                                 </div>
