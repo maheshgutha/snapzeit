@@ -73,6 +73,8 @@ export default function Index() {
   const [searchEventType, setSearchEventType] = useState('');
   const [searchDate, setSearchDate] = useState<Date>();
   const [loading, setLoading] = useState(true);
+  
+
 
   // SEO optimization with international support and marketing
   useEffect(() => {
@@ -128,6 +130,7 @@ export default function Index() {
   const [matchLoading, setMatchLoading] = useState(false);
   const [showSmartMatching, setShowSmartMatching] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const [searchSuggestions, setSearchSuggestions] = useState<string[]>([]);
   const [showSearchSuggestions, setShowSearchSuggestions] = useState(false);
   const [liveActivity, setLiveActivity] = useState({ bookings: 0, photographers: 0 });
@@ -517,7 +520,7 @@ export default function Index() {
                 className="bg-white/10 backdrop-blur-md border-white/20 text-white hover:bg-white/20 hover:scale-105 transition-all"
                 onClick={() => navigate('/photographers?category=event')}
               >
-                <Calendar className="w-4 h-4 mr-2" />
+                <CalendarIcon className="w-4 h-4 mr-2" />
                 Events
               </Button>
             </div>
@@ -920,7 +923,7 @@ export default function Index() {
                 <span className="text-white font-bold text-lg">2</span>
               </div>
               <div className="w-10 h-10 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center mx-auto mb-4">
-                <Calendar className="h-5 w-5 text-emerald-600" />
+                <CalendarIcon className="h-5 w-5 text-emerald-600" />
               </div>
               <h3 className="font-bold mb-2">{t('features.book.title')}</h3>
               <p className="text-sm text-gray-600 dark:text-gray-300">{t('features.book.desc')}</p>
