@@ -36,7 +36,7 @@ const OWNER_INSERT = new Set([
 const FORBIDDEN_WRITE_FIELDS = {
   profiles: ['hashed_password', 'is_blocked', 'block_reason', 'email', 'user_id'],
   photographers: ['is_blocked', 'block_reason', 'rating', 'review_count'],
-  bookings: ['payment_status', 'payment_intent_id', 'payment_order_id', 'commission_rate'],
+  bookings: ['payment_status', 'payment_intent_id', 'payment_order_id', 'commission_rate', 'total_amount', 'platform_fee', 'photographer_payout', 'currency'],
   rental_bookings: ['total_price', 'currency', 'payment_status', 'payment_intent_id', 'payment_order_id', 'equipment_id'],
   reviews: ['is_moderated', 'moderation_status'],
   user_roles: [],

@@ -811,55 +811,12 @@ app.post('/api/rpc/recalc_photographer_rating', async (req, res) => {
 });
 
 // -------------------------------------------------------------------
-// 9. PAYMENTS - Razorpay Order Creation (Server-side)
+// 9. PAYMENTS
+// Order creation lives on the domain endpoints (/api/bookings/:id/pay-order,
+// /api/rentals/:id/pay-order) where the amount is computed server-side. The
+// old generic create-order endpoint was removed because it charged whatever
+// amount the client asked for.
 // -------------------------------------------------------------------
-app.post('/api/payments/create-order', async (req, res) => {
-  try {
-    const { amount, currency = 'INR', receipt } = req.body;
-
-    if (!amount) {
-      return res.status(400).json({ data: null, error: { message: 'Amount is required' } });
-    }
-
-    const keyId = process.env.RAZORPAY_KEY_ID;
-    const keySecret = process.env.RAZORPAY_KEY_SECRET;
-
-    if (!keyId || !keySecret) {
-      return res.status(500).json({ data: null, error: { message: 'Razorpay keys not configured on server' } });
-    }
-
-    // Razorpay API expects amount in paise (smallest currency unit)
-    const orderBody = {
-      amount: Math.round(Number(amount) * 100),
-      currency,
-      receipt: receipt || `rcpt_${Date.now()}`,
-      payment_capture: 1,
-    };
-
-    const basicAuth = Buffer.from(`${keyId}:${keySecret}`).toString('base64');
-
-    const response = await fetch('https://api.razorpay.com/v1/orders', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Basic ${basicAuth}`,
-      },
-      body: JSON.stringify(orderBody),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      console.error('Razorpay order creation failed:', data);
-      return res.status(response.status).json({ data: null, error: data });
-    }
-
-    res.json({ data, error: null });
-  } catch (err) {
-    console.error('Create order error:', err);
-    res.status(500).json({ data: null, error: err.message || String(err) });
-  }
-});
 
 // Verify Razorpay signature (client-side confirmation)
 app.post('/api/payments/verify-signature', async (req, res) => {
@@ -890,58 +847,10 @@ app.post('/api/payments/verify-signature', async (req, res) => {
   }
 });
 
-// Create booking after verifying Razorpay signature (server-side booking creation)
-app.post('/api/payments/create-booking', async (req, res) => {
-  try {
-    const sessionUser = authenticateToken(req);
-    if (!sessionUser) {
-      return res.status(401).json({ data: null, error: { message: 'Authentication required' } });
-    }
-
-    const { booking, razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
-
-    if (!booking || !razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
-      return res.status(400).json({ data: null, error: { message: 'Missing booking or payment parameters' } });
-    }
-
-    const keySecret = process.env.RAZORPAY_KEY_SECRET;
-    if (!keySecret) {
-      return res.status(500).json({ data: null, error: { message: 'Server missing Razorpay secret key' } });
-    }
-
-    const expected = crypto.createHmac('sha256', keySecret)
-      .update(`${razorpay_order_id}|${razorpay_payment_id}`)
-      .digest('hex');
-
-    if (expected !== razorpay_signature) {
-      return res.status(400).json({ data: null, error: { message: 'Signature mismatch' } });
-    }
-
-    const bookingsColl = db.collection('bookings');
-
-    const now = new Date();
-    const bookingDoc = {
-      ...booking,
-      user_id: sessionUser.userId, // booking always belongs to the paying user
-      payment_status: 'paid',
-      payment_intent_id: razorpay_payment_id,
-      payment_order_id: razorpay_order_id,
-      status: booking.status || 'confirmed',
-      created_at: now,
-      updated_at: now
-    };
-
-    if (!bookingDoc._id && bookingDoc.id) bookingDoc._id = bookingDoc.id;
-    if (!bookingDoc._id) bookingDoc._id = crypto.randomUUID();
-
-    await bookingsColl.insertOne(bookingDoc);
-
-    return res.json({ data: { ...bookingDoc, id: bookingDoc._id }, error: null });
-  } catch (err) {
-    console.error('Create booking error:', err);
-    return res.status(500).json({ data: null, error: { message: err.message || String(err) } });
-  }
-});
+// (The old /api/payments/create-booking endpoint was removed: it accepted a
+// client-supplied booking amount and marked it paid. Bookings are now created
+// via /api/bookings/request and paid via pay-order + confirm-payment, where
+// both the price and the order are controlled server-side.)
 
 // Webhook endpoint for Razorpay events (use RAZORPAY_WEBHOOK_SECRET)
 app.post('/api/payments/webhook', express.raw({ type: '*/*' }), async (req, res) => {
@@ -1036,6 +945,172 @@ app.post('/api/admin/bookings/:id/refund', requireAdmin, async (req, res) => {
   } catch (err) {
     console.error('Refund booking error:', err);
     return res.status(500).json({ data: null, error: { message: err.message || String(err) } });
+  }
+});
+
+// -------------------------------------------------------------------
+// Bookings: server-priced requests with platform fee, and payment
+// -------------------------------------------------------------------
+
+// Platform fee percentage. Admin-configurable via the platform_settings
+// collection (key 'commission_rate'); falls back to env then 5%.
+async function getCommissionRate() {
+  try {
+    const setting = await db.collection('platform_settings').findOne({ key: 'commission_rate' });
+    const fromDb = Number(setting?.value);
+    if (Number.isFinite(fromDb) && fromDb >= 0 && fromDb <= 50) return fromDb;
+  } catch (e) { /* fall through */ }
+  const fromEnv = Number(process.env.PLATFORM_COMMISSION_RATE);
+  if (Number.isFinite(fromEnv) && fromEnv >= 0 && fromEnv <= 50) return fromEnv;
+  return 5;
+}
+
+app.post('/api/bookings/request', async (req, res) => {
+  const sessionUser = authenticateToken(req);
+  if (!sessionUser) {
+    return res.status(401).json({ data: null, error: { message: 'Authentication required' } });
+  }
+
+  try {
+    const { photographer_id, booking_date, start_time, end_time, duration_hours, event_type, location, notes } = req.body || {};
+    if (!photographer_id || !booking_date || !duration_hours) {
+      return res.status(400).json({ data: null, error: { message: 'photographer_id, booking_date and duration_hours are required' } });
+    }
+
+    const hours = Number(duration_hours);
+    if (!Number.isFinite(hours) || hours < 1 || hours > 24) {
+      return res.status(400).json({ data: null, error: { message: 'Duration must be between 1 and 24 hours' } });
+    }
+
+    const photographer = await db.collection('photographers').findOne({ _id: photographer_id });
+    if (!photographer || photographer.status !== 'approved' || photographer.is_blocked) {
+      return res.status(404).json({ data: null, error: { message: 'This photographer is not available for booking' } });
+    }
+
+    // Price is computed here from the photographer's own listed rate, in the
+    // photographer's own currency. Worldwide pricing is set by each
+    // photographer for their market — never trusted from the client.
+    const totalAmount = Math.round(Number(photographer.price_per_hour) * hours * 100) / 100;
+    const commissionRate = await getCommissionRate();
+    const platformFee = Math.round(totalAmount * commissionRate) / 100;
+
+    const now = new Date();
+    const booking = {
+      _id: crypto.randomUUID(),
+      user_id: sessionUser.userId,
+      photographer_id,
+      photographer_name: photographer.name,
+      booking_date,
+      start_time: start_time || '10:00:00',
+      end_time: end_time || '',
+      duration_hours: hours,
+      event_type: event_type || 'Session',
+      location: location || photographer.location || '',
+      notes: notes || '',
+      total_amount: totalAmount,
+      currency: photographer.currency || 'USD',
+      commission_rate: commissionRate,
+      platform_fee: platformFee,
+      photographer_payout: Math.round((totalAmount - platformFee) * 100) / 100,
+      status: 'pending',
+      payment_status: 'unpaid',
+      created_at: now,
+      updated_at: now,
+    };
+
+    await db.collection('bookings').insertOne(booking);
+    res.json({ data: { ...booking, id: booking._id }, error: null });
+  } catch (err) {
+    console.error('Booking request error:', err);
+    res.status(500).json({ data: null, error: { message: err.message } });
+  }
+});
+
+app.post('/api/bookings/:id/pay-order', async (req, res) => {
+  const sessionUser = authenticateToken(req);
+  if (!sessionUser) {
+    return res.status(401).json({ data: null, error: { message: 'Authentication required' } });
+  }
+
+  try {
+    const booking = await db.collection('bookings').findOne({ _id: req.params.id, user_id: sessionUser.userId });
+    if (!booking) return res.status(404).json({ data: null, error: { message: 'Booking not found' } });
+    if (booking.payment_status === 'paid') {
+      return res.status(409).json({ data: null, error: { message: 'This booking is already paid' } });
+    }
+
+    const keyId = process.env.RAZORPAY_KEY_ID;
+    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+    if (!keyId || !keySecret) {
+      return res.status(500).json({ data: null, error: { message: 'Razorpay keys not configured on server' } });
+    }
+
+    const basicAuth = Buffer.from(`${keyId}:${keySecret}`).toString('base64');
+    const response = await fetch('https://api.razorpay.com/v1/orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Basic ${basicAuth}` },
+      body: JSON.stringify({
+        amount: Math.round(booking.total_amount * 100),
+        currency: booking.currency || 'USD',
+        receipt: `booking_${booking._id}`.slice(0, 40),
+        payment_capture: 1,
+      }),
+    });
+    const order = await response.json();
+    if (!response.ok) {
+      console.error('Razorpay booking order failed:', order);
+      return res.status(response.status).json({ data: null, error: order });
+    }
+
+    await db.collection('bookings').updateOne(
+      { _id: booking._id },
+      { $set: { payment_order_id: order.id, updated_at: new Date() } }
+    );
+    res.json({ data: order, error: null });
+  } catch (err) {
+    console.error('Booking pay-order error:', err);
+    res.status(500).json({ data: null, error: { message: err.message } });
+  }
+});
+
+app.post('/api/bookings/:id/confirm-payment', async (req, res) => {
+  const sessionUser = authenticateToken(req);
+  if (!sessionUser) {
+    return res.status(401).json({ data: null, error: { message: 'Authentication required' } });
+  }
+
+  try {
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body || {};
+    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+      return res.status(400).json({ data: null, error: { message: 'Missing payment parameters' } });
+    }
+
+    const booking = await db.collection('bookings').findOne({ _id: req.params.id, user_id: sessionUser.userId });
+    if (!booking) return res.status(404).json({ data: null, error: { message: 'Booking not found' } });
+
+    if (booking.payment_order_id !== razorpay_order_id) {
+      return res.status(400).json({ data: null, error: { message: 'Payment does not match this booking' } });
+    }
+
+    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+    if (!keySecret) {
+      return res.status(500).json({ data: null, error: { message: 'Server missing Razorpay secret key' } });
+    }
+    const expected = crypto.createHmac('sha256', keySecret)
+      .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+      .digest('hex');
+    if (expected !== razorpay_signature) {
+      return res.status(400).json({ data: null, error: { message: 'Signature mismatch' } });
+    }
+
+    await db.collection('bookings').updateOne(
+      { _id: booking._id },
+      { $set: { status: 'confirmed', payment_status: 'paid', payment_intent_id: razorpay_payment_id, updated_at: new Date() } }
+    );
+    res.json({ data: { id: booking._id, status: 'confirmed', payment_status: 'paid' }, error: null });
+  } catch (err) {
+    console.error('Booking confirm-payment error:', err);
+    res.status(500).json({ data: null, error: { message: err.message } });
   }
 });
 

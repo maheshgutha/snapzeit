@@ -322,7 +322,7 @@ export default function PhotographerDashboard() {
 
       {/* Stats Overview */}
       <section className="py-8 container relative z-10 -mt-8">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 mb-12">
           <Card className="glass-card border-0 hover:translate-y-[-4px] transition-transform duration-300">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -378,12 +378,27 @@ export default function PhotographerDashboard() {
               </div>
             </CardContent>
           </Card>
+
+          <Card className="glass-card border-0 hover:translate-y-[-4px] transition-transform duration-300">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Profile Views</p>
+                  <p className="text-2xl font-black text-gray-900 dark:text-white mt-1">{photographer.profileViews}</p>
+                </div>
+                <div className="p-3 bg-pink-100 dark:bg-pink-900/30 rounded-xl">
+                  <Eye className="h-6 w-6 text-pink-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Main Dashboard Content */}
         <Tabs defaultValue="bookings" className="w-full">
           <TabsList className="flex flex-wrap h-auto gap-2 bg-transparent p-1 mb-8">
             <TabsTrigger value="bookings" className="px-5 py-2.5 rounded-full data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-purple-600 data-[state=active]:text-white shadow-sm border border-transparent data-[state=active]:border-0 transition-all">Bookings</TabsTrigger>
+            <TabsTrigger value="calendar" className="px-5 py-2.5 rounded-full data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-purple-600 data-[state=active]:text-white shadow-sm border border-transparent data-[state=active]:border-0 transition-all">Calendar</TabsTrigger>
             <TabsTrigger value="leads" className="px-5 py-2.5 rounded-full data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-purple-600 data-[state=active]:text-white shadow-sm border border-transparent data-[state=active]:border-0 transition-all">
               Leads <Badge variant="secondary" className="ml-2 bg-red-500 text-white hover:bg-red-600 text-[10px] px-1.5 py-0.5 border-0">New</Badge>
             </TabsTrigger>
@@ -424,6 +439,46 @@ export default function PhotographerDashboard() {
                       </div>
                     </div>
                   ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Calendar Tab */}
+          <TabsContent value="calendar" className="mt-6">
+            <Card className="glass-card border-0">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="h-5 w-5 text-indigo-600" />
+                  Calendar Management
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid md:grid-cols-3 gap-6">
+                  <div className="md:col-span-2 bg-white/50 dark:bg-gray-800/50 rounded-xl border border-gray-100 dark:border-gray-700 p-6 min-h-[400px] flex items-center justify-center">
+                    {/* Placeholder for actual interactive calendar */}
+                    <div className="text-center text-gray-500">
+                      <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                      <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Interactive Calendar Coming Soon</h3>
+                      <p>You will be able to block dates, set custom availability, and sync with Google Calendar.</p>
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <h3 className="font-bold text-lg">Upcoming Sessions</h3>
+                    {bookings.slice(0, 3).map(booking => (
+                      <div key={booking.id} className="p-4 bg-white/80 dark:bg-gray-800/80 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+                        <div className="flex justify-between items-start mb-2">
+                          <span className="font-semibold">{booking.date}</span>
+                          <Badge className="bg-blue-100 text-blue-800">10:00 AM</Badge>
+                        </div>
+                        <p className="text-gray-900 dark:text-gray-100 font-medium">{booking.client}</p>
+                        <p className="text-sm text-gray-500">{booking.type}</p>
+                      </div>
+                    ))}
+                    {bookings.length === 0 && (
+                      <p className="text-sm text-gray-500 italic">No upcoming sessions this month.</p>
+                    )}
+                  </div>
                 </div>
               </CardContent>
             </Card>

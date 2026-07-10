@@ -26,6 +26,7 @@ export default function PhotographerRegister() {
   const { user } = useAuth();
   
   const [loading, setLoading] = useState(false);
+  const [step, setStep] = useState(1);
   const [isNewUser, setIsNewUser] = useState(!user);
   const [formData, setFormData] = useState({
     name: user?.user_metadata?.name || '',
@@ -111,6 +112,13 @@ export default function PhotographerRegister() {
       pricePerHour: priceValidation.message
     });
     
+    if (step === 1) {
+      return nameValidation.isValid && emailValidation.isValid && passwordValidation.isValid && phoneValidation.isValid && locationValid;
+    }
+    if (step === 2) {
+      return priceValidation.isValid;
+    }
+    
     return nameValidation.isValid && emailValidation.isValid && passwordValidation.isValid && 
            phoneValidation.isValid && priceValidation.isValid && locationValid;
   };
@@ -128,7 +136,12 @@ export default function PhotographerRegister() {
     e.preventDefault();
 
     if (!validateForm()) {
-      toast.error('Please fix the errors below');
+      toast.error('Please fix the errors below before proceeding');
+      return;
+    }
+
+    if (step < 3) {
+      setStep(step + 1);
       return;
     }
 
@@ -277,7 +290,7 @@ export default function PhotographerRegister() {
           </CardHeader>
           <CardContent className="p-10">
             {/* Google OAuth Option */}
-            {isNewUser && (
+            {isNewUser && step === 1 && (
               <>
                 <SocialLogin onSuccess={() => navigate('/photographer/onboarding')} isPhotographer={true} className="mb-8" />
                 <div className="relative mb-8">
@@ -290,10 +303,34 @@ export default function PhotographerRegister() {
                 </div>
               </>
             )}
+
+            {/* Stepper Indicator */}
+            <div className="flex justify-between items-center mb-8 relative">
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-gray-200 dark:bg-gray-700 -z-10 rounded-full" />
+              <div 
+                className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-gradient-to-r from-purple-600 to-pink-600 -z-10 rounded-full transition-all duration-300"
+                style={{ width: `${(step - 1) * 50}%` }}
+              />
+              {[1, 2, 3].map(s => (
+                <div 
+                  key={s} 
+                  className={`w-10 h-10 rounded-full flex items-center justify-center font-bold border-4 text-sm transition-colors ${
+                    step >= s 
+                      ? 'bg-gradient-to-br from-purple-600 to-pink-600 border-white text-white shadow-lg shadow-purple-500/30' 
+                      : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-400'
+                  }`}
+                >
+                  {s}
+                </div>
+              ))}
+            </div>
             
             <form onSubmit={handleSubmit} className="space-y-8">
-              {/* Basic Info */}
-              <div className="grid md:grid-cols-2 gap-6">
+              
+              {/* Step 1: Basic Info */}
+              {step === 1 && (
+                <div className="animate-in fade-in slide-in-from-right-4 duration-500 space-y-8">
+                  <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label>Full Name *</Label>
                   <Input
@@ -423,8 +460,12 @@ export default function PhotographerRegister() {
                   </ul>
                 )}
               </div>
+              </div>
+              )}
 
-              {/* Professional Info */}
+              {/* Step 2: Professional Info */}
+              {step === 2 && (
+                <div className="animate-in fade-in slide-in-from-right-4 duration-500 space-y-8">
               <div className="grid md:grid-cols-3 gap-6">
                 <div className="space-y-2">
                   <Label>Specialty *</Label>
@@ -521,24 +562,44 @@ export default function PhotographerRegister() {
                   Add links to your best work. One URL per line.
                 </p>
               </div>
+              </div>
+              )}
 
-              <Button 
-                type="submit" 
-                className="w-full h-14 bg-gradient-to-r from-purple-600 via-pink-600 to-red-500 hover:from-purple-700 hover:via-pink-700 hover:to-red-600 text-white font-bold text-lg rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02]" 
-                disabled={loading}
-              >
-                {loading ? (
-                  <div className="flex items-center gap-3">
-                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Creating Profile...
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-3">
-                    <Camera className="h-5 w-5" />
-                    {isNewUser ? 'Create Account & Profile' : 'Create Photographer Profile'}
-                  </div>
+              <div className="flex gap-4 pt-6">
+                {step > 1 && (
+                  <Button 
+                    type="button" 
+                    variant="outline"
+                    className="h-14 px-8 rounded-xl font-bold"
+                    onClick={() => setStep(step - 1)}
+                  >
+                    Back
+                  </Button>
                 )}
-              </Button>
+                <Button 
+                  type="submit" 
+                  className="flex-1 h-14 bg-gradient-to-r from-purple-600 via-pink-600 to-red-500 hover:from-purple-700 hover:via-pink-700 hover:to-red-600 text-white font-bold text-lg rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02]" 
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <div className="flex items-center gap-3">
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      {step === 3 ? 'Creating Profile...' : 'Please Wait...'}
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-3">
+                      {step === 3 ? (
+                        <>
+                          <Camera className="h-5 w-5" />
+                          {isNewUser ? 'Create Account & Profile' : 'Create Photographer Profile'}
+                        </>
+                      ) : (
+                        'Continue to Next Step'
+                      )}
+                    </div>
+                  )}
+                </Button>
+              </div>
 
               <p className="text-xs text-center text-muted-foreground">
                 Your profile will be reviewed by our team before being published.

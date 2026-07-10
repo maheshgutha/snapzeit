@@ -55,6 +55,7 @@ export default function PhotographerProfile() {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [portfolioImages, setPortfolioImages] = useState<string[]>([]);
   const [coverPhoto, setCoverPhoto] = useState<string>('');
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const packages = [
     { id: 'basic', name: 'Basic Package', hours: 2, price: photographer?.price_per_hour ? photographer.price_per_hour * 2 : 300, features: ['2 hours shooting', '20 edited photos', 'Online gallery', 'Basic retouching'] },
@@ -277,10 +278,216 @@ export default function PhotographerProfile() {
                         ))}
                       </div>
                       <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-lg">{photographer.bio}</p>
+                      
+                      {/* Top Review Highlight */}
+                      {photographer.rating >= 4.5 && (
+                        <div className="mt-8 p-5 bg-yellow-50 dark:bg-yellow-900/10 rounded-xl border-l-4 border-yellow-400">
+                          <div className="flex gap-1 mb-2">
+                            {[1, 2, 3, 4, 5].map((s) => (
+                              <Star key={s} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                            ))}
+                          </div>
+                          <p className="italic text-gray-700 dark:text-gray-300 font-medium">
+                            "Absolutely amazing experience! The photos turned out better than we could have ever imagined. Highly recommended!"
+                          </p>
+                          <p className="text-sm font-bold text-gray-900 dark:text-gray-100 mt-2">— Verified Client</p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Main Content */}
+              <section className="py-12 w-full">
+                <Tabs defaultValue="portfolio" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 gap-2">
+                    <TabsTrigger value="portfolio" className="px-3 py-2.5 rounded-full text-sm md:text-base">Portfolio</TabsTrigger>
+                    <TabsTrigger value="packages" className="px-3 py-2.5 rounded-full text-sm md:text-base">Packages</TabsTrigger>
+                    <TabsTrigger value="reviews" className="px-3 py-2.5 rounded-full text-sm md:text-base">Reviews</TabsTrigger>
+                    <TabsTrigger value="booking" className="px-3 py-2.5 rounded-full text-sm md:text-base">Book Now</TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="portfolio" className="mt-8">
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className="text-2xl font-bold">Portfolio</h3>
+                      {isOwner && (
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+                              <Plus className="h-4 w-4 mr-2" />
+                              Add Photos
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-4xl">
+                            <DialogHeader>
+                              <DialogTitle>Upload Portfolio Images</DialogTitle>
+                            </DialogHeader>
+                            <ImageUpload
+                              onUpload={handlePortfolioUpload}
+                              maxFiles={20}
+                              title="Upload Your Best Work"
+                              description="Showcase your photography skills with high-quality images"
+                            />
+                          </DialogContent>
+                        </Dialog>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {portfolioImages.length > 0 ? (
+                        <>
+                          {portfolioImages.map((image, index) => (
+                            <div 
+                              key={index} 
+                              className="group relative aspect-square bg-gray-200 rounded-3xl overflow-hidden hover:scale-105 transition-transform duration-300 cursor-zoom-in shadow-lg"
+                              onClick={() => setSelectedImage(image)}
+                            >
+                              <img 
+                                src={image} 
+                                alt={`Portfolio ${index + 1}`} 
+                                className="w-full h-full object-cover" 
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  target.src = 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800&q=80';
+                                }}
+                              />
+                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-300 flex items-center justify-center">
+                                <Eye className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 w-8 h-8" />
+                              </div>
+                              <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                <Badge variant="secondary" className="text-xs">
+                                  {index + 1}
+                                </Badge>
+                              </div>
+                            </div>
+                          ))}
+
+                          {/* Fullscreen Lightbox Dialog */}
+                          <Dialog open={!!selectedImage} onOpenChange={(open) => !open && setSelectedImage(null)}>
+                            <DialogContent className="max-w-[95vw] md:max-w-[85vw] h-[90vh] p-0 bg-transparent border-0 shadow-none flex flex-col justify-center items-center">
+                              <div className="relative w-full h-full flex items-center justify-center">
+                                {selectedImage && (
+                                  <img 
+                                    src={selectedImage} 
+                                    alt="Fullscreen View" 
+                                    className="max-w-full max-h-full object-contain rounded-lg" 
+                                  />
+                                )}
+                              </div>
+                            </DialogContent>
+                          </Dialog>
+                        </>
+                      ) : (
+                        <div className="col-span-full text-center py-24 bg-gray-50 dark:bg-gray-800/50 rounded-3xl border-2 border-dashed border-gray-200 dark:border-gray-700">
+                          <div className="w-24 h-24 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm">
+                            <Camera className="h-12 w-12 text-gray-300 dark:text-gray-600" />
+                          </div>
+                          <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-3">
+                            {isOwner ? "Your Portfolio is Empty" : "No Portfolio Images Yet"}
+                          </h3>
+                          <p className="text-gray-500 mb-6 max-w-sm mx-auto">
+                            {isOwner 
+                              ? "Upload your best shots to attract more clients and showcase your photography style."
+                              : "This photographer hasn't uploaded any portfolio images yet."
+                            }
+                          </p>
+                          {isOwner && (
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+                                  <Plus className="h-4 w-4 mr-2" />
+                                  Upload Your First Photos
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent className="max-w-4xl">
+                                <DialogHeader>
+                                  <DialogTitle>Upload Portfolio Images</DialogTitle>
+                                </DialogHeader>
+                                <ImageUpload
+                                  onUpload={handlePortfolioUpload}
+                                  maxFiles={20}
+                                  title="Upload Your Best Work"
+                                  description="Showcase your photography skills with high-quality images"
+                                />
+                              </DialogContent>
+                            </Dialog>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="packages" className="mt-8">
+                    <h3 className="text-2xl font-bold mb-6">Photography Packages</h3>
+                    <div className="grid md:grid-cols-3 gap-6">
+                      {packages.map((pkg) => (
+                        <Card key={pkg.id} className="relative overflow-hidden hover:shadow-xl transition-shadow border-0 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm">
+                          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-600 to-purple-600" />
+                          <CardContent className="p-6">
+                            <h4 className="text-xl font-bold mb-2">{pkg.name}</h4>
+                            <div className="text-3xl font-black text-blue-600 mb-6">${pkg.price}</div>
+                            <ul className="space-y-3 mb-8">
+                              {pkg.features.map((feature, idx) => (
+                                <li key={idx} className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                                  <CheckCircle className="h-4 w-4 text-green-500 shrink-0" />
+                                  <span className="text-sm">{feature}</span>
+                                </li>
+                              ))}
+                            </ul>
+                            <Button 
+                              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                              onClick={() => {
+                                setSelectedPackage(pkg.id);
+                                document.querySelector('[value="booking"]')?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+                              }}
+                            >
+                              Select Package
+                            </Button>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="reviews" className="mt-8">
+                    <h3 className="text-2xl font-bold mb-6">Client Reviews</h3>
+                    <Card className="bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm border-0">
+                      <CardContent className="p-12 text-center">
+                        <div className="w-20 h-20 bg-yellow-100 dark:bg-yellow-900/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                          <Star className="h-10 w-10 text-yellow-500" />
+                        </div>
+                        <h4 className="text-xl font-bold mb-2">No Reviews Yet</h4>
+                        <p className="text-gray-500">
+                          {isOwner 
+                            ? "Complete your first booking to start collecting reviews!"
+                            : "Be the first to book and review this photographer!"
+                          }
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+
+                  <TabsContent value="booking" className="mt-8">
+                    <Card className="bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm border-0 overflow-hidden">
+                      <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-8 text-white text-center">
+                        <h3 className="text-2xl font-bold mb-2">Ready to create magic?</h3>
+                        <p className="text-blue-100">Click the button below to open the booking system and secure your date.</p>
+                      </div>
+                      <CardContent className="p-8 text-center">
+                        <Button 
+                          size="lg" 
+                          className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-xl hover:scale-105 transition-all text-lg h-14 px-8 rounded-full"
+                          onClick={() => setShowBooking(true)}
+                        >
+                          <CalendarIcon className="h-5 w-5 mr-2" />
+                          Start Booking Process
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                </Tabs>
+              </section>
             </div>
 
             {/* Enhanced Quick Booking Card */}
@@ -334,171 +541,7 @@ export default function PhotographerProfile() {
         </div>
       </section>
 
-      {/* Main Content */}
-      <section className="py-12 container">
-        <Tabs defaultValue="portfolio" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 gap-2">
-            <TabsTrigger value="portfolio" className="px-3 py-2.5 rounded-full text-sm md:text-base">Portfolio</TabsTrigger>
-            <TabsTrigger value="packages" className="px-3 py-2.5 rounded-full text-sm md:text-base">Packages</TabsTrigger>
-            <TabsTrigger value="reviews" className="px-3 py-2.5 rounded-full text-sm md:text-base">Reviews</TabsTrigger>
-            <TabsTrigger value="booking" className="px-3 py-2.5 rounded-full text-sm md:text-base">Book Now</TabsTrigger>
-          </TabsList>
 
-          <TabsContent value="portfolio" className="mt-8">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-2xl font-bold">Portfolio</h3>
-              {isOwner && (
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Photos
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-4xl">
-                    <DialogHeader>
-                      <DialogTitle>Upload Portfolio Images</DialogTitle>
-                    </DialogHeader>
-                    <ImageUpload
-                      onUpload={handlePortfolioUpload}
-                      maxFiles={20}
-                      title="Upload Your Best Work"
-                      description="Showcase your photography skills with high-quality images"
-                    />
-                  </DialogContent>
-                </Dialog>
-              )}
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {portfolioImages.length > 0 ? (
-                portfolioImages.map((image, index) => (
-                  <div key={index} className="group relative aspect-square bg-gray-200 rounded-3xl overflow-hidden hover:scale-105 transition-transform duration-300 cursor-pointer shadow-lg">
-                    <img 
-                      src={image} 
-                      alt={`Portfolio ${index + 1}`} 
-                      className="w-full h-full object-cover" 
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800&q=80';
-                      }}
-                    />
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300" />
-                    <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <Badge variant="secondary" className="text-xs">
-                        {index + 1}
-                      </Badge>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="col-span-full text-center py-24 bg-gray-50 dark:bg-gray-800/50 rounded-3xl border-2 border-dashed border-gray-200 dark:border-gray-700">
-                  <div className="w-24 h-24 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm">
-                    <Camera className="h-12 w-12 text-gray-300 dark:text-gray-600" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-3">
-                    {isOwner ? "Your Portfolio is Empty" : "No Portfolio Images Yet"}
-                  </h3>
-                  <p className="text-gray-500 max-w-md mx-auto mb-8 text-lg">
-                    {isOwner 
-                      ? "Upload your best work to showcase your photography skills and attract more clients."
-                      : `${photographer.name} hasn't uploaded any photos to their portfolio yet. Check back soon!`}
-                  </p>
-                  {isOwner && (
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
-                          <Plus className="h-4 w-4 mr-2" />
-                          Upload First Photos
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-4xl">
-                        <DialogHeader>
-                          <DialogTitle>Upload Portfolio Images</DialogTitle>
-                        </DialogHeader>
-                        <ImageUpload
-                          onUpload={handlePortfolioUpload}
-                          maxFiles={20}
-                          title="Upload Your Best Work"
-                          description="Showcase your photography skills with high-quality images"
-                        />
-                      </DialogContent>
-                    </Dialog>
-                  )}
-                </div>
-              )}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="packages" className="mt-8">
-            <div className="grid md:grid-cols-3 gap-6">
-              {packages.map(pkg => (
-                <Card key={pkg.id} className="hover:shadow-lg transition-shadow">
-                  <CardContent className="p-6">
-                    <h3 className="text-xl font-bold mb-2">{pkg.name}</h3>
-                    <div className="text-3xl font-bold text-blue-600 mb-4">${pkg.price}</div>
-                    <ul className="space-y-2 mb-6">
-                      {pkg.features.map(feature => (
-                        <li key={feature} className="flex items-center gap-2 text-sm">
-                          <CheckCircle className="h-4 w-4 text-green-600" />
-                          {feature}
-                        </li>
-                      ))}
-                    </ul>
-                    <Button className="w-full" onClick={() => setSelectedPackage(pkg.id)}>
-                      Select Package
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="reviews" className="mt-8">
-            <div className="space-y-6">
-              {[1, 2, 3].map(i => (
-                <Card key={i}>
-                  <CardContent className="p-6">
-                    <div className="flex items-start gap-4">
-                      <Avatar>
-                        <AvatarFallback>U{i}</AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="font-semibold">Customer {i}</span>
-                          <div className="flex items-center gap-1">
-                            {[1, 2, 3, 4, 5].map(star => (
-                              <Star key={star} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                            ))}
-                          </div>
-                        </div>
-                        <p className="text-gray-600">Amazing photographer! Very professional and delivered exactly what we wanted. Highly recommend!</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="booking" className="mt-8">
-            <div className="flex flex-col items-center justify-center py-12 text-center bg-gray-50 dark:bg-gray-800 rounded-xl">
-              <CalendarIcon className="h-16 w-16 text-blue-600 mb-4" />
-              <h3 className="text-2xl font-bold mb-2">Ready to Book?</h3>
-              <p className="text-gray-600 dark:text-gray-400 max-w-md mb-8">
-                Select your preferred date and package to secure your session with {photographer.name}.
-              </p>
-              <Button
-                size="lg"
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold text-lg px-8 py-6 rounded-full shadow-lg hover:scale-105 transition-all"
-                onClick={() => setShowBooking(true)}
-              >
-                <CreditCard className="h-5 w-5 mr-2" />
-                Start Booking Process
-              </Button>
-            </div>
-          </TabsContent>
-        </Tabs>
       </section>
 
       {/* Messaging System */}

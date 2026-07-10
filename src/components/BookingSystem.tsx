@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -7,11 +7,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
 import { Badge } from '@/components/ui/badge';
-import { X, Calendar as CalendarIcon, Clock, CreditCard, CheckCircle } from 'lucide-react';
-import { initiatePayment } from '@/utils/payment-service';
+import { X, Calendar as CalendarIcon, Clock, CreditCard, CheckCircle, ShieldCheck, Lock, ChevronRight, ChevronLeft } from 'lucide-react';
+import { openRazorpayCheckout } from '@/utils/payment-service';
 import { apiClient, getAuthHeaders } from '@/integrations/api/client';
 import { toast } from 'sonner';
-import { formatPrice, getUserCurrency, convertAmount, refreshExchangeRates } from '@/lib/currency';
+import { formatPrice, formatPriceLocal } from '@/lib/currency';
+import { startOfToday } from 'date-fns';
+
+const getBaseUrl = () => import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
 
 interface BookingSystemProps {
   photographerName: string;
@@ -22,6 +25,7 @@ interface BookingSystemProps {
 }
 
 export function BookingSystem({ photographerName, photographerId, pricePerHour, currency = 'USD', onClose }: BookingSystemProps) {
+  const [step, setStep] = useState(1);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedPackage, setSelectedPackage] = useState('basic');
   const [bookingForm, setBookingForm] = useState({
@@ -32,39 +36,38 @@ export function BookingSystem({ photographerName, photographerId, pricePerHour, 
     eventType: 'portrait'
   });
 
-  const [userCurrency, setUserCurrency] = useState(getUserCurrency());
-  
-  useEffect(() => {
-    refreshExchangeRates().then(() => {
-      setUserCurrency(getUserCurrency());
-    });
-  }, []);
-
-  const convertedPricePerHour = convertAmount(pricePerHour, currency, userCurrency);
-
+  // Packages are priced in the photographer's own currency — that's what gets
+  // charged. Viewers from other regions see a converted approximation next to
+  // it. The authoritative price is recomputed server-side at booking time.
   const packages = [
     {
       id: 'basic',
       name: 'Basic Package',
       hours: 2,
-      price: Math.round(convertedPricePerHour * 2),
+      price: pricePerHour * 2,
       features: ['2 hours shooting', '20 edited photos', 'Online gallery', 'Basic retouching']
     },
     {
       id: 'standard',
       name: 'Standard Package',
       hours: 4,
-      price: Math.round(convertedPricePerHour * 4),
+      price: pricePerHour * 4,
       features: ['4 hours shooting', '50 edited photos', 'Online gallery', 'Advanced retouching', 'Print release']
     },
     {
       id: 'premium',
       name: 'Premium Package',
       hours: 8,
-      price: Math.round(convertedPricePerHour * 8),
+      price: pricePerHour * 8,
       features: ['8 hours shooting', '100+ edited photos', 'Online gallery', 'Premium retouching', 'Print release', 'USB delivery']
     }
   ];
+
+  // Local-currency approximation shown alongside the real price when they differ.
+  const approxLocal = (amount: number) => {
+    const local = formatPriceLocal(amount, currency);
+    return local !== formatPrice(amount, currency) ? local : null;
+  };
 
   const eventTypes = [
     'Wedding', 'Portrait', 'Event', 'Commercial', 'Fashion', 'Family', 'Maternity', 'Corporate'
@@ -72,100 +75,20 @@ export function BookingSystem({ photographerName, photographerId, pricePerHour, 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (step < 3) {
+      if (step === 1 && !selectedPackage) return;
+      if (step === 2 && (!selectedDate || !bookingForm.name || !bookingForm.email)) {
+         toast.error("Please fill out all required details and select a date.");
+         return;
+      }
+      setStep(step + 1);
+      return;
+    }
+
     if (!selectedDate) {
       toast.error('Please select a date for your session.');
       return;
     }
-
-    const selectedPkg = packages.find(p => p.id === selectedPackage);
-    if (!selectedPkg) return;
-
-    // Check if Razorpay key is configured
-    const razorpayKey = import.meta.env.VITE_RAZORPAY_KEY_ID;
-    const isRazorpayConfigured = razorpayKey && razorpayKey !== "rzp_test_YOUR_KEY_ID";
-
-    if (isRazorpayConfigured) {
-      // Initiate Razorpay Payment
-      initiatePayment({
-        amount: selectedPkg.price,
-        currency: userCurrency,
-        name: bookingForm.name,
-        description: `Booking for ${photographerName} - ${selectedPkg.name}`,
-        email: bookingForm.email,
-        contact: bookingForm.phone,
-        onSuccess: async (response) => {
-          try {
-            const apiBase = import.meta.env.VITE_API_BASE_URL || '';
-            const verifyResp = await fetch(`${apiBase}/api/payments/verify-signature`, {
-              method: 'POST',
-              headers: getAuthHeaders(),
-              body: JSON.stringify({
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature,
-              }),
-            });
-
-            const verifyJson = await verifyResp.json();
-            if (verifyResp.ok && verifyJson.data?.verified) {
-              await createBooking(response, 'paid');
-            } else {
-              console.error('Payment verification failed', verifyJson.error || verifyJson);
-              toast.error('Payment verification failed. Please contact support.');
-            }
-          } catch (err) {
-            console.error('Verification error:', err);
-            toast.error('Payment verification error.');
-          }
-        },
-        onFailure: (error) => {
-          console.error("Payment failed:", error);
-          toast.error(`Payment Failed: ${error.description || 'Reason unknown'}`);
-        }
-      });
-    } else {
-      // Bypass Payment (Mock Mode)
-      console.warn("Razorpay key not configured. Using Mock Payment.");
-      const { data: { user } } = await apiClient.auth.getUser();
-      if (!user) {
-        toast.error("Please login to book.");
-        return;
-      }
-      // Simulate API delay
-      toast.info("Test Mode: Simulating successful payment...");
-      setTimeout(async () => {
-        // Insert a pending booking via generic DB endpoint for mock mode
-        const apiBase = import.meta.env.VITE_API_BASE_URL || '';
-        const selectedPkg = packages.find(p => p.id === selectedPackage);
-        const bookingData = {
-          user_id: user.id,
-          photographer_id: photographerId,
-          booking_date: selectedDate!.toISOString().split('T')[0],
-          start_time: '10:00:00',
-          end_time: '12:00:00',
-          event_type: bookingForm.eventType,
-          location: 'Client Location',
-          total_amount: selectedPkg?.price,
-          payment_status: 'pending',
-          payment_intent_id: 'mock_payment_id_' + Date.now(),
-          status: 'pending',
-          created_at: new Date().toISOString()
-        };
-
-        await fetch(`${apiBase}/api/db/bookings`, {
-          method: 'POST',
-          headers: getAuthHeaders(),
-          body: JSON.stringify(bookingData)
-        });
-        toast.success('Booking simulated (mock).');
-        onClose();
-      }, 1000);
-    }
-  };
-
-  const createBooking = async (paymentRespOrId: any, paymentStatus: string) => {
-    try {
-    const apiBase = import.meta.env.VITE_API_BASE_URL || '';
 
     const selectedPkg = packages.find(p => p.id === selectedPackage);
     if (!selectedPkg) return;
@@ -176,54 +99,83 @@ export function BookingSystem({ photographerName, photographerId, pricePerHour, 
       return;
     }
 
-    const bookingData = {
-      user_id: user.id,
-      photographer_id: photographerId,
-      booking_date: selectedDate!.toISOString().split('T')[0],
-      start_time: '10:00:00',
-      end_time: '12:00:00',
-      event_type: bookingForm.eventType,
-      location: 'Client Location',
-      total_amount: selectedPkg.price,
-      status: 'confirmed'
-    };
-
-    // If paymentRespOrId is an object (Razorpay response), call server booking endpoint
-    if (typeof paymentRespOrId === 'object' && paymentRespOrId.razorpay_payment_id) {
-      const body = {
-        booking: bookingData,
-        razorpay_order_id: paymentRespOrId.razorpay_order_id,
-        razorpay_payment_id: paymentRespOrId.razorpay_payment_id,
-        razorpay_signature: paymentRespOrId.razorpay_signature
-      };
-
-      const resp = await fetch(`${apiBase}/api/payments/create-booking`, {
+    try {
+      // The server prices the booking from the photographer's stored rate and
+      // records the platform fee — client numbers are display-only.
+      const resp = await fetch(`${getBaseUrl()}/api/bookings/request`, {
         method: 'POST',
         headers: getAuthHeaders(),
-        body: JSON.stringify(body)
+        body: JSON.stringify({
+          photographer_id: photographerId,
+          booking_date: selectedDate.toISOString().split('T')[0],
+          start_time: '10:00:00',
+          duration_hours: selectedPkg.hours,
+          event_type: bookingForm.eventType,
+          notes: bookingForm.message,
+        }),
       });
-
       const json = await resp.json();
-      if (!resp.ok) {
-        throw new Error(json?.error?.message || 'Booking creation failed');
+      if (!resp.ok || json.error) {
+        toast.error(json.error?.message || 'Booking request failed');
+        return;
       }
 
-      toast.success(`Booking Confirmed! Reference: ${json.data.payment_intent_id}`);
-      onClose();
-      return;
-    }
+      const booking = json.data;
+      const razorpayKey = import.meta.env.VITE_RAZORPAY_KEY_ID;
+      const isRazorpayConfigured = razorpayKey && razorpayKey !== "rzp_test_YOUR_KEY_ID";
 
-    // Fallback: if paymentRespOrId is a string id, insert via generic DB endpoint
-    if (typeof paymentRespOrId === 'string') {
-      const fallback = { ...bookingData, payment_status: paymentStatus, payment_intent_id: paymentRespOrId, created_at: new Date().toISOString() };
-      await fetch(`${apiBase}/api/db/bookings`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify(fallback) });
-      toast.success(`Booking Confirmed! Reference: ${paymentRespOrId}`);
-      onClose();
-      return;
-    }
+      if (!isRazorpayConfigured) {
+        toast.success('Booking request sent!', {
+          description: `${formatPrice(booking.total_amount, booking.currency)} — the photographer will confirm and payment will be arranged.`,
+        });
+        onClose();
+        return;
+      }
+
+      // Payment: order is created server-side, pinned to this booking
+      const orderResp = await fetch(`${getBaseUrl()}/api/bookings/${booking.id}/pay-order`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+      });
+      const orderJson = await orderResp.json();
+      if (!orderResp.ok || orderJson.error) {
+        toast.info('Booking saved as pending — payment could not be started.', {
+          description: orderJson.error?.message || orderJson.error?.description,
+        });
+        onClose();
+        return;
+      }
+
+      await openRazorpayCheckout({
+        order: orderJson.data,
+        description: `Booking for ${photographerName} - ${selectedPkg.name}`,
+        name: bookingForm.name,
+        email: bookingForm.email,
+        contact: bookingForm.phone,
+        onSuccess: async (response) => {
+          const confirmResp = await fetch(`${getBaseUrl()}/api/bookings/${booking.id}/confirm-payment`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify(response),
+          });
+          const confirmJson = await confirmResp.json();
+          if (confirmResp.ok && !confirmJson.error) {
+            toast.success(`Booking Confirmed! Paid ${formatPrice(booking.total_amount, booking.currency)}.`);
+          } else {
+            toast.error(confirmJson.error?.message || 'Payment confirmation failed. Contact support.');
+          }
+          onClose();
+        },
+        onFailure: (error) => {
+          toast.info('Payment not completed — your booking is saved as pending.', {
+            description: error?.description || error?.message,
+          });
+          onClose();
+        },
+      });
     } catch (err: any) {
-      console.error("Booking creation failed:", err);
-      toast.error("Booking creation failed: " + err.message);
+      console.error('Booking failed:', err);
+      toast.error('Booking failed: ' + err.message);
     }
   };
 
@@ -247,11 +199,17 @@ export function BookingSystem({ photographerName, photographerId, pricePerHour, 
         </CardHeader>
 
         <CardContent className="p-6">
-          <form onSubmit={handleSubmit} className="space-y-8">
+          <div className="flex gap-2 mb-6 border-b pb-4">
+            <div className={`flex-1 text-center py-2 ${step >= 1 ? 'text-blue-600 font-bold border-b-2 border-blue-600' : 'text-gray-400'}`}>1. Package</div>
+            <div className={`flex-1 text-center py-2 ${step >= 2 ? 'text-blue-600 font-bold border-b-2 border-blue-600' : 'text-gray-400'}`}>2. Details</div>
+            <div className={`flex-1 text-center py-2 ${step >= 3 ? 'text-blue-600 font-bold border-b-2 border-blue-600' : 'text-gray-400'}`}>3. Review & Pay</div>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
             {/* Step 1: Package Selection */}
-            <div>
+            {step === 1 && (
+            <div className="animate-fade-in-up">
               <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                <span className="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm">1</span>
                 Choose Your Package
               </h3>
               <div className="grid md:grid-cols-3 gap-4">
@@ -269,7 +227,12 @@ export function BookingSystem({ photographerName, photographerId, pricePerHour, 
                           <Badge className="bg-blue-600">Selected</Badge>
                         )}
                       </div>
-                      <div className="text-2xl font-bold text-blue-600 mb-3">{formatPrice(pkg.price, userCurrency)}</div>
+                      <div className="mb-3">
+                        <div className="text-2xl font-bold text-blue-600">{formatPrice(pkg.price, currency)}</div>
+                        {approxLocal(pkg.price) && (
+                          <div className="text-xs text-muted-foreground">≈ {approxLocal(pkg.price)} in your currency</div>
+                        )}
+                      </div>
                       <ul className="space-y-1 text-sm">
                         {pkg.features.map(feature => (
                           <li key={feature} className="flex items-center gap-2">
@@ -283,26 +246,26 @@ export function BookingSystem({ photographerName, photographerId, pricePerHour, 
                 ))}
               </div>
             </div>
+            )}
 
             {/* Step 2: Date & Details */}
-            <div className="grid md:grid-cols-2 gap-8">
+            {step === 2 && (
+            <div className="grid md:grid-cols-2 gap-8 animate-fade-in-up">
               <div>
                 <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                  <span className="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm">2</span>
                   Select Date
                 </h3>
                 <Calendar
                   mode="single"
                   selected={selectedDate}
                   onSelect={setSelectedDate}
-                  disabled={(date) => date < new Date()}
+                  disabled={(date) => date < startOfToday()}
                   className="rounded-md border"
                 />
               </div>
 
               <div>
                 <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                  <span className="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm">3</span>
                   Your Details
                 </h3>
                 <div className="space-y-4">
@@ -366,10 +329,13 @@ export function BookingSystem({ photographerName, photographerId, pricePerHour, 
                 </div>
               </div>
             </div>
+            )}
 
-            {/* Booking Summary */}
-            <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-6">
-              <h4 className="font-bold mb-4">Booking Summary</h4>
+            {/* Step 3: Booking Summary & Payment */}
+            {step === 3 && (
+            <div className="space-y-6 animate-fade-in-up">
+              <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-6 border dark:border-gray-700">
+                <h4 className="font-bold mb-4 text-xl">Booking Summary</h4>
               <div className="grid md:grid-cols-2 gap-4 text-sm">
                 <div>
                   <p><strong>Photographer:</strong> {photographerName}</p>
@@ -380,30 +346,73 @@ export function BookingSystem({ photographerName, photographerId, pricePerHour, 
                   <p><strong>Date:</strong> {selectedDate ? selectedDate.toDateString() : 'Not selected'}</p>
                   <p><strong>Event Type:</strong> {bookingForm.eventType}</p>
                   <p className="text-lg font-bold text-blue-600 mt-2">
-                    <strong>Total: {formatPrice(selectedPkg?.price || 0, userCurrency)}</strong>
+                    <strong>Total: {formatPrice(selectedPkg?.price || 0, currency)}</strong>
                   </p>
+                  {approxLocal(selectedPkg?.price || 0) && (
+                    <p className="text-xs text-muted-foreground">≈ {approxLocal(selectedPkg?.price || 0)} in your currency · charged in {currency}</p>
+                  )}
                 </div>
               </div>
+              
+              {/* Trust Badges */}
+              <div className="flex flex-wrap items-center justify-center gap-6 p-4 bg-emerald-50 dark:bg-emerald-950/20 rounded-xl text-sm font-medium text-emerald-800 dark:text-emerald-400">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="h-5 w-5" />
+                  <span>Buyer Protection</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Lock className="h-5 w-5" />
+                  <span>Secure SSL Checkout</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="h-5 w-5" />
+                  <span>Verified Professional</span>
+                </div>
+              </div>
+              </div>
             </div>
+            )}
 
             {/* Submit Button */}
-            <div className="flex gap-4">
-              <Button
-                type="button"
-                variant="outline"
-                className="flex-1"
-                onClick={onClose}
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-                disabled={!selectedDate || !bookingForm.name || !bookingForm.email}
-              >
-                <CreditCard className="h-4 w-4 mr-2" />
-                Send Booking Request
-              </Button>
+            <div className="flex gap-4 pt-4 border-t mt-6">
+              {step > 1 ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setStep(step - 1)}
+                >
+                  <ChevronLeft className="h-4 w-4 mr-2" />
+                  Back
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1"
+                  onClick={onClose}
+                >
+                  Cancel
+                </Button>
+              )}
+              
+              {step < 3 ? (
+                <Button
+                  type="submit"
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  Continue
+                  <ChevronRight className="h-4 w-4 ml-2" />
+                </Button>
+              ) : (
+                <Button
+                  type="submit"
+                  className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg shadow-blue-500/25 transition-transform active:scale-95 text-white"
+                >
+                  <CreditCard className="h-4 w-4 mr-2" />
+                  Pay & Confirm Booking
+                </Button>
+              )}
             </div>
           </form>
         </CardContent>
