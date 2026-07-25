@@ -304,6 +304,23 @@ function authenticateToken(req) {
   }
 }
 
+// Inserts a notification document. Never throws — a notification failure
+// should not break the booking/payment/message flow that triggered it.
+async function createNotification(userId, title, message, type = 'info') {
+  try {
+    await db.collection('notifications').insertOne({
+      user_id: userId,
+      title,
+      message,
+      type,
+      read: false,
+      created_at: new Date(),
+    });
+  } catch (err) {
+    console.error('createNotification error:', err);
+  }
+}
+
 // Express middleware: only admins may pass.
 function requireAdmin(req, res, next) {
   const user = authenticateToken(req);
@@ -811,6 +828,84 @@ app.post('/api/rpc/recalc_photographer_rating', async (req, res) => {
 });
 
 // -------------------------------------------------------------------
+// 8b. AI FUNCTIONS
+// Mirrors Supabase's functions.invoke(name, { body }) pattern that
+// src/components/CaptionGenerator.tsx already calls. The OpenAI key stays
+// server-side only (OPENAI_API_KEY, no VITE_ prefix) — never call it from
+// the browser.
+// -------------------------------------------------------------------
+app.post('/api/functions/:name', async (req, res) => {
+  const sessionUser = authenticateToken(req);
+  if (!sessionUser) {
+    return res.status(401).json({ data: null, error: { message: 'Authentication required' } });
+  }
+
+  if (req.params.name !== 'generate-captions') {
+    return res.status(404).json({ data: null, error: { message: `Unknown function: ${req.params.name}` } });
+  }
+
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    return res.status(501).json({ data: null, error: { message: 'OPENAI_API_KEY is not configured on the server' } });
+  }
+
+  try {
+    const { imageUrl, context } = req.body || {};
+    if (!imageUrl) {
+      return res.status(400).json({ data: null, error: { message: 'imageUrl is required' } });
+    }
+
+    const prompt = `You are a social media caption assistant for a photography marketplace. ` +
+      `Look at the provided image${context ? ` (extra context from the photographer: "${context}")` : ''} ` +
+      `and respond with ONLY a JSON object, no markdown fences, no commentary, matching exactly this shape: ` +
+      `{"imageDescription": string, "captions": {"instagram": {"short": string, "long": string}, ` +
+      `"seo": {"title": string, "altText": string, "description": string}, "linkedin": string, "pinterest": string}, ` +
+      `"keywords": string[], "mood": string, "suggestedHashtags": string[]}`;
+
+    const openaiResp = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'user',
+            content: [
+              { type: 'text', text: prompt },
+              { type: 'image_url', image_url: { url: imageUrl } },
+            ],
+          },
+        ],
+        max_tokens: 800,
+      }),
+    });
+
+    const openaiData = await openaiResp.json();
+    if (!openaiResp.ok) {
+      console.error('OpenAI generate-captions error:', openaiData);
+      return res.status(502).json({ data: null, error: { message: openaiData?.error?.message || 'OpenAI request failed' } });
+    }
+
+    const raw = openaiData?.choices?.[0]?.message?.content || '';
+    let result;
+    try {
+      const cleaned = raw.replace(/^```json\s*|```$/g, '').trim();
+      result = JSON.parse(cleaned);
+    } catch (parseErr) {
+      result = { parseError: true, raw };
+    }
+
+    res.json({ data: { success: true, result }, error: null });
+  } catch (err) {
+    console.error('generate-captions error:', err);
+    res.status(500).json({ data: null, error: { message: err.message } });
+  }
+});
+
+// -------------------------------------------------------------------
 // 9. PAYMENTS
 // Order creation lives on the domain endpoints (/api/bookings/:id/pay-order,
 // /api/rentals/:id/pay-order) where the amount is computed server-side. The
@@ -1107,6 +1202,13 @@ app.post('/api/bookings/:id/confirm-payment', async (req, res) => {
       { _id: booking._id },
       { $set: { status: 'confirmed', payment_status: 'paid', payment_intent_id: razorpay_payment_id, updated_at: new Date() } }
     );
+
+    const photographer = await db.collection('photographers').findOne({ _id: booking.photographer_id });
+    await createNotification(booking.user_id, 'Booking confirmed', `Your ${booking.event_type || 'session'} booking is confirmed.`, 'success');
+    if (photographer?.user_id) {
+      await createNotification(photographer.user_id, 'New booking', `You have a new confirmed booking (${booking.event_type || 'session'}).`, 'success');
+    }
+
     res.json({ data: { id: booking._id, status: 'confirmed', payment_status: 'paid' }, error: null });
   } catch (err) {
     console.error('Booking confirm-payment error:', err);
@@ -1298,6 +1400,16 @@ app.post('/api/rentals/:id/confirm-payment', async (req, res) => {
       { _id: rental._id },
       { $set: { status: 'confirmed', payment_status: 'paid', payment_intent_id: razorpay_payment_id, updated_at: new Date() } }
     );
+
+    const equipment = await db.collection('equipment').findOne({ _id: rental.equipment_id });
+    await createNotification(rental.user_id || rental.renter_id, 'Rental confirmed', `Your rental of ${rental.equipment_name || 'equipment'} is confirmed.`, 'success');
+    if (equipment?.photographer_id) {
+      const owner = await db.collection('photographers').findOne({ _id: equipment.photographer_id });
+      if (owner?.user_id) {
+        await createNotification(owner.user_id, 'New rental', `Your ${rental.equipment_name || 'equipment'} was rented out.`, 'success');
+      }
+    }
+
     res.json({ data: { id: rental._id, status: 'confirmed', payment_status: 'paid' }, error: null });
   } catch (err) {
     console.error('Rental confirm-payment error:', err);
@@ -1356,6 +1468,14 @@ app.post('/api/db/:collection', async (req, res) => {
     });
 
     await collection.insertMany(prepared);
+
+    if (collName === 'messages') {
+      for (const doc of prepared) {
+        if (doc.recipient_id) {
+          await createNotification(doc.recipient_id, 'New message', doc.subject || 'You have a new message.', 'info');
+        }
+      }
+    }
 
     const result = prepared.map(doc => ({
       ...doc,

@@ -1,3 +1,4 @@
+// NOTE: this assembles boards from local logic, not a call to an AI model.
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/api/client';

@@ -336,7 +336,7 @@ export default function AdminPanel() {
     <button
       onClick={() => onClick(id)}
       className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-left transition-all duration-300 ${active
-        ? 'bg-gradient-primary text-white shadow-lg shadow-orange-500/20 scale-[1.02]'
+        ? 'gradient-primary text-white shadow-lg shadow-orange-500/20 scale-[1.02]'
         : 'text-slate-600 dark:text-slate-400 hover:bg-white/50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white hover:pl-5'
         }`}
     >

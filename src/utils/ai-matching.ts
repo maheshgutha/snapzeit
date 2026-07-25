@@ -1,4 +1,6 @@
-// AI-Powered Matching System for Smart Photographer Recommendations
+// Smart Matching System for Photographer Recommendations
+// NOTE: this is local rule-based/heuristic scoring, not a call to an
+// external AI model (no OpenAI/HuggingFace key is used anywhere here).
 export interface UserPreferences {
   budget: number;
   location: string;

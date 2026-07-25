@@ -1,3 +1,5 @@
+// NOTE: consistency scoring here is local heuristic logic, not a call to
+// an AI vision model.
 import { useState, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";

@@ -1,3 +1,5 @@
+// NOTE: matching is powered by src/utils/ai-matching.ts, local heuristic
+// scoring — not a call to an AI model.
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';

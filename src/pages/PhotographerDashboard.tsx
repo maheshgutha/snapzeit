@@ -9,6 +9,7 @@ import { ImageUpload, CoverPhotoUpload } from '@/components/ImageUpload';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { PredictiveAnalytics } from '@/components/PredictiveAnalytics';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
@@ -44,6 +45,7 @@ export default function PhotographerDashboard() {
   });
 
   const [bookings, setBookings] = useState<any[]>([]);
+  const [selectedBooking, setSelectedBooking] = useState<any | null>(null);
   const [messages, setMessages] = useState<any[]>([]);
   const [portfolioImages, setPortfolioImages] = useState<string[]>([]);
 
@@ -101,10 +103,14 @@ export default function PhotographerDashboard() {
         mappedBookings = bookingsData.map(b => ({
           id: b.id,
           client: (profileMap.get(b.user_id) as any)?.full_name || 'Unknown Client', // Accessing full_name from profile
+          client_email: (profileMap.get(b.user_id) as any)?.email || '',
           type: b.event_type,
           date: b.booking_date,
           status: b.status,
-          amount: b.total_amount
+          amount: b.total_amount,
+          duration_hours: b.duration_hours,
+          payment_status: b.payment_status,
+          notes: b.notes,
         }));
       }
       setBookings(mappedBookings);
@@ -405,6 +411,7 @@ export default function PhotographerDashboard() {
             <TabsTrigger value="messages" className="px-5 py-2.5 rounded-full data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-purple-600 data-[state=active]:text-white shadow-sm border border-transparent data-[state=active]:border-0 transition-all">Messages</TabsTrigger>
             <TabsTrigger value="portfolio" className="px-5 py-2.5 rounded-full data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-purple-600 data-[state=active]:text-white shadow-sm border border-transparent data-[state=active]:border-0 transition-all">Portfolio</TabsTrigger>
             <TabsTrigger value="earnings" className="px-5 py-2.5 rounded-full data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-purple-600 data-[state=active]:text-white shadow-sm border border-transparent data-[state=active]:border-0 transition-all">Earnings</TabsTrigger>
+            <TabsTrigger value="insights" className="px-5 py-2.5 rounded-full data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-purple-600 data-[state=active]:text-white shadow-sm border border-transparent data-[state=active]:border-0 transition-all">Insights</TabsTrigger>
             <TabsTrigger value="profile" className="px-5 py-2.5 rounded-full data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-purple-600 data-[state=active]:text-white shadow-sm border border-transparent data-[state=active]:border-0 transition-all">Profile</TabsTrigger>
           </TabsList>
 
@@ -435,7 +442,7 @@ export default function PhotographerDashboard() {
                           {booking.status}
                         </Badge>
                         <span className="font-bold text-lg">${booking.amount}</span>
-                        <Button variant="ghost" size="sm" className="hover:bg-blue-50 text-blue-600">View Details</Button>
+                        <Button variant="ghost" size="sm" className="hover:bg-blue-50 text-blue-600" onClick={() => setSelectedBooking(booking)}>View Details</Button>
                       </div>
                     </div>
                   ))}
@@ -443,6 +450,39 @@ export default function PhotographerDashboard() {
               </CardContent>
             </Card>
           </TabsContent>
+
+          {/* Booking Details Dialog */}
+          <Dialog open={!!selectedBooking} onOpenChange={(open) => !open && setSelectedBooking(null)}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Booking Details</DialogTitle>
+              </DialogHeader>
+              {selectedBooking && (
+                <div className="space-y-3 text-sm">
+                  <div className="flex justify-between"><span className="text-gray-500">Client</span><span className="font-medium">{selectedBooking.client}</span></div>
+                  {selectedBooking.client_email && (
+                    <div className="flex justify-between"><span className="text-gray-500">Email</span><span className="font-medium">{selectedBooking.client_email}</span></div>
+                  )}
+                  <div className="flex justify-between"><span className="text-gray-500">Event Type</span><span className="font-medium">{selectedBooking.type}</span></div>
+                  <div className="flex justify-between"><span className="text-gray-500">Date</span><span className="font-medium">{selectedBooking.date}</span></div>
+                  {selectedBooking.duration_hours && (
+                    <div className="flex justify-between"><span className="text-gray-500">Duration</span><span className="font-medium">{selectedBooking.duration_hours} hours</span></div>
+                  )}
+                  <div className="flex justify-between"><span className="text-gray-500">Status</span><span className="font-medium capitalize">{selectedBooking.status}</span></div>
+                  {selectedBooking.payment_status && (
+                    <div className="flex justify-between"><span className="text-gray-500">Payment</span><span className="font-medium capitalize">{selectedBooking.payment_status}</span></div>
+                  )}
+                  <div className="flex justify-between"><span className="text-gray-500">Amount</span><span className="font-bold">${selectedBooking.amount}</span></div>
+                  {selectedBooking.notes && (
+                    <div>
+                      <span className="text-gray-500">Notes</span>
+                      <p className="mt-1 font-medium">{selectedBooking.notes}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </DialogContent>
+          </Dialog>
 
           {/* Calendar Tab */}
           <TabsContent value="calendar" className="mt-6">
@@ -654,6 +694,14 @@ export default function PhotographerDashboard() {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          {/* Insights Tab */}
+          <TabsContent value="insights" className="mt-6">
+            <PredictiveAnalytics
+              city={photographer.location?.split(',')[0]?.trim() || ''}
+              country={photographer.location?.split(',')[1]?.trim() || photographer.location || ''}
+            />
           </TabsContent>
 
           {/* Profile Tab */}

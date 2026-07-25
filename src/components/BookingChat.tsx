@@ -63,6 +63,7 @@ export default function BookingChat({ bookingId, otherPartyName }: BookingChatPr
     const { error } = await supabase.from('messages').insert({
       booking_id: bookingId,
       sender_id: user.id,
+      subject: `Booking chat with ${otherPartyName}`,
       content: newMessage.trim(),
     });
 

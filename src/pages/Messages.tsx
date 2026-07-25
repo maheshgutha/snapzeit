@@ -55,9 +55,9 @@ export default function Messages() {
     const recipientId = selectedMessage.sender_id === user.id
       ? selectedMessage.recipient_id
       : selectedMessage.sender_id;
-    const subject = selectedMessage.subject.startsWith('Re:')
+    const subject = (selectedMessage.subject || '').startsWith('Re:')
       ? selectedMessage.subject
-      : `Re: ${selectedMessage.subject}`;
+      : `Re: ${selectedMessage.subject || 'your message'}`;
 
     const { error } = await sendMessage(recipientId, subject, replyContent.trim());
     setSending(false);
@@ -72,9 +72,9 @@ export default function Messages() {
 
   const filteredMessages = useMemo(() => 
     messages.filter(msg =>
-      msg.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      msg.sender_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      msg.content.toLowerCase().includes(searchQuery.toLowerCase())
+      (msg.subject || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (msg.sender_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (msg.content || '').toLowerCase().includes(searchQuery.toLowerCase())
     ), [messages, searchQuery]);
 
   if (authLoading || loading) {

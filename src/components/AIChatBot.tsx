@@ -72,16 +72,12 @@ export function AIChatBot() {
     if (lowerText.includes('hi') || lowerText.includes('hello')) {
       response = "Hello! How can I help you find the perfect photographer today?";
     } else if (lowerText.includes('location') || lowerText.includes('in ') || lowerText.includes('at ')) {
-      // Try to extract location
-      const words = lowerText.split(' ');
-      const location = "";
-
       // Look for locations in our database
-      const availableLocations = [...new Set(allPhotographers.map(p => p.location.toLowerCase()))];
+      const availableLocations = [...new Set(allPhotographers.map(p => (p.location || '').toLowerCase()).filter(Boolean))];
       const foundLocation = availableLocations.find(loc => lowerText.includes(loc));
 
       if (foundLocation) {
-        suggestions = allPhotographers.filter(p => p.location.toLowerCase().includes(foundLocation));
+        suggestions = allPhotographers.filter(p => (p.location || '').toLowerCase().includes(foundLocation));
         response = `I found ${suggestions.length} photographers in ${foundLocation}. Here are some recommendations:`;
       } else {
         response = "I couldn't find any photographers in that specific location. Would you like to see our most popular photographers instead?";
@@ -89,7 +85,7 @@ export function AIChatBot() {
       }
     } else if (lowerText.includes('wedding') || lowerText.includes('portrait') || lowerText.includes('event')) {
       const specialty = ['wedding', 'portrait', 'event', 'fashion', 'commercial'].find(s => lowerText.includes(s));
-      suggestions = allPhotographers.filter(p => p.specialty.toLowerCase().includes(specialty || ''));
+      suggestions = allPhotographers.filter(p => (p.specialty || '').toLowerCase().includes(specialty || ''));
       response = `Great! I found some amazing ${specialty} photographers for you:`;
     } else if (lowerText.includes('who') || lowerText.includes('photographer') || lowerText.includes('recommend')) {
       suggestions = allPhotographers.sort((a, b) => b.rating - a.rating).slice(0, 3);
@@ -117,16 +113,29 @@ export function AIChatBot() {
 
     // Simulate AI thinking
     setTimeout(async () => {
-      const { response, suggestions } = await processMessage(userMsg.content);
-      const botMsg: Message = {
-        id: (Date.now() + 1).toString(),
-        role: 'bot',
-        content: response,
-        suggestions,
-        timestamp: new Date()
-      };
-      setMessages(prev => [...prev, botMsg]);
-      setLoading(false);
+      try {
+        const { response, suggestions } = await processMessage(userMsg.content);
+        const botMsg: Message = {
+          id: (Date.now() + 1).toString(),
+          role: 'bot',
+          content: response,
+          suggestions,
+          timestamp: new Date()
+        };
+        setMessages(prev => [...prev, botMsg]);
+      } catch (err) {
+        console.error('AIChatBot processMessage error:', err);
+        const errorMsg: Message = {
+          id: (Date.now() + 1).toString(),
+          role: 'bot',
+          content: "Sorry, something went wrong — please try again.",
+          suggestions: [],
+          timestamp: new Date()
+        };
+        setMessages(prev => [...prev, errorMsg]);
+      } finally {
+        setLoading(false);
+      }
     }, 1000);
   };
 

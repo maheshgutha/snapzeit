@@ -83,9 +83,10 @@ export function MessagingSystem({ photographerId, photographerName, photographer
 
     await supabase.from('messages').insert({
       sender_id: user.id,
-      receiver_id: photographerId,
+      recipient_id: photographerId,
+      subject: 'New message',
       content: messageContent,
-      read: false
+      is_read: false
     });
     
     // No need to fetch immediately, interval will catch it, or we could trigger one explicitly

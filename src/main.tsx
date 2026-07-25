@@ -1,8 +1,8 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { ThemeProvider } from "next-themes";
-import "@/lib/i18n";
-import { refreshExchangeRates } from "@/lib/currency";
+import "@/lib/i18n.ts";
+import { refreshExchangeRates } from "@/lib/currency.ts";
 import App from "./App.tsx";
 import "./index.css";
 

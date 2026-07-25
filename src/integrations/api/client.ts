@@ -218,9 +218,41 @@ class ApiQueryBuilder {
   }
 }
 
-export const supabase = {
+// This object mimics the Supabase JS client's shape (.from().eq()... etc.)
+// but talks to our own Express + MongoDB backend — there is no Supabase
+// project behind this app. Named `db` to reflect that; `supabase` below is
+// kept only so the ~100 existing `import { supabase } from ...` call sites
+// don't all need to change at once.
+export const db = {
   from(table: string) {
     return new ApiQueryBuilder(table);
+  },
+
+  // Mirrors Supabase's supabase.functions.invoke(name, { body }). Routes to
+  // our own /api/functions/:name on the Express backend.
+  functions: {
+    async invoke(name: string, opts?: { body?: any }) {
+      const url = `${getBaseUrl()}/api/functions/${name}`;
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      const session = getStoredSession();
+      if (session?.access_token) {
+        headers['Authorization'] = `Bearer ${session.access_token}`;
+      }
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(opts?.body ?? {}),
+        });
+        const result = await response.json();
+        if (!response.ok) {
+          return { data: null, error: result.error || { message: 'Function call failed' } };
+        }
+        return { data: result.data, error: result.error };
+      } catch (err: any) {
+        return { data: null, error: { message: err.message } };
+      }
+    },
   },
 
   async rpc(func: string, params?: any) {
@@ -492,5 +524,7 @@ function compressToDataUrl(file: File | Blob, maxDim: number, quality: number): 
 }
 
 // Backwards-compatible exports
-export const apiClient = supabase;
+export const apiClient = db;
+// Legacy alias — prefer importing { db } in new code.
+export const supabase = db;
 export default apiClient;

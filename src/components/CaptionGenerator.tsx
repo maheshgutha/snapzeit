@@ -1,3 +1,6 @@
+// Calls the server-side /api/functions/generate-captions route (see
+// server/app.js), which uses OPENAI_API_KEY to generate real captions.
+// Falls back to an error toast if OPENAI_API_KEY isn't configured.
 import { useState, useEffect } from 'react';
 import { apiClient, supabase } from '@/integrations/api/client';
 import { Button } from '@/components/ui/button';

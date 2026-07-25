@@ -73,6 +73,8 @@ export function MessageProvider({ children }: { children: ReactNode }) {
 
       const formattedMessages = (data as any)?.map((msg: any) => ({
         ...msg,
+        subject: msg.subject || '(no subject)',
+        content: msg.content || '',
         read: msg.is_read, // Map database column is_read to interface read
         sender_name: nameByUserId[msg.sender_id] || 'Unknown',
         sender_type: 'user' as const
