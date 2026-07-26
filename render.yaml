@@ -1,5 +1,5 @@
 services:
-  - type: web_service
+  - type: web
     name: snapzeit-backend
     env: node
     plan: free
@@ -7,11 +7,29 @@ services:
     buildCommand: "npm install"
     startCommand: "npm start"
     envVars:
-      - key: MONGO_URI
-        value: "${MONGO_URI}"
-      - key: MONGO_DB_NAME
-        value: "${MONGO_DB_NAME}"
-      - key: JWT_SECRET
-        value: "${JWT_SECRET}"
       - key: NODE_ENV
         value: "production"
+      - key: PORT
+        value: "3001"
+      - key: MONGO_URI
+        sync: false
+      - key: MONGO_DB_NAME
+        value: "snapzeit"
+      - key: JWT_SECRET
+        sync: false
+      - key: RAZORPAY_KEY_ID
+        sync: false
+      - key: RAZORPAY_KEY_SECRET
+        sync: false
+      - key: RAZORPAY_WEBHOOK_SECRET
+        sync: false
+      - key: CORS_ORIGIN
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        sync: false
+      - key: APP_URL
+        sync: false
