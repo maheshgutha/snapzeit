@@ -309,8 +309,18 @@ export default function PhotographerProfile() {
                       <div className="flex items-center gap-6 mb-4">
                         <div className="flex items-center gap-1">
                           <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-                          <span className="font-bold text-lg">{photographer.rating}</span>
-                          <span className="text-gray-500">({photographer.review_count} reviews)</span>
+                          {reviewsLoading ? (
+                            <span className="text-gray-400">Loading…</span>
+                          ) : reviews.length > 0 ? (
+                            <>
+                              <span className="font-bold text-lg">
+                                {(reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / reviews.length).toFixed(1)}
+                              </span>
+                              <span className="text-gray-500">({reviews.length} review{reviews.length === 1 ? '' : 's'})</span>
+                            </>
+                          ) : (
+                            <span className="text-gray-500">No reviews yet</span>
+                          )}
                         </div>
                         <div className="flex items-center gap-2 text-gray-600">
                           <MapPin className="h-4 w-4" />
@@ -326,20 +336,24 @@ export default function PhotographerProfile() {
                       </div>
                       <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-lg">{photographer.bio}</p>
                       
-                      {/* Top Review Highlight */}
-                      {photographer.rating >= 4.5 && (
-                        <div className="mt-8 p-5 bg-yellow-50 dark:bg-yellow-900/10 rounded-xl border-l-4 border-yellow-400">
-                          <div className="flex gap-1 mb-2">
-                            {[1, 2, 3, 4, 5].map((s) => (
-                              <Star key={s} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                            ))}
+                      {/* Top Review Highlight — pulled from real reviews, not fabricated */}
+                      {(() => {
+                        const topReview = [...reviews].sort((a, b) => (b.rating || 0) - (a.rating || 0))[0];
+                        if (!topReview || !topReview.comment) return null;
+                        return (
+                          <div className="mt-8 p-5 bg-yellow-50 dark:bg-yellow-900/10 rounded-xl border-l-4 border-yellow-400">
+                            <div className="flex gap-1 mb-2">
+                              {[1, 2, 3, 4, 5].map((s) => (
+                                <Star key={s} className={`h-4 w-4 ${s <= topReview.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} />
+                              ))}
+                            </div>
+                            <p className="italic text-gray-700 dark:text-gray-300 font-medium">
+                              "{topReview.comment}"
+                            </p>
+                            <p className="text-sm font-bold text-gray-900 dark:text-gray-100 mt-2">— {topReview.user_name || 'Verified Client'}</p>
                           </div>
-                          <p className="italic text-gray-700 dark:text-gray-300 font-medium">
-                            "Absolutely amazing experience! The photos turned out better than we could have ever imagined. Highly recommended!"
-                          </p>
-                          <p className="text-sm font-bold text-gray-900 dark:text-gray-100 mt-2">— Verified Client</p>
-                        </div>
-                      )}
+                        );
+                      })()}
                     </div>
                   </div>
                 </CardContent>

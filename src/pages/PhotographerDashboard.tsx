@@ -9,13 +9,13 @@ import { ImageUpload, CoverPhotoUpload } from '@/components/ImageUpload';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { PredictiveAnalytics } from '@/components/PredictiveAnalytics';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Calendar as CalendarWidget } from '@/components/ui/calendar';
 import {
   Camera, Calendar, DollarSign, Star, Users, TrendingUp, MessageCircle,
   Settings, Edit, Plus, Eye, Heart, Award, Clock, MapPin, Loader2, Zap
@@ -46,6 +46,7 @@ export default function PhotographerDashboard() {
 
   const [bookings, setBookings] = useState<any[]>([]);
   const [selectedBooking, setSelectedBooking] = useState<any | null>(null);
+  const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | undefined>(new Date());
   const [messages, setMessages] = useState<any[]>([]);
   const [portfolioImages, setPortfolioImages] = useState<string[]>([]);
 
@@ -117,8 +118,8 @@ export default function PhotographerDashboard() {
 
       // 3. Calculate Stats
       const totalEarnings = mappedBookings
-        .filter(b => b.status === 'completed' || b.status === 'paid')
-        .reduce((sum, b) => sum + Number(b.amount), 0);
+        .filter(b => b.payment_status === 'paid')
+        .reduce((sum, b) => sum + Number(b.amount || 0), 0);
 
       const totalBookings = mappedBookings.length;
 
@@ -495,12 +496,38 @@ export default function PhotographerDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="grid md:grid-cols-3 gap-6">
-                  <div className="md:col-span-2 bg-white/50 dark:bg-gray-800/50 rounded-xl border border-gray-100 dark:border-gray-700 p-6 min-h-[400px] flex items-center justify-center">
-                    {/* Placeholder for actual interactive calendar */}
-                    <div className="text-center text-gray-500">
-                      <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                      <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Interactive Calendar Coming Soon</h3>
-                      <p>You will be able to block dates, set custom availability, and sync with Google Calendar.</p>
+                  <div className="md:col-span-2 bg-white/50 dark:bg-gray-800/50 rounded-xl border border-gray-100 dark:border-gray-700 p-4 flex flex-col items-center">
+                    <CalendarWidget
+                      mode="single"
+                      selected={selectedCalendarDate}
+                      onSelect={setSelectedCalendarDate}
+                      className="rounded-md"
+                      modifiers={{
+                        booked: bookings
+                          .map(b => { const d = new Date(b.date); return isNaN(d.getTime()) ? null : d; })
+                          .filter((d): d is Date => d !== null),
+                      }}
+                      modifiersClassNames={{ booked: 'bg-indigo-100 text-indigo-900 font-bold dark:bg-indigo-900 dark:text-indigo-100' }}
+                    />
+                    <div className="w-full mt-4 border-t border-gray-100 dark:border-gray-700 pt-4">
+                      <h4 className="font-semibold mb-2">
+                        {selectedCalendarDate ? selectedCalendarDate.toDateString() : 'Select a date'}
+                      </h4>
+                      {(() => {
+                        const dayBookings = bookings.filter(b => {
+                          const d = new Date(b.date);
+                          return selectedCalendarDate && !isNaN(d.getTime()) &&
+                            d.toDateString() === selectedCalendarDate.toDateString();
+                        });
+                        if (dayBookings.length === 0) {
+                          return <p className="text-sm text-gray-500 italic">No sessions on this date.</p>;
+                        }
+                        return dayBookings.map(b => (
+                          <div key={b.id} className="text-sm p-2 rounded-lg bg-indigo-50 dark:bg-indigo-950 mb-1">
+                            <span className="font-medium">{b.client}</span> — {b.type} <Badge variant="outline" className="ml-1 capitalize">{b.status}</Badge>
+                          </div>
+                        ));
+                      })()}
                     </div>
                   </div>
                   <div className="space-y-4">
@@ -509,7 +536,6 @@ export default function PhotographerDashboard() {
                       <div key={booking.id} className="p-4 bg-white/80 dark:bg-gray-800/80 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
                         <div className="flex justify-between items-start mb-2">
                           <span className="font-semibold">{booking.date}</span>
-                          <Badge className="bg-blue-100 text-blue-800">10:00 AM</Badge>
                         </div>
                         <p className="text-gray-900 dark:text-gray-100 font-medium">{booking.client}</p>
                         <p className="text-sm text-gray-500">{booking.type}</p>
@@ -550,6 +576,9 @@ export default function PhotographerDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
+                  {messages.length === 0 && (
+                    <p className="text-sm text-gray-500 italic py-6 text-center">No messages yet.</p>
+                  )}
                   {messages.map(message => (
                     <div key={message.id} className={`p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${message.unread ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : ''}`}>
                       <div className="flex items-start justify-between">
@@ -659,20 +688,32 @@ export default function PhotographerDashboard() {
                   <CardTitle>Monthly Earnings</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <span>January 2024</span>
-                      <span className="font-bold">$4,200</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span>December 2023</span>
-                      <span className="font-bold">$3,800</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span>November 2023</span>
-                      <span className="font-bold">$5,100</span>
-                    </div>
-                  </div>
+                  {(() => {
+                    const paid = bookings.filter(b => b.payment_status === 'paid');
+                    const byMonth = new Map<string, number>();
+                    for (const b of paid) {
+                      const d = new Date(b.date);
+                      if (isNaN(d.getTime())) continue;
+                      const key = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+                      byMonth.set(key, (byMonth.get(key) || 0) + Number(b.amount || 0));
+                    }
+                    const rows = Array.from(byMonth.entries()).sort((a, b) =>
+                      new Date(b[0]).getTime() - new Date(a[0]).getTime()
+                    );
+                    if (rows.length === 0) {
+                      return <p className="text-sm text-gray-500 italic">No paid bookings yet.</p>;
+                    }
+                    return (
+                      <div className="space-y-4">
+                        {rows.map(([month, total]) => (
+                          <div key={month} className="flex justify-between items-center">
+                            <span>{month}</span>
+                            <span className="font-bold">${total.toLocaleString()}</span>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
                 </CardContent>
               </Card>
 
@@ -682,10 +723,7 @@ export default function PhotographerDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div className="p-4 border rounded-lg">
-                      <h3 className="font-semibold">Bank Account</h3>
-                      <p className="text-sm text-gray-600">****1234 - Primary</p>
-                    </div>
+                    <p className="text-sm text-gray-500 italic">No payment method added yet.</p>
                     <Button variant="outline" className="w-full">
                       <Plus className="h-4 w-4 mr-2" />
                       Add Payment Method
@@ -698,10 +736,69 @@ export default function PhotographerDashboard() {
 
           {/* Insights Tab */}
           <TabsContent value="insights" className="mt-6">
-            <PredictiveAnalytics
-              city={photographer.location?.split(',')[0]?.trim() || ''}
-              country={photographer.location?.split(',')[1]?.trim() || photographer.location || ''}
-            />
+            {(() => {
+              const paid = bookings.filter(b => b.payment_status === 'paid');
+              const confirmed = bookings.filter(b => b.status === 'confirmed');
+              const avgBookingValue = paid.length > 0
+                ? paid.reduce((sum, b) => sum + Number(b.amount || 0), 0) / paid.length
+                : 0;
+              const eventTypeCounts = new Map<string, number>();
+              for (const b of bookings) {
+                if (!b.type) continue;
+                eventTypeCounts.set(b.type, (eventTypeCounts.get(b.type) || 0) + 1);
+              }
+              const topEventTypes = Array.from(eventTypeCounts.entries()).sort((a, b) => b[1] - a[1]);
+
+              return (
+                <div className="space-y-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Your Booking Insights</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid sm:grid-cols-4 gap-4">
+                        <div className="p-4 rounded-xl bg-indigo-50 dark:bg-indigo-950">
+                          <p className="text-xs text-gray-500 uppercase">Total Bookings</p>
+                          <p className="text-2xl font-bold">{bookings.length}</p>
+                        </div>
+                        <div className="p-4 rounded-xl bg-indigo-50 dark:bg-indigo-950">
+                          <p className="text-xs text-gray-500 uppercase">Confirmed</p>
+                          <p className="text-2xl font-bold">{confirmed.length}</p>
+                        </div>
+                        <div className="p-4 rounded-xl bg-indigo-50 dark:bg-indigo-950">
+                          <p className="text-xs text-gray-500 uppercase">Paid Bookings</p>
+                          <p className="text-2xl font-bold">{paid.length}</p>
+                        </div>
+                        <div className="p-4 rounded-xl bg-indigo-50 dark:bg-indigo-950">
+                          <p className="text-xs text-gray-500 uppercase">Avg. Booking Value</p>
+                          <p className="text-2xl font-bold">${avgBookingValue.toFixed(0)}</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Your Event Types</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {topEventTypes.length === 0 ? (
+                        <p className="text-sm text-gray-500 italic">Not enough booking data yet to show a breakdown.</p>
+                      ) : (
+                        <div className="space-y-3">
+                          {topEventTypes.map(([type, count]) => (
+                            <div key={type} className="flex justify-between items-center">
+                              <span>{type}</span>
+                              <Badge variant="outline">{count} booking{count === 1 ? '' : 's'}</Badge>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+              );
+            })()}
           </TabsContent>
 
           {/* Profile Tab */}

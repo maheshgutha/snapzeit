@@ -250,7 +250,16 @@ export function BookingSystem({ photographerName, photographerId, pricePerHour, 
 
             {/* Step 2: Date & Details */}
             {step === 2 && (
-            <div className="grid md:grid-cols-2 gap-8 animate-fade-in-up">
+            <div className="animate-fade-in-up">
+              <div className="mb-6 p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 flex items-center justify-between text-sm">
+                <span>
+                  <strong>{selectedPkg?.name}</strong> — {selectedPkg?.hours} hour{selectedPkg?.hours === 1 ? '' : 's'} — {formatPrice(selectedPkg?.price || 0, currency)}
+                </span>
+                <button type="button" onClick={() => setStep(1)} className="text-blue-600 font-medium hover:underline">
+                  Change duration/package
+                </button>
+              </div>
+              <div className="grid md:grid-cols-2 gap-8">
               <div>
                 <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
                   Select Date
@@ -327,6 +336,7 @@ export function BookingSystem({ photographerName, photographerId, pricePerHour, 
                     />
                   </div>
                 </div>
+              </div>
               </div>
             </div>
             )}

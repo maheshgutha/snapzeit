@@ -83,6 +83,18 @@ export default function Photographers() {
   const [selectedStyle, setSelectedStyle] = useState('');
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [sortBy, setSortBy] = useState('rating');
+  const [activePresetIdx, setActivePresetIdx] = useState<number | null>(null);
+  const [minPriceInput, setMinPriceInput] = useState('');
+  const [maxPriceInput, setMaxPriceInput] = useState('');
+  const debouncedMinPrice = useDebounce(minPriceInput, 500);
+  const debouncedMaxPrice = useDebounce(maxPriceInput, 500);
+
+  useEffect(() => {
+    const min = Math.max(0, Number(debouncedMinPrice) || 0);
+    const max = debouncedMaxPrice.trim() === '' ? 500 : Math.max(min, Number(debouncedMaxPrice) || 500);
+    setPriceRange([min, max]);
+     
+  }, [debouncedMinPrice, debouncedMaxPrice]);
   const [currency, setCurrency] = useState('USD');
   const [favorites, setFavorites] = useState<string[]>([]);
 
@@ -160,17 +172,31 @@ export default function Photographers() {
     setCountry('');
     setCity('');
     setPriceRange([0, 500]);
+    setMinPriceInput('');
+    setMaxPriceInput('');
     setSelectedStyle('');
     setSelectedDate(undefined);
     setSearch('');
     setSearchParams({});
     setPage(1);
+    setActivePresetIdx(null);
   };
 
-  const applyPreset = (preset: typeof FILTER_PRESETS[0]) => {
-    if (preset.specialty) setSpecialty(preset.specialty);
-    if (preset.priceMin) setPriceRange([preset.priceMin, priceRange[1]]);
-    if (preset.priceMax) setPriceRange([priceRange[0], preset.priceMax]);
+  const applyPreset = (preset: typeof FILTER_PRESETS[0], idx: number) => {
+    if (activePresetIdx === idx) {
+      // Clicking the active preset again turns it off.
+      setSpecialty('');
+      setPriceRange([0, 500]);
+      setMinPriceInput('');
+      setMaxPriceInput('');
+      setActivePresetIdx(null);
+      return;
+    }
+    setSpecialty(preset.specialty || '');
+    setPriceRange([preset.priceMin ?? 0, preset.priceMax ?? 500]);
+    setMinPriceInput(preset.priceMin ? String(preset.priceMin) : '');
+    setMaxPriceInput(preset.priceMax ? String(preset.priceMax) : '');
+    setActivePresetIdx(idx);
   };
 
   const handlePageChange = (newPage: number) => {
@@ -261,16 +287,24 @@ export default function Photographers() {
         <Label className="text-sm font-medium mb-2 block">Price Range</Label>
         <div className="grid grid-cols-2 gap-2">
           <Input
-            type="number"
+            type="text"
+            inputMode="numeric"
             placeholder="Min"
-            value={priceRange[0]}
-            onChange={(e) => setPriceRange([Number(e.target.value), priceRange[1]])}
+            value={minPriceInput}
+            onChange={(e) => {
+              const digitsOnly = e.target.value.replace(/[^0-9]/g, '');
+              setMinPriceInput(digitsOnly);
+            }}
           />
           <Input
-            type="number"
+            type="text"
+            inputMode="numeric"
             placeholder="Max"
-            value={priceRange[1] === 500 ? '' : priceRange[1]}
-            onChange={(e) => setPriceRange([priceRange[0], Number(e.target.value) || 500])}
+            value={maxPriceInput}
+            onChange={(e) => {
+              const digitsOnly = e.target.value.replace(/[^0-9]/g, '');
+              setMaxPriceInput(digitsOnly);
+            }}
           />
         </div>
       </div>
@@ -306,10 +340,10 @@ export default function Photographers() {
             {FILTER_PRESETS.map((preset, idx) => (
               <Button
                 key={idx}
-                variant="outline"
+                variant={activePresetIdx === idx ? 'default' : 'outline'}
                 size="sm"
-                onClick={() => applyPreset(preset)}
-                className="h-8 text-xs hover:scale-105 transition-all"
+                onClick={() => applyPreset(preset, idx)}
+                className={`h-8 text-xs hover:scale-105 transition-all ${activePresetIdx === idx ? 'bg-blue-600 text-white' : ''}`}
               >
                 <span className="mr-1">{preset.icon}</span>
                 {preset.name}
@@ -351,7 +385,7 @@ export default function Photographers() {
                   <SheetHeader>
                     <SheetTitle>Filters</SheetTitle>
                   </SheetHeader>
-                  <div className="mt-6"><FiltersContent /></div>
+                  <div className="mt-6">{FiltersContent()}</div>
                 </SheetContent>
               </Sheet>
             </div>
@@ -370,7 +404,7 @@ export default function Photographers() {
           <aside className="hidden md:block w-64 shrink-0">
             <div className="sticky top-24 bg-card rounded-2xl border shadow-sm p-6">
               <h3 className="font-bold mb-6">Filters</h3>
-              <FiltersContent />
+              {FiltersContent()}
             </div>
           </aside>
 

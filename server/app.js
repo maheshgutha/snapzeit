@@ -696,11 +696,25 @@ app.post('/api/rpc/get_public_photographers', async (req, res) => {
     .sort({ rating: -1, review_count: -1 })
     .toArray();
 
+    // Compute real rating/review_count from the reviews collection instead
+    // of trusting the stored field, which can drift from reality.
+    const photographerIds = list.map(p => p._id);
+    const reviewStats = await db.collection('reviews').aggregate([
+      { $match: { photographer_id: { $in: photographerIds } } },
+      { $group: { _id: '$photographer_id', avgRating: { $avg: '$rating' }, count: { $sum: 1 } } }
+    ]).toArray();
+    const statsMap = new Map(reviewStats.map(s => [s._id, s]));
+
     // Map _id to id
-    const mapped = list.map(item => ({
-      ...item,
-      id: item._id
-    }));
+    const mapped = list.map(item => {
+      const stats = statsMap.get(item._id);
+      return {
+        ...item,
+        id: item._id,
+        rating: stats ? Math.round(stats.avgRating * 10) / 10 : 0,
+        review_count: stats ? stats.count : 0,
+      };
+    });
 
     res.json({ data: mapped, error: null });
   } catch (err) {
@@ -777,11 +791,26 @@ app.post('/api/rpc/get_photographers_paginated', async (req, res) => {
       .limit(Number(p_limit) || 20)
       .toArray();
 
-    const mapped = list.map(item => ({
-      ...item,
-      id: item._id,
-      total_count: totalCount
-    }));
+    // Compute real rating/review_count from the reviews collection for just
+    // this page of results, instead of trusting the stored field on the
+    // photographer document (which can drift from reality).
+    const photographerIds = list.map(p => p._id);
+    const reviewStats = await db.collection('reviews').aggregate([
+      { $match: { photographer_id: { $in: photographerIds } } },
+      { $group: { _id: '$photographer_id', avgRating: { $avg: '$rating' }, count: { $sum: 1 } } }
+    ]).toArray();
+    const statsMap = new Map(reviewStats.map(s => [s._id, s]));
+
+    const mapped = list.map(item => {
+      const stats = statsMap.get(item._id);
+      return {
+        ...item,
+        id: item._id,
+        rating: stats ? Math.round(stats.avgRating * 10) / 10 : 0,
+        review_count: stats ? stats.count : 0,
+        total_count: totalCount
+      };
+    });
 
     res.json({ data: mapped, error: null });
   } catch (err) {
